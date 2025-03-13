@@ -29,18 +29,22 @@ private:
 	int Size;
 };
 
+
+// Vertex Buffer, Index Buffer Cache
 class FBufferCache
 {
 private:
-	std::unordered_map <EPrimitiveType, BufferInfo> Cache;
+	std::unordered_map <EPrimitiveType, BufferInfo> VertexBufferCache;
+	std::unordered_map <EPrimitiveType, BufferInfo> IndexBufferCache;
 
 public:
 	FBufferCache();
 	~FBufferCache();
+	
+	BufferInfo& GetVertexBufferBufferInfo(EPrimitiveType Type);
+	BufferInfo& GetIndexBufferBufferInfo(EPrimitiveType Type);
 
-	void Init();
-	BufferInfo GetBufferInfo(EPrimitiveType Type);
-
+	void Release();
 public:
 	TArray<FVertexSimple> CreateArrowVertices();
 	TArray<FVertexSimple> CreateConeVertices();
@@ -48,5 +52,5 @@ public:
 
 private :
 	BufferInfo CreateVertexBufferInfo(EPrimitiveType Type);
+	BufferInfo CreateIndexBufferInfo(EPrimitiveType Type);
 };
-

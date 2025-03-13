@@ -30,6 +30,7 @@ void URenderer::Release()
     ReleaseFrameBuffer();
     ReleaseDepthStencilBuffer();
     ReleaseDeviceAndSwapChain();
+    ReleaseBufferCache();
 }
 
 void URenderer::CreateShader()
@@ -81,7 +82,7 @@ void URenderer::CreateShader()
     PickingShaderCSO->Release();
 
     // 정점 하나의 크기를 설정 (바이트 단위)
-    Stride = sizeof(FVertexSimple);
+    VertexStride = sizeof(FVertexSimple);
 }
 
 void URenderer::ReleaseShader()
@@ -205,18 +206,21 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
         return;
     }
 
-	BufferInfo Info = BufferCache->GetBufferInfo(PrimitiveComp->GetType());
+    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferBufferInfo(PrimitiveComp->GetType());
+    
+    if (VertexBufferInfo.GetBuffer() == nullptr)
+    {
+        return;
+    }
 
-	if (Info.GetBuffer() == nullptr)
-	{
-		return;
-	}
+    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferBufferInfo(PrimitiveComp->GetType());
 
-	//if (CurrentTopology != Info.GetTopology())
-	{
-		DeviceContext->IASetPrimitiveTopology(Info.GetTopology());
-		CurrentTopology = Info.GetTopology();
-	}
+    //if (CurrentTopology != Info.GetTopology())
+    {
+        // TODO 토폴로지를 Engine, World(SceneManager) 단에서 넣어주는 경우 BufferInfo에서 Topology를 가지면 안됨.
+        DeviceContext->IASetPrimitiveTopology(VertexBufferInfo.GetTopology());
+        CurrentTopology = VertexBufferInfo.GetTopology();
+    }
 
     ConstantUpdateInfo UpdateInfo{ 
         PrimitiveComp->GetWorldTransform(), 
@@ -226,24 +230,35 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
 
     UpdateConstant(UpdateInfo);
     
-    RenderPrimitiveInternal(Info.GetBuffer(), Info.GetSize());
-
+    RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
 }
 
-void URenderer::RenderPrimitiveInternal(ID3D11Buffer* pBuffer, UINT numVertices) const
+
+
+void URenderer::RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, const BufferInfo& IndexBufferInfo) const
 {
-    UINT Offset = 0;
-    DeviceContext->IASetVertexBuffers(0, 1, &pBuffer, &Stride, &Offset);
-
-    DeviceContext->Draw(numVertices, 0);
+    UINT VertexBufferOffset = 0;
+    ID3D11Buffer* VertexBuffer = VertexBufferInfo.GetBuffer();
+    DeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &VertexStride, &VertexBufferOffset);
+    
+    if (IndexBufferInfo.GetBuffer() == nullptr)
+    {
+        DeviceContext->Draw(VertexBufferInfo.GetSize(), 0);
+    }
+    else
+    {
+        UINT IndexBufferOffset = 0;
+        DeviceContext->IASetIndexBuffer(IndexBufferInfo.GetBuffer(), DXGI_FORMAT_R32_UINT, IndexBufferOffset);
+        DeviceContext->DrawIndexed(IndexBufferInfo.GetSize(), IndexBufferOffset, 0);
+    }
 }
 
-ID3D11Buffer* URenderer::CreateVertexBuffer(const FVertexSimple* Vertices, UINT ByteWidth) const
+ID3D11Buffer* URenderer::CreateVertexBuffer(const FVertexSimple* Vertices, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage = D3D11_USAGE_DEFAULT) const
 {
     D3D11_BUFFER_DESC VertexBufferDesc = {};
     VertexBufferDesc.ByteWidth = ByteWidth;
-    VertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    VertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    VertexBufferDesc.Usage = D3d11Usage;
+    VertexBufferDesc.BindFlags = BindFlag;
 
     D3D11_SUBRESOURCE_DATA VertexBufferSRD = {};
     VertexBufferSRD.pSysMem = Vertices;
@@ -257,9 +272,24 @@ ID3D11Buffer* URenderer::CreateVertexBuffer(const FVertexSimple* Vertices, UINT 
     return VertexBuffer;
 }
 
-void URenderer::ReleaseVertexBuffer(ID3D11Buffer* pBuffer) const
+ID3D11Buffer* URenderer::CreateIndexBuffer(const TArray<uint32>& Indices, UINT ByteWidth, D3D11_BIND_FLAG BindFlag,
+    D3D11_USAGE D3d11Usage) const
 {
-    pBuffer->Release();
+    D3D11_BUFFER_DESC IndexBufferDesc = {};
+    IndexBufferDesc.ByteWidth = ByteWidth;
+    IndexBufferDesc.Usage = D3d11Usage;
+    IndexBufferDesc.BindFlags = BindFlag;
+
+    D3D11_SUBRESOURCE_DATA IndexBufferSRD = {};
+    IndexBufferSRD.pSysMem = Indices.GetData();
+
+    ID3D11Buffer* IndexBuffer;
+    const HRESULT Result = Device->CreateBuffer(&IndexBufferDesc, &IndexBufferSRD, &IndexBuffer);
+    if (FAILED(Result))
+    {
+        return nullptr;
+    }
+    return IndexBuffer;
 }
 
 void URenderer::UpdateConstant(const ConstantUpdateInfo& UpdateInfo) const
@@ -362,6 +392,15 @@ void URenderer::ReleaseDeviceAndSwapChain()
     {
         DeviceContext->Release();
         DeviceContext = nullptr;
+    }
+}
+
+void URenderer::ReleaseBufferCache()
+{
+    if (BufferCache)
+    {
+        BufferCache->Release();
+        BufferCache.reset();
     }
 }
 
