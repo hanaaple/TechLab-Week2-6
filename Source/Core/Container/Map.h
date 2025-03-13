@@ -15,9 +15,14 @@ namespace std
     {
         size_t operator()(const FString& Str) const
         {
+#if IS_WIDECHAR
+            return hash<std::wstring>()(Str.ToStdString());
+#else
             return hash<std::string>()(Str.ToStdString());
+#endif
         }
     };
+    
 }
 
 template <typename KeyType, typename ValueType, typename Allocator = FDefaultAllocator<std::pair<const KeyType, ValueType>>>

@@ -14,8 +14,12 @@ public:
  * - 존재하지 않는 경우 새로운 FNameEntry를 추가하고 인덱스를 반환
  */
     int32 FindOrAdd(const FString& Name);
+    int32 FindOrAddLower(const FString& Name);
+
     //주어진 인덱스에 해당하는 문자열 반환
     FString GetName(int32 Index) const;
+    //주어진 인덱스에 해당하는 NameEntry 반환
+    const FNameEntry& GetNameEntry(int32 Index) const;
 
 private:
     //FString 값으로 NameEntries의 index 반환
