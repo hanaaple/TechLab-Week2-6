@@ -2,6 +2,7 @@
 #include "Actor.h"
 class ACube : public AActor
 {
+    DECLARE_OBJECT(ACube, AActor)
 	using Super = AActor;
 public:
 	ACube();

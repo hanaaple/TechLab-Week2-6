@@ -19,6 +19,7 @@ void ACube::BeginPlay()
 void ACube::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+    std::cout<<GetClassFName().ToString().ToStdString()<<std::endl;
 }
 
 const char* ACube::GetTypeName()
