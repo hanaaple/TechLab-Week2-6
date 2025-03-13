@@ -80,20 +80,20 @@ public:
      * @param pBuffer 렌더링에 사용할 버텍스 버퍼에 대한 포인터
      * @param numVertices 버텍스 버퍼에 저장된 버텍스의 총 개수
      */
-    void RenderPrimitiveInternal(ID3D11Buffer* pBuffer, UINT numVertices) const;
+    void RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, const BufferInfo& IndexBufferInfo) const;
 
     /**
      * 정점 데이터로 Vertex Buffer를 생성합니다.
      * @param Vertices 버퍼로 변환할 정점 데이터 배열의 포인터
      * @param ByteWidth 버퍼의 총 크기 (바이트 단위)
+     * @param BindFlag
+     * @param D3d11Usage
      * @return 생성된 버텍스 버퍼에 대한 ID3D11Buffer 포인터, 실패 시 nullptr
      *
      * @note 이 함수는 D3D11_USAGE_IMMUTABLE 사용법으로 버퍼를 생성합니다.
      */
-    ID3D11Buffer* CreateVertexBuffer(const FVertexSimple* Vertices, UINT ByteWidth) const;
-
-    /** Buffer를 해제합니다. */
-    void ReleaseVertexBuffer(ID3D11Buffer* pBuffer) const;
+    ID3D11Buffer* CreateVertexBuffer(const FVertexSimple* Vertices, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage) const;
+	ID3D11Buffer* CreateIndexBuffer(const TArray<uint32>& Indices, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage) const;
 
     /** Constant Data를 업데이트 합니다. */
     void UpdateConstant(const ConstantUpdateInfo& UpdateInfo) const;
@@ -116,6 +116,8 @@ protected:
     /** Direct3D Device 및 SwapChain을 해제합니다.  */
     void ReleaseDeviceAndSwapChain();
 
+	void ReleaseBufferCache();
+	
     /** 프레임 버퍼를 생성합니다. */
     void CreateFrameBuffer();
 
@@ -161,7 +163,7 @@ protected:
     ID3D11PixelShader* SimplePixelShader = nullptr;         // Pixel의 색상을 결정하는 Pixel 셰이더
 
     ID3D11InputLayout* SimpleInputLayout = nullptr;         // Vertex 셰이더 입력 레이아웃 정의
-    unsigned int Stride = 0;                                // Vertex 버퍼의 각 요소 크기
+    unsigned int VertexStride = 0;                                // Vertex 버퍼의 각 요소 크기
 
     // Depth Stenil Buffer
 	ID3D11Texture2D* DepthStencilBuffer = nullptr;          // DepthStencil버퍼 역할을 하는 텍스쳐

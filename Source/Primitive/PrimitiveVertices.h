@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Core/Container/Array.h"
 #include "Core/HAL/PlatformType.h"
 struct FVertexSimple
 {
@@ -22,3 +23,4 @@ extern FVertexSimple LineVertices[2];
 extern FVertexSimple CubeVertices[36];
 extern FVertexSimple SphereVertices[2400];
 extern FVertexSimple TriangleVertices[3];
+extern TArray<uint32> CubeIndecies;
