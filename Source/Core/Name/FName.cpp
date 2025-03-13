@@ -10,13 +10,14 @@ FName::FName(const FString& InName, uint32 InNumber)
   DisplayIndex(FNameTable::Get().FindOrAdd(InName)), // 원본 문자열 저장
   Number(InNumber)
 {
-    //std::cout<<InName.ToStdString()<<" "<<ComparisonIndex<<" "<<DisplayIndex<<" "<<Number<<std::endl;
 }
-
+FName::FName(const char* pStr, uint32 InNumber)
+    : FName(FString(pStr), InNumber) // FString 변환 후 기존 생성자 호출
+{
+}
 bool FName::operator==(const FName& Other) const
 {
-    return FNameTable::Get().GetNameEntry(ComparisonIndex).GetLowerCaseHash()
-    == FNameTable::Get().GetNameEntry(Other.ComparisonIndex).GetLowerCaseHash();
+    return ComparisonIndex == Other.ComparisonIndex&&Number == Other.Number;
     //return ComparisonIndex == Other.ComparisonIndex && Number == Other.Number;
 }
 
@@ -27,8 +28,7 @@ bool FName::operator!=(const FName& Other) const
 // 대소문자 구별 비교
 bool FName::EqualsCaseSensitive(const FName& Other) const
 {
-    return FNameTable::Get().GetNameEntry(DisplayIndex).GetName() ==
-           FNameTable::Get().GetNameEntry(Other.DisplayIndex).GetName();
+    return DisplayIndex == Other.DisplayIndex&&Number==Other.Number;
 }
 // 정렬용 비교 함수
 int32 FName::Compare(const FName& Other) const

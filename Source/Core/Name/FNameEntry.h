@@ -9,9 +9,10 @@ class FNameEntry
 public:
     explicit FNameEntry(const FString& InName);
     const FString& GetName() const;
-    uint32 GetLowerCaseHash() const;
+    //uint32 GetLowerCaseHash() const;
 private:
     FString Name;
+    /*
     uint32 HashLowerCase;  // 소문자로 변환된 해시값 저장
     static uint32 ComputeLowerCaseHash(const FString& Str)
     {
@@ -25,4 +26,5 @@ private:
         return std::hash<std::string>()(LowerStr);
 #endif
     }
+    */
 };

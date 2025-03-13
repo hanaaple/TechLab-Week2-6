@@ -9,6 +9,7 @@ class FName
 public:
     FName();
     FName(const FString& InName, uint32 InNumber = 0);
+    FName(const char* pStr, uint32 InNumber = 0); // char* 버전 추가
 
     //대소문자 무시 비교(소문자 해시값으로 비교)
     bool operator==(const FName& Other) const;
