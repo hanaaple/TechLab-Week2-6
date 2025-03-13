@@ -4,7 +4,21 @@
 #include <algorithm>
 #include "ContainerAllocator.h"
 #include "Pair.h"
+#include <functional> // std::hash 포함
 
+#include "String.h"
+/**FName에서 사용할 FString 해시화 함수*/
+namespace std
+{
+    template <>
+    struct hash<FString>
+    {
+        size_t operator()(const FString& Str) const
+        {
+            return hash<std::string>()(Str.ToStdString());
+        }
+    };
+}
 
 template <typename KeyType, typename ValueType, typename Allocator = FDefaultAllocator<std::pair<const KeyType, ValueType>>>
 class TMap

@@ -135,6 +135,8 @@ public:
 
     FORCEINLINE bool operator==(const FString& Rhs) const;
     FORCEINLINE bool operator==(const TCHAR* Rhs) const;
+    /** 키 해시화를 위해 std::string으로 변환*/
+    std::string ToStdString() const;
 };
 
 

@@ -117,3 +117,8 @@ int32 FString::Find(
         return FindSubString(StartPosition, -1, -1);
     }
 }
+
+std::string FString::ToStdString() const
+{
+    return std::string(PrivateString.begin(), PrivateString.end());
+}
