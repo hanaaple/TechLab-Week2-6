@@ -206,14 +206,14 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
         return;
     }
 
-    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferBufferInfo(PrimitiveComp->GetType());
+    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(PrimitiveComp->GetType());
     
     if (VertexBufferInfo.GetBuffer() == nullptr)
     {
         return;
     }
 
-    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferBufferInfo(PrimitiveComp->GetType());
+    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(PrimitiveComp->GetType());
 
     //if (CurrentTopology != Info.GetTopology())
     {

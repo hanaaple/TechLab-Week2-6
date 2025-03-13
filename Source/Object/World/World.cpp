@@ -90,15 +90,39 @@ void UWorld::RenderPickingTexture(URenderer& Renderer)
 	Renderer.PreparePicking();
 	Renderer.PreparePickingShader();
 
-	for (auto& RenderComponent : RenderComponents)
+	for (auto& [PrimitiveType, RenderComponents] : RenderComponentTable)
 	{
-		if (RenderComponent->GetOwner()->GetDepth() > 0)
+		if (PrimitiveType == EPrimitiveComponentType::EPT_Line || PrimitiveType == EPrimitiveComponentType::EPT_BoundingBox)
 		{
-			continue;
+			TArray<FVertexSimple> Vertexs;
+			for (auto RenderComponent : RenderComponents){ 
+				if (RenderComponent->GetOwner()->GetDepth() > 0)
+				{
+					continue;
+				}
+				uint32 UUID = RenderComponent->GetUUID();
+				RenderComponent->UpdateConstantPicking(Renderer, APicker::EncodeUUID(UUID));
+				RenderComponent->Render();
+			}
+			
+			for (auto& LineGrid : LineGridVertices)
+			{
+				Vertexs.Add(LineGrid);
+			}
+			DrawBatch(Vertexs);
 		}
-		uint32 UUID = RenderComponent->GetUUID();
-		RenderComponent->UpdateConstantPicking(Renderer, APicker::EncodeUUID(UUID));
-		RenderComponent->Render();
+		else
+		{
+			for (auto RenderComponent : RenderComponents){ 
+				if (RenderComponent->GetOwner()->GetDepth() > 0)
+				{
+					continue;
+				}
+				uint32 UUID = RenderComponent->GetUUID();
+				RenderComponent->UpdateConstantPicking(Renderer, APicker::EncodeUUID(UUID));
+				RenderComponent->Render();
+			}
+		}
 	}
 
 	Renderer.PrepareZIgnore();
@@ -115,17 +139,46 @@ void UWorld::RenderMainTexture(URenderer& Renderer)
 {
 	Renderer.PrepareMain();
 	Renderer.PrepareMainShader();
-	for (auto& RenderComponent : RenderComponents)
-	{
-		if (RenderComponent->GetOwner()->GetDepth() > 0)
-		{
-			continue;
-		}
-		uint32 depth = RenderComponent->GetOwner()->GetDepth();
-		// RenderComponent->UpdateConstantDepth(Renderer, depth);
-		RenderComponent->Render();
-	}
 
+	// if (is Batch)
+	// {}
+	// else if (is not Batch)
+	// {}
+	
+	for (auto& [PrimitiveType, RenderComponents] : RenderComponentTable)
+	{
+		if (isPrimitiveType is Batch)
+		// if (PrimitiveType == EPrimitiveType::EPT_Line || PrimitiveType == EPrimitiveType::EPT_BoundingBox)
+		{
+			TArray<FVertexSimple> Vertexs;
+			for (auto RenderComponent : RenderComponents)
+			{
+				if (RenderComponent->GetOwner()->GetDepth() > 0)
+				{
+					continue;
+				}
+				uint32 depth = RenderComponent->GetOwner()->GetDepth();
+				// RenderComponent->UpdateConstantDepth(Renderer, depth);
+				// RenderComponent->Render();
+				Vertexs.Add(RenderComponent->GetVertexData());
+			}
+			DrawBatch(Vertexs);
+		}
+		else
+		{
+			for (auto RenderComponent : RenderComponents)
+			{
+				if (RenderComponent->GetOwner()->GetDepth() > 0)
+				{
+					continue;
+				}
+				uint32 depth = RenderComponent->GetOwner()->GetDepth();
+				// RenderComponent->UpdateConstantDepth(Renderer, depth);
+				RenderComponent->Render();
+			}
+		}
+	}
+	
 	Renderer.PrepareZIgnore();
 	for (auto& RenderComponent: ZIgnoreRenderComponents)
 	{

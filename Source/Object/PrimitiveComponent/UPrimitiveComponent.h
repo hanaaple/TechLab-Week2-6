@@ -19,8 +19,8 @@ public:
 	void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
 	void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 	virtual void Render();
-
-	virtual EPrimitiveType GetType() { return EPrimitiveType::EPT_None; }
+	
+	virtual EPrimitiveComponentType GetType() { return EPrimitiveComponentType::EPT_None; }
 
 	bool IsUseVertexColor() const { return bUseVertexColor; }
 
@@ -61,9 +61,9 @@ public:
 		bCanBeRendered = true;
 	}
 	virtual ~UCubeComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveComponentType GetType() override
 	{
-		return EPrimitiveType::EPT_Cube;
+		return EPrimitiveComponentType::EPT_Cube;
 	}
 };
 
@@ -76,9 +76,9 @@ public:
 		bCanBeRendered = true;
 	}
 	virtual ~USphereComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveComponentType GetType() override
 	{
-		return EPrimitiveType::EPT_Sphere;
+		return EPrimitiveComponentType::EPT_Sphere;
 	}
 };
 
@@ -91,9 +91,9 @@ public:
 		bCanBeRendered = true;
 	}
 	virtual ~UTriangleComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveComponentType GetType() override
 	{
-		return EPrimitiveType::EPT_Triangle;
+		return EPrimitiveComponentType::EPT_Triangle;
 	}
 };
 
@@ -107,9 +107,9 @@ public:
 		bCanBeRendered = true;
 	}
 	virtual ~ULineComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveComponentType GetType() override
 	{
-		return EPrimitiveType::EPT_Line;
+		return EPrimitiveComponentType::EPT_Line;
 	}
 };
 
@@ -123,9 +123,9 @@ public:
 		bCanBeRendered = true;
 	}
 	virtual ~UCylinderComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveComponentType GetType() override
 	{
-		return EPrimitiveType::EPT_Cylinder;
+		return EPrimitiveComponentType::EPT_Cylinder;
 	}
 };
 
@@ -138,8 +138,8 @@ public:
 		bCanBeRendered = true;
 	}
 	virtual ~UConeComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveComponentType GetType() override
 	{
-		return EPrimitiveType::EPT_Cone;
+		return EPrimitiveComponentType::EPT_Cone;
 	}
 };

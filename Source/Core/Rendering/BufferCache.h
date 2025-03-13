@@ -34,15 +34,15 @@ private:
 class FBufferCache
 {
 private:
-	std::unordered_map <EPrimitiveType, BufferInfo> VertexBufferCache;
-	std::unordered_map <EPrimitiveType, BufferInfo> IndexBufferCache;
+	std::unordered_map <EPrimitiveComponentType, BufferInfo> VertexBufferCache;
+	std::unordered_map <EPrimitiveComponentType, BufferInfo> IndexBufferCache;
 
 public:
 	FBufferCache();
 	~FBufferCache();
-	
-	BufferInfo& GetVertexBufferBufferInfo(EPrimitiveType Type);
-	BufferInfo& GetIndexBufferBufferInfo(EPrimitiveType Type);
+ 
+	BufferInfo& GetVertexBufferInfo(EPrimitiveComponentType Type);
+	BufferInfo& GetIndexBufferInfo(EPrimitiveComponentType Type);
 
 	void Release();
 public:
@@ -51,6 +51,6 @@ public:
 	TArray<FVertexSimple> CreateCylinderVertices();
 
 private :
-	BufferInfo CreateVertexBufferInfo(EPrimitiveType Type);
-	BufferInfo CreateIndexBufferInfo(EPrimitiveType Type);
+	BufferInfo CreateVertexBufferInfo(EPrimitiveComponentType Type);
+	BufferInfo CreateIndexBufferInfo(EPrimitiveComponentType Type);
 };
