@@ -59,6 +59,16 @@ public:
     SizeType RemoveAll(const Predicate& Pred);
     T* GetData();
 
+    void Push(T&& Item);	
+    void Push(const T& Item);
+
+    /**
+     * Pops element from the array.
+     *
+     * @returns Popped element.
+     */
+    T Pop();
+    
     /**
      * Array에서 Item을 찾습니다.
      * @param Item 찾으려는 Item
@@ -213,6 +223,32 @@ template <typename T, typename Allocator>
 T* TArray<T, Allocator>::GetData()
 {
     return PrivateVector.data();
+}
+
+template <typename T, typename Allocator>
+void TArray<T, Allocator>::Push(T&& Item)
+{
+    Add(Item);
+}
+
+template <typename T, typename Allocator>
+void TArray<T, Allocator>::Push(const T& Item)
+{
+    Add(Item);
+}
+
+template <typename T, typename Allocator>
+T TArray<T, Allocator>::Pop()
+{
+    T Result = PrivateVector.back();
+    PrivateVector.pop_back();
+
+    // UE Code
+    // RangeCheck(0);           비어있는지 체크
+    // T Result = static_cast<std::remove_reference_t<T>&&>(GetData()[Num() - 1]);
+    // RemoveAtImpl(ArrayNum - 1);
+    // ResizeShrink();
+    return Result;
 }
 
 template <typename T, typename Allocator>

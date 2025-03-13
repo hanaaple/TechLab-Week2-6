@@ -33,13 +33,18 @@ public:
 	void SetupAttachment(USceneComponent* InParent, bool bUpdateChildTransform = false);
 	// 부모의 월드 트랜스폼을 받아서 자신의 로컬 트랜스폼을 갱신
 	void ApplyParentWorldTransform(const FTransform& InTransform);
-
+	void SetVisibility(bool bNewVisibility) const;
+	bool GetVisibleFlag() const	{ return bVisible; }
+	const TArray<USceneComponent*>& GetAttachChildren() const {return AttachChildren; }
 protected:
-	USceneComponent* Parent = nullptr;
-	TSet<USceneComponent*> Children;
 	// 이건 내 로컬 트랜스폼
 	FTransform RelativeTransform = FTransform();
 	bool bCanEverTick = true;
+
+private:
+	USceneComponent* AttachParent = nullptr;
+	TArray<USceneComponent*> AttachChildren;
+	bool bVisible = true;
 
 	// debug
 protected:

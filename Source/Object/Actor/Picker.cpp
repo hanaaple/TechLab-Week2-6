@@ -3,7 +3,7 @@
 #include "Picker.h"
 
 #include "Core/Input/PlayerInput.h"
-#include "Object/Gizmo/GizmoHandle.h"
+#include "Object/Gizmo/EditorGizmos.h"
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 #include "Static/FEditorManager.h"
 
@@ -87,7 +87,7 @@ void APicker::LateTick(float DeltaTime)
         UActorComponent* PickedComponent = UEngine::Get().GetObjectByUUID<UActorComponent>(UUID);\
         if (PickedComponent != nullptr)
         {
-            if (AGizmoHandle* Gizmo = dynamic_cast<AGizmoHandle*>(PickedComponent->GetOwner()))
+            if (AEditorGizmos* Gizmo = dynamic_cast<AEditorGizmos*>(PickedComponent->GetOwner()))
             {
                 if (Gizmo->GetSelectedAxis() != ESelectedAxis::None) return;
                 UCylinderComp* CylinderComp = static_cast<UCylinderComp*>(PickedComponent);
@@ -109,7 +109,7 @@ void APicker::LateTick(float DeltaTime)
     }
     else
     {
-        if (AGizmoHandle* Handle = FEditorManager::Get().GetGizmoHandle())
+        if (AEditorGizmos* Handle = FEditorManager::Get().GetGizmoHandle())
         {
             Handle->SetSelectedAxis(ESelectedAxis::None);
         }

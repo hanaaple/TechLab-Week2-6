@@ -15,10 +15,10 @@ void USceneComponent::Tick(float DeltaTime)
 // 내 월드 트랜스폼 반환
 const FTransform USceneComponent::GetWorldTransform()
 {
-	if (Parent)
+	if (AttachParent)
 	{
 		// 부모가 있을 경우 부모 월드 * 내 로컬
-		FMatrix ParentWorld = Parent->GetWorldTransform().GetMatrix();
+		FMatrix ParentWorld = AttachParent->GetWorldTransform().GetMatrix();
 		FMatrix MyLocal = RelativeTransform.GetMatrix();
 
 		FMatrix NewMatrix = MyLocal * ParentWorld;
@@ -39,7 +39,7 @@ void USceneComponent::SetRelativeTransform(const FTransform& InTransform)
 void USceneComponent::Pick(bool bPicked)
 {
 	bIsPicked = bPicked;
-	for (auto& Child : Children)
+	for (auto& Child : AttachChildren)
 	{
 		Child->Pick(bPicked);
 	}
@@ -49,8 +49,8 @@ void USceneComponent::SetupAttachment(USceneComponent* InParent, bool bUpdateChi
 {
 	if (InParent)
 	{
-		Parent = InParent;
-		InParent->Children.Add(this);
+		AttachParent = InParent;
+		InParent->AttachChildren.Add(this);
 		ApplyParentWorldTransform(InParent->GetWorldTransform());
 	}
 	else
@@ -68,4 +68,35 @@ void USceneComponent::ApplyParentWorldTransform(const FTransform& ParentWorldTra
 
 	// 내 로컬 트랜스폼 갱신
 	SetRelativeTransform(NewMatrix.GetTransform());
+}
+
+void USceneComponent::SetVisibility(bool bNewVisibility) const
+{
+	// UE5 - Visibility 변경시 Flag Update
+
+	const TArray<USceneComponent*>& AttachedChildren = AttachChildren;
+	if (AttachedChildren.Num() <= 0)
+		return;
+	
+	TArray<USceneComponent*> ChildrenStack;
+
+	for (auto child : AttachedChildren)
+	{
+		ChildrenStack.Push(child);
+	}
+
+	while (ChildrenStack.Num() > 0)
+	{
+		USceneComponent* CurrentComp = ChildrenStack.Pop();
+		if (CurrentComp != nullptr)
+		{
+			for (auto child : CurrentComp->GetAttachChildren())
+			{
+				ChildrenStack.Push(child);
+			}
+
+			CurrentComp->SetVisibility(bNewVisibility);
+			
+		}
+	}
 }

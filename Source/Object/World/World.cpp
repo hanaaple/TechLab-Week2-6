@@ -5,7 +5,7 @@
 #include "Core/Container/Map.h"
 #include "Core/Input/PlayerInput.h"
 #include "Object/Actor/Camera.h"
-#include <Object/Gizmo/GizmoHandle.h>
+#include <Object/Gizmo/EditorGizmos.h>
 
 #include "Object/Actor/Cone.h"
 #include "Object/Actor/Cube.h"
