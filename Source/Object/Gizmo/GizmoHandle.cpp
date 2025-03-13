@@ -44,7 +44,7 @@ void AGizmoHandle::Tick(float DeltaTime)
 	AActor* SelectedActor  = FEditorManager::Get().GetSelectedActor();
 	if (SelectedActor != nullptr && bIsActive)
 	{
-		FTransform GizmoTr = RootComponent->GetComponentTransform();
+		FTransform GizmoTr = RootComponent->TEMPGetComponentTransform();
 		GizmoTr.SetPosition(SelectedActor->GetActorTransform().GetPosition());
 		SetActorTransform(GizmoTr);
 	}

@@ -223,7 +223,7 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
     }
 
     ConstantUpdateInfo UpdateInfo{ 
-        PrimitiveComp->GetWorldTransform(), 
+        PrimitiveComp->GetComponentTransform(), 
         PrimitiveComp->GetCustomColor(), 
         PrimitiveComp->IsUseVertexColor()
     };

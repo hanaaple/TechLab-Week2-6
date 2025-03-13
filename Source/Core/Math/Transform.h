@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "Vector.h"
 #include "Matrix.h"
-#include "Core/Engine.h"
 #include "Core/Math/Plane.h"
 
 #define TORAD 0.0174532925199432957f
@@ -10,7 +9,7 @@ struct FTransform
 {
 protected:
 	FVector Position;
-	FQuat Rotation;
+	FQuat Rotation; TODO// -> FVector로 바꾸고 내부적으로 World 계산할때만 Quaternion으로 
 	FVector Scale;
 	int Depth;
 	
