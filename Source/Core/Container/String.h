@@ -135,6 +135,14 @@ public:
 
     FORCEINLINE bool operator==(const FString& Rhs) const;
     FORCEINLINE bool operator==(const TCHAR* Rhs) const;
+    FString ToLower() const;
+
+    /** 키 해시화를 위해 std::string으로 변환*/
+#if IS_WIDECHAR
+    std::wstring ToStdString() const;
+#else
+    std::string ToStdString() const;
+#endif
 };
 
 
@@ -166,7 +174,7 @@ FString operator+(const FString& Lhs, const FString& Rhs)
 
 FORCEINLINE bool FString::operator==(const FString& Rhs) const
 {
-    return Equals(Rhs, ESearchCase::IgnoreCase);
+    return Equals(Rhs/*, ESearchCase::IgnoreCase*/);
 }
 
 FORCEINLINE bool FString::operator==(const TCHAR* Rhs) const
