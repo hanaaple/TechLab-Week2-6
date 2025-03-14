@@ -22,12 +22,14 @@ public:
 	static FName GetParentClassFName() { return StaticClassFName_Internal(); }
 	//virtual const UObject* GetParentClass() const { return nullptr; }
 
-	static bool IsAByName(FName ClassName){if (ClassName==GetClassFName())return true;return false;}
+//
 	template<typename T>
-	bool IsA() const
+		requires std::derived_from<T, UObject>
+	static bool IsA()
 	{
-		return this->IsAByName(T::GetClassFName());
+		return IsAByName(T::GetClassFName());
 	}
+	static bool IsA(FName ClassName){if (ClassName==GetClassFName())return true;return false;}
 public:
 	uint32 GetUUID() const { return UUID; }
 	uint32 GetInternalIndex() const { return InternalIndex; }
@@ -39,11 +41,12 @@ using Super = ParentClass; \
 static FName StaticClassFName_Internal() { return #ClassName; } \
 static FName GetClassFName() { return StaticClassFName_Internal(); } \
 static FName GetParentClassFName() { return Super::StaticClassFName_Internal(); } \
-static bool IsAByName(FName ClassName) \
+static bool IsA(FName ClassName) \
 { \
 if (GetClassFName() == ClassName) \
 return true; \
-return Super::IsAByName(ClassName); \
+return Super::IsA(ClassName); \
 }\
 template<typename T> \
-bool IsA() const { return this->IsAByName(T::StaticClassFName_Internal()); }
+requires std::derived_from<T, UObject>\
+static bool IsA() { return IsA(T::StaticClassFName_Internal()); }
