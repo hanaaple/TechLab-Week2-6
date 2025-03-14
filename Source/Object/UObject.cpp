@@ -2,7 +2,6 @@
 
 UObject::UObject()
 {
-
 }
 
 UObject::~UObject()

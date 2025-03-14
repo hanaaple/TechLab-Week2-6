@@ -11,6 +11,7 @@ class UWorld;
 
 class AActor : public UObject
 {
+    DECLARE_OBJECT(AActor, UObject)
 	friend class FEditorManager;
 public:
 	AActor();
