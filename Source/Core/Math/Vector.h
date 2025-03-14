@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "MathUtility.h"
 
+struct FVector4;
 
 struct FVector
 {
@@ -11,6 +12,8 @@ struct FVector
     static const FVector ZeroVector;
     static const FVector OneVector;
 
+public:
+    FVector(const FVector4& vector4);
 public:
     static FVector Zero() { return {0, 0, 0}; }
     static FVector One() { return {1, 1, 1}; }
@@ -193,20 +196,3 @@ inline bool FVector::operator!=(const FVector& Other) const
 {
     return X != Other.X || Y != Other.Y || Z != Other.Z;
 }
-
-struct alignas(16) FVector4 : public FVector
-{
-    using FVector::X;
-    using FVector::Y;
-    using FVector::Z;
-
-    float W;
-    FVector4()
-        : FVector(0, 0, 0), W(0)
-    {
-    }
-    FVector4(float InX, float InY, float InZ, float InW)
-        : FVector(InX, InY, InZ), W(InW)
-    {
-    }
-};

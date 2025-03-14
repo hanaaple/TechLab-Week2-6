@@ -207,6 +207,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\Math\Vector4.h" />
     <ClInclude Include="Source\Core\Name\FName.h" />
     <ClInclude Include="Source\Core\Name\FNameEntry.h" />
     <ClInclude Include="Source\Core\Name\FNameTable.h" />

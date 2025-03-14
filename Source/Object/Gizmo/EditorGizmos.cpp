@@ -27,8 +27,7 @@ AEditorGizmos::AEditorGizmos()
 	YArrow->SetupAttachment(ZArrow);
 	YArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(90.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	YArrow->SetCustomColor(FVector4(0.0f, 1.0f, 0.0f, 1.0f));
-
-	RootComponent = ZArrow;
+	//RootComponent = ZArrow;
 	
 	UEngine::Get().GetWorld()->AddZIgnoreComponent(ZArrow);
 	UEngine::Get().GetWorld()->AddZIgnoreComponent(XArrow);
@@ -40,11 +39,11 @@ AEditorGizmos::AEditorGizmos()
 void AEditorGizmos::Tick(float DeltaTime)
 {
 	AActor* SelectedActor  = FEditorManager::Get().GetSelectedActor();
-	if (SelectedActor != nullptr && RootComponent->GetVisibleFlag())
+	if (SelectedActor != nullptr && RootComponent && RootComponent->GetVisibleFlag())
 	{
 		FTransform GizmoTr = RootComponent->GetComponentTransform();
 		GizmoTr.SetPosition(SelectedActor->GetActorTransform().GetPosition());
-		GizmoTr.SetRotation(SelectedActor->GetActorTransform().GetRotation());
+		GizmoTr.SetRotation(SelectedActor->GetActorTransform().GetEulerRotation());
 		SetActorTransform(GizmoTr);
 	}
 
@@ -76,22 +75,22 @@ void AEditorGizmos::Tick(float DeltaTime)
 			
 			// View 공간으로 변환
 			FMatrix InvProjMat = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
-			RayOrigin = InvProjMat.TransformVector4(RayOrigin);
+			RayOrigin = RayOrigin * InvProjMat;
 			RayOrigin.W = 1;
-			RayEnd = InvProjMat.TransformVector4(RayEnd);
+			RayEnd = RayEnd * InvProjMat;
 			RayEnd *= 1000.0f;  // 프러스텀의 Far 값이 적용이 안돼서 수동으로 곱함
 			RayEnd.W = 1;
 			
 			// 마우스 포인터의 월드 위치와 방향
 			FMatrix InvViewMat = FEditorManager::Get().GetCamera()->GetViewMatrix().Inverse();
-			RayOrigin = InvViewMat.TransformVector4(RayOrigin);
+			RayOrigin = RayOrigin * InvViewMat;
 			RayOrigin /= RayOrigin.W = 1;
-			RayEnd = InvViewMat.TransformVector4(RayEnd);
+			RayEnd = RayEnd * InvViewMat;
 			RayEnd /= RayEnd.W = 1;
-			FVector RayDir = (RayEnd - RayOrigin).GetSafeNormal();
+			FVector4 RayDir = (RayEnd - RayOrigin).GetSafeNormal();
 	
 			// 액터와의 거리
-			float Distance = FVector::Distance(RayOrigin, Actor->GetActorTransform().GetPosition());
+			float Distance = FVector4::Distance(RayOrigin, Actor->GetActorTransform().GetPosition());
 			
 			// Ray 방향으로 Distance만큼 재계산
 			FVector Result = RayOrigin + RayDir * Distance;
@@ -139,7 +138,8 @@ void AEditorGizmos::SetScaleByDistance()
 
 void AEditorGizmos::SetActorVisibility(bool bNewActive)
 {
-	RootComponent->SetVisibility(bNewActive);
+	if (RootComponent != nullptr)
+		RootComponent->SetVisibility(bNewActive);
 }
 
 const char* AEditorGizmos::GetTypeName()

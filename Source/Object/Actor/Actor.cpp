@@ -16,6 +16,12 @@ void AActor::BeginPlay()
 	{
 		Component->BeginPlay();
 
+
+		//TODO11
+		// Primitive -> MeshComponent?
+		// OnAddComponent -> If Component is mesh (이건 어떻게하냐) -> RegistComponentToWorld
+		
+		// 자기가 메시 (Parent)인 경우 -> regist
 		if (UPrimitiveComponent* PrimitiveComponent = dynamic_cast<UPrimitiveComponent*>(Component))
 		{
 			PrimitiveComponent->RegisterComponentWithWorld(World);
@@ -90,12 +96,23 @@ FTransform AActor::GetActorTransform() const
 	return RootComponent != nullptr ? RootComponent->GetComponentTransform() : FTransform();
 }
 
-void AActor::SetActorTransform(const FTransform& InTransform)
+void AActor::SetActorTransform(const FTransform& NewTransform)
 {
-	// InTransform은 월드 기준임
 	if (RootComponent)
 	{
-		RootComponent->SetRelativeTransform(InTransform);
+		RootComponent->SetWorldTransform(NewTransform);
+	}
+	else
+	{
+		UE_LOG("RootComponent is nullptr");
+	}
+}
+
+void AActor::SetActorRelativeTransform(const FTransform& NewRelativeTransform)
+{
+	if (RootComponent)
+	{
+		RootComponent->SetRelativeTransform(NewRelativeTransform);
 	}
 	else
 	{

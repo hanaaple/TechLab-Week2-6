@@ -131,3 +131,14 @@ FQuat FQuat::MakeFromRotationMatrix(const FMatrix& M)
 
     return Q;
 }
+
+FQuat FQuat::Inverse() const
+{
+    float magSquared = MagnitudeSquared();
+    return FQuat(W / magSquared, -X / magSquared, -Y / magSquared, -Z / magSquared);
+}
+
+float FQuat::MagnitudeSquared() const
+{
+    return W * W + X * X + Y * Y + Z * Z;
+}

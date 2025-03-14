@@ -10,6 +10,7 @@
 
 #include "Object/Actor/Arrow.h"
 #include "Object/Actor/Picker.h"
+#include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 
 class AActor;
 
@@ -34,6 +35,7 @@ public:
 	void Render();
 	void RenderPickingTexture(URenderer& Renderer);
 	void DisplayPickingTexture(URenderer& Renderer);
+	void DrawBatch(TArray<UPrimitiveComponent*>& BatchTargets);
 	void RenderMainTexture(URenderer& Renderer);
 
 	void ClearWorld();
@@ -45,8 +47,15 @@ public:
 	bool ContainsZIgnoreComponent(UPrimitiveComponent* InComponent) {return ZIgnoreRenderComponents.Find(InComponent) != -1; }
 	
 	// render
-	void AddRenderComponent(class UPrimitiveComponent* Component) { RenderComponents.Add(Component); }
-	void RemoveRenderComponent(class UPrimitiveComponent* Component) { RenderComponents.Remove(Component); }
+	void AddRenderComponent(class UPrimitiveComponent* Component)
+	{
+		if (!RenderComponentTable.Contains(Component->GetType()))
+		{
+			RenderComponentTable.Add(Component->GetType(), TArray<UPrimitiveComponent*>());
+		}
+		RenderComponentTable[Component->GetType()].AddUnique(Component);
+	}
+	void RemoveRenderComponent(class UPrimitiveComponent* Component) { RenderComponentTable.Remove(Component->GetType()); }
 
 private:
 	UWorldInfo GetWorldInfo() const;
@@ -60,7 +69,7 @@ protected:
 	TArray<UPrimitiveComponent*> ZIgnoreRenderComponents;
 	TArray<AActor*> ActorsToSpawn;
 	TArray<AActor*> PendingDestroyActors; // TODO: 추후에 TQueue로 변경
-	TSet<UPrimitiveComponent*> RenderComponents;
+	TMap<EPrimitiveMeshType, TArray<UPrimitiveComponent*>> RenderComponentTable;
 };
 
 template <typename T>
