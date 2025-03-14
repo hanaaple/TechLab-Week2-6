@@ -11,6 +11,7 @@ class UWorld;
 
 class AActor : public UObject
 {
+    DECLARE_OBJECT(AActor, UObject)
 	friend class FEditorManager;
 public:
 	AActor();
@@ -81,8 +82,16 @@ public:
 		Components.Remove(Object);
 	}
 
+	/** @return Actor's World Transform */
 	FTransform GetActorTransform() const;
-	void SetActorTransform(const FTransform& InTransform);
+	/** @param
+	 * * Set Actor World Transform */
+	void SetActorTransform(const FTransform& NewTransform);
+
+	// Actor는 World 기준이라 없다? -> 그런데 Actor에 Parent는 있을 수 있다?
+	/** @param NewRelativeTransform 새로운 상대 좌표 */
+	void SetActorRelativeTransform(const FTransform& NewRelativeTransform);
+	
 	bool CanEverTick() const { return bCanEverTick; }
 	virtual const char* GetTypeName();
 
@@ -90,7 +99,7 @@ public:
 
 public:
 	USceneComponent* GetRootComponent() const { return RootComponent; }
-	void SetRootComponent(USceneComponent* InRootComponent) { RootComponent = InRootComponent; }
+	virtual void SetRootComponent(USceneComponent* InRootComponent) { RootComponent = InRootComponent; }
 
 public:
 	void SetColor(FVector4 InColor);

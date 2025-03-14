@@ -12,46 +12,66 @@ void USceneComponent::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-// 내 월드 트랜스폼 반환
-const FTransform USceneComponent::GetWorldTransform()
+FTransform USceneComponent::GetRelativeTransform() const
 {
-	if (Parent)
-	{
-		// 부모가 있을 경우 부모 월드 * 내 로컬
-		FMatrix ParentWorld = Parent->GetWorldTransform().GetMatrix();
-		FMatrix MyLocal = RelativeTransform.GetMatrix();
-
-		FMatrix NewMatrix = MyLocal * ParentWorld;
-		return NewMatrix.GetTransform();
-	}
-
+	//const FTransform RelativeTransform(RelativeRotationCache.RotatorToQuat(GetRelativeRotation()), GetRelativeLocation(), GetRelativeScale3D());
 	return RelativeTransform;
 }
 
-void USceneComponent::SetRelativeTransform(const FTransform& InTransform)
+// 내 월드 트랜스폼 반환
+const FTransform& USceneComponent::GetComponentTransform() const
+{
+	return ComponentToWorld;
+}
+
+void USceneComponent::SetRelativeTransform(const FTransform& NewRelativeTransform)
 {
 	// 내 로컬 트랜스폼 갱신
-	RelativeTransform = InTransform;
-	FVector Rot = RelativeTransform.GetRotation().GetEuler();
+	RelativeTransform = NewRelativeTransform;
 
+	UpdateComponentToWorld();
+}
+
+void USceneComponent::SetWorldTransform(const FTransform& NewTransform)
+{	
+	ComponentToWorld = NewTransform;	
+
+	UpdateRelativeTransform();
 }
 
 void USceneComponent::Pick(bool bPicked)
 {
 	bIsPicked = bPicked;
-	for (auto& Child : Children)
+	for (auto& Child : AttachChildren)
 	{
 		Child->Pick(bPicked);
 	}
 }
 
-void USceneComponent::SetupAttachment(USceneComponent* InParent, bool bUpdateChildTransform)
+void USceneComponent::SetupAttachment(USceneComponent* InParent, EAttachmentRule AttachmentRule)
 {
 	if (InParent)
 	{
-		Parent = InParent;
-		InParent->Children.Add(this);
-		ApplyParentWorldTransform(InParent->GetWorldTransform());
+		AttachParent = InParent;
+		InParent->AttachChildren.Add(this);
+
+		if (AttachmentRule == EAttachmentRule::KeepRelative)
+		{
+			// RelativeTransform 유지
+			UpdateComponentToWorld();
+		}
+		else if (AttachmentRule == EAttachmentRule::KeepWorld)
+		{
+			UpdateRelativeTransform();
+			// World 유지
+		}
+		else if (AttachmentRule == EAttachmentRule::SnapToTarget)
+		{
+			RelativeTransform = FTransform();
+			UpdateComponentToWorld();
+		}
+		
+		// ApplyParentWorldTransform(InParent->GetComponentTransform());
 	}
 	else
 	{
@@ -59,13 +79,109 @@ void USceneComponent::SetupAttachment(USceneComponent* InParent, bool bUpdateChi
 	}
 }
 
-void USceneComponent::ApplyParentWorldTransform(const FTransform& ParentWorldTransform)
+// void USceneComponent::ApplyParentWorldTransform()
+// {
+// 	FMatrix ParentWorld = AttachParent->GetComponentTransform().GetMatrix();
+// 	FMatrix MyLocal = RelativeTransform.GetMatrix();
+//
+// 	FMatrix NewMatrix = MyLocal * ParentWorld.Inverse();
+//
+// 	// 내 로컬 트랜스폼 갱신
+// 	SetRelativeTransform(NewMatrix.GetTransform());
+// }
+
+
+void USceneComponent::UpdateChildTransforms()
 {
-	FMatrix ParentWorld = ParentWorldTransform.GetMatrix();
-	FMatrix MyLocal = RelativeTransform.GetMatrix();
+	for (USceneComponent* ChildComp : AttachChildren)
+	{
+		if (ChildComp != nullptr)
+		{
+			ChildComp->UpdateComponentToWorld();
+		}
+	}
+}
 
-	FMatrix NewMatrix = MyLocal * ParentWorld.Inverse();
+void USceneComponent::UpdateComponentToWorld()
+{
+	if (AttachParent != nullptr)
+	{
+		// FMatrix ParentWorld = AttachParent->GetComponentTransform().GetMatrix();
+		// FMatrix MyLocal = RelativeTransform.GetMatrix();
+		// FMatrix NewMatrix = MyLocal * ParentWorld.Inverse();
+		// ComponentToWorld = NewMatrix.GetTransform();
 
-	// 내 로컬 트랜스폼 갱신
-	SetRelativeTransform(NewMatrix.GetTransform());
+		//ComponentToWorld = AttachParent->GetComponentTransform().GetRelativeTransform(RelativeTransform);
+
+		const FTransform& ParentToWorld = AttachParent->GetComponentTransform();
+		ComponentToWorld = RelativeTransform * ParentToWorld;
+	}
+	else
+	{
+		ComponentToWorld = RelativeTransform;
+	}
+
+	if (AttachChildren.Num() > 0)
+	{
+		UpdateChildTransforms();
+	}
+}
+
+void USceneComponent::UpdateRelativeTransform()
+{
+	if (AttachParent != nullptr)
+	{
+		// Parent 기반 RelativeTransform Update
+		
+		//RelativeTransform = ComponentToWorld.GetRelativeTransform(ParentToWorld);
+
+		
+		// 부모가 있다면, RelativeTransform = 부모의 Inverse(ComponentToWorld) * NewTransform 계산.
+		//RelativeTransform = ComponentToWorld
+		
+
+
+		const FTransform& ParentToWorld = AttachParent->GetComponentTransform();
+		ComponentToWorld = RelativeTransform * ParentToWorld;
+	}
+	else
+	{
+		RelativeTransform = ComponentToWorld;
+	}
+
+	if (AttachChildren.Num() > 0)
+	{
+		UpdateChildTransforms();
+	}
+}
+
+void USceneComponent::SetVisibility(bool bNewVisibility) const
+{
+	// UE5 - Visibility 변경시 Flag Update
+
+	const TArray<USceneComponent*>& AttachedChildren = AttachChildren;
+	if (AttachedChildren.Num() <= 0)
+		return;
+	
+	TArray<USceneComponent*> ChildrenStack;
+
+	for (auto child : AttachedChildren)
+	{
+		ChildrenStack.Push(child);
+	}
+
+	while (ChildrenStack.Num() > 0)
+	{
+		USceneComponent* CurrentComp = ChildrenStack.Pop();
+		if (CurrentComp != nullptr)
+		{
+			for (auto child : CurrentComp->AttachChildren)
+			{
+				ChildrenStack.Push(child);
+			}
+
+			CurrentComp->SetVisibility(bNewVisibility);
+			
+		}
+	}
 }

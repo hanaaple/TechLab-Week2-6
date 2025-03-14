@@ -31,18 +31,19 @@ private:
 
 
 // Vertex Buffer, Index Buffer Cache
+// Batch Rendering을 하지 않는 애들만 사용
 class FBufferCache
 {
 private:
-	std::unordered_map <EPrimitiveType, BufferInfo> VertexBufferCache;
-	std::unordered_map <EPrimitiveType, BufferInfo> IndexBufferCache;
+	std::unordered_map <EPrimitiveMeshType, BufferInfo> VertexBufferCache;
+	std::unordered_map <EPrimitiveMeshType, BufferInfo> IndexBufferCache;
 
 public:
 	FBufferCache();
 	~FBufferCache();
-	
-	BufferInfo& GetVertexBufferBufferInfo(EPrimitiveType Type);
-	BufferInfo& GetIndexBufferBufferInfo(EPrimitiveType Type);
+
+	BufferInfo& GetVertexBufferInfo(EPrimitiveMeshType Type);
+	BufferInfo& GetIndexBufferInfo(EPrimitiveMeshType Type);
 
 	void Release();
 public:
@@ -51,6 +52,6 @@ public:
 	TArray<FVertexSimple> CreateCylinderVertices();
 
 private :
-	BufferInfo CreateVertexBufferInfo(EPrimitiveType Type);
-	BufferInfo CreateIndexBufferInfo(EPrimitiveType Type);
+	BufferInfo CreateVertexBufferInfo(EPrimitiveMeshType Type);
+	BufferInfo CreateIndexBufferInfo(EPrimitiveMeshType Type);
 };

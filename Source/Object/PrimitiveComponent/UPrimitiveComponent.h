@@ -65,8 +65,8 @@ public:
 	void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
 	void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 	virtual void Render();
-
-	virtual EPrimitiveType GetType() { return EPrimitiveType::EPT_None; }
+	
+	virtual EPrimitiveMeshType GetType() { return EPrimitiveMeshType::EPT_None; }
 
 	bool IsUseVertexColor() const { return bUseVertexColor; }
 
@@ -86,15 +86,15 @@ public:
 	virtual void RegisterComponentWithWorld(class UWorld* World);
 
 public:
-	void SetCanBeRendered(bool bRender) { bCanBeRendered = bRender; }
 
 	void SetIsOrthoGraphic(bool IsOrtho) { bIsOrthoGraphic = IsOrtho; }
 	bool GetIsOrthoGraphic() { return bIsOrthoGraphic;}
-	
+	bool GetIsBatch() {return bIsBatch; }
+
 protected:
-	bool bCanBeRendered = false;
 	bool bUseVertexColor = true;
 	bool bIsOrthoGraphic = false;
+	bool bIsBatch = false;
 	FVector4 CustomColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 };
 
@@ -108,9 +108,9 @@ public:
 		aabb.GenerateAABB(EPrimitiveType::EPT_Cube);
 	}
 	virtual ~UCubeComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveType::EPT_Cube;
+		return EPrimitiveMeshType::EPT_Cube;
 	}
 };
 
@@ -124,9 +124,9 @@ public:
 		aabb.GenerateAABB(EPrimitiveType::EPT_Sphere);
 	}
 	virtual ~USphereComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveType::EPT_Sphere;
+		return EPrimitiveMeshType::EPT_Sphere;
 	}
 };
 
@@ -140,9 +140,9 @@ public:
 		aabb.GenerateAABB(EPrimitiveType::EPT_Triangle);
 	}
 	virtual ~UTriangleComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveType::EPT_Triangle;
+		return EPrimitiveMeshType::EPT_Triangle;
 	}
 };
 
@@ -157,9 +157,9 @@ public:
 		aabb.GenerateAABB(EPrimitiveType::EPT_Line);
 	}
 	virtual ~ULineComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveType::EPT_Line;
+		return EPrimitiveMeshType::EPT_Line;
 	}
 };
 
@@ -174,9 +174,9 @@ public:
 		aabb.GenerateAABB(EPrimitiveType::EPT_Cylinder);
 	}
 	virtual ~UCylinderComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveType::EPT_Cylinder;
+		return EPrimitiveMeshType::EPT_Cylinder;
 	}
 };
 
@@ -190,9 +190,9 @@ public:
 		aabb.GenerateAABB(EPrimitiveType::EPT_Cone);
 	}
 	virtual ~UConeComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveType::EPT_Cone;
+		return EPrimitiveMeshType::EPT_Cone;
 	}
 };
 

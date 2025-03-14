@@ -1,13 +1,15 @@
 ﻿#include "Cube.h"
 #include <Object/PrimitiveComponent/UPrimitiveComponent.h>
 
+#include "Arrow.h"
+#include "Sphere.h"
+
 ACube::ACube()
 {
 	bCanEverTick = true;
 
 	UCubeComp* CubeComponent = AddComponent<UCubeComp>();
 	RootComponent = CubeComponent;
-
 	CubeComponent->SetRelativeTransform(FTransform());
 }
 

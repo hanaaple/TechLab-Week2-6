@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "Object/Actor/Actor.h"
 
-class AGizmoHandle;
+class AEditorGizmos;
 
 class ABoundingBoxActor;
 
@@ -17,11 +17,11 @@ public:
 
     void SetCamera(ACamera* NewCamera);
 
-    AGizmoHandle* GetGizmoHandle() const {return GizmoHandle;}
+    AEditorGizmos* GetGizmoHandle() const {return GizmoHandle;}
     
 private:
     ACamera* Camera = nullptr;
     AActor* SelectedActor = nullptr;
-    AGizmoHandle* GizmoHandle = nullptr;
+    AEditorGizmos* GizmoHandle = nullptr;
     ABoundingBoxActor* AABB = nullptr;
 };

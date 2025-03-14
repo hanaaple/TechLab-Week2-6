@@ -5,7 +5,7 @@
 #include "Core/Container/Map.h"
 #include "Core/Input/PlayerInput.h"
 #include "Object/Actor/Camera.h"
-#include <Object/Gizmo/GizmoHandle.h>
+#include <Object/Gizmo/EditorGizmos.h>
 
 #include "Object/Actor/Cone.h"
 #include "Object/Actor/Cube.h"
@@ -20,6 +20,10 @@ void UWorld::BeginPlay()
 	for (const auto& Actor : Actors)
 	{
 		Actor->BeginPlay();
+		if (ActorsToSpawn.Find(Actor) != -1)
+		{
+			ActorsToSpawn.Remove(Actor);
+		}
 	}
 }
 
@@ -90,15 +94,29 @@ void UWorld::RenderPickingTexture(URenderer& Renderer)
 	Renderer.PreparePicking();
 	Renderer.PreparePickingShader();
 
-	for (auto& RenderComponent : RenderComponents)
+	for (auto& [MeshType, RenderComponents] : RenderComponentTable)
 	{
-		if (RenderComponent->GetOwner()->GetDepth() > 0)
+		TArray<UPrimitiveComponent*> BatchTargetComponents;
+		for (auto RenderComponent : RenderComponents)
 		{
-			continue;
+			//TODO11
+			// Picking들도 정상적으로 렌더링 시켜야됨. 
+			if (RenderComponent->GetIsBatch())
+			{
+				BatchTargetComponents.Add(RenderComponent);
+			}
+			else
+			{
+				if (RenderComponent->GetOwner()->GetDepth() > 0)
+				{
+					continue;
+				}
+				uint32 UUID = RenderComponent->GetUUID();
+				RenderComponent->UpdateConstantPicking(Renderer, APicker::EncodeUUID(UUID));
+				RenderComponent->Render();
+			}
 		}
-		uint32 UUID = RenderComponent->GetUUID();
-		RenderComponent->UpdateConstantPicking(Renderer, APicker::EncodeUUID(UUID));
-		RenderComponent->Render();
+		//DrawPickingBatch(BatchTargetComponents);
 	}
 
 	Renderer.PrepareZIgnore();
@@ -113,19 +131,42 @@ void UWorld::RenderPickingTexture(URenderer& Renderer)
 
 void UWorld::RenderMainTexture(URenderer& Renderer)
 {
+	// 셰이더 변경 불가
 	Renderer.PrepareMain();
 	Renderer.PrepareMainShader();
-	for (auto& RenderComponent : RenderComponents)
-	{
-		if (RenderComponent->GetOwner()->GetDepth() > 0)
-		{
-			continue;
-		}
-		uint32 depth = RenderComponent->GetOwner()->GetDepth();
-		// RenderComponent->UpdateConstantDepth(Renderer, depth);
-		RenderComponent->Render();
-	}
 
+	// 1. 같은 메쉬여도 배치 여부가 다를수 있다.
+	// 2. 다른 메쉬여도 같은 토폴로지, 같은 머터리얼과 셰이더, 트
+
+	// 같은 토폴로지, 셰이더, 다른 메시 -> 배치 렌더링
+	// 같은 토폴로지, 셰이더, 같은 메시 -> 인스턴싱
+	
+	for (auto& [MeshType, RenderComponents] : RenderComponentTable)
+	{
+		TArray<UPrimitiveComponent*> BatchTargetComponents;
+		for (auto RenderComponent : RenderComponents)
+		{
+			//TODO11
+			// 나쁜점 -> Render를 추상화해서 사용하는데 이걸 막음
+			if (RenderComponent->GetIsBatch() && RenderComponent->GetVisibleFlag())
+			{
+				BatchTargetComponents.Add(RenderComponent);
+			}
+			else
+			{
+				if (RenderComponent->GetOwner()->GetDepth() > 0)
+				{
+					continue;
+				}
+				uint32 depth = RenderComponent->GetOwner()->GetDepth();
+				// RenderComponent->UpdateConstantDepth(Renderer, depth);
+				RenderComponent->Render();
+			}
+		}
+
+		//DrawBatch(BatchTargetComponents);
+	}
+	
 	Renderer.PrepareZIgnore();
 	for (auto& RenderComponent: ZIgnoreRenderComponents)
 	{
@@ -137,6 +178,18 @@ void UWorld::RenderMainTexture(URenderer& Renderer)
 void UWorld::DisplayPickingTexture(URenderer& Renderer)
 {
 	Renderer.RenderPickingTexture();
+}
+
+void UWorld::DrawBatch(TArray<UPrimitiveComponent*>& BatchTargets)
+{
+	//TODO11
+	// 이게 PrimitiveComponent->Render() 부분인데, 추상화되는 부분을 구체화시켜놓음. 막을 방법?
+	URenderer* Renderer = UEngine::Get().GetRenderer();
+	if (Renderer == nullptr)
+	{
+		return;
+	}
+	//Renderer->RenderBatch(BatchTargets);
 }
 
 void UWorld::ClearWorld()
@@ -206,7 +259,7 @@ void UWorld::LoadWorld(const char* SceneName)
 	for (uint32 i = 0; i < ActorCount; i++)
 	{
 		UObjectInfo* ObjectInfo = WorldInfo->ObjctInfos[i];
-		FTransform Transform = FTransform(ObjectInfo->Location, FQuat(), ObjectInfo->Scale);
+		FTransform Transform = FTransform(ObjectInfo->Location, FVector(), ObjectInfo->Scale);
 		Transform.Rotate(ObjectInfo->Rotation);
 
 		AActor* Actor = nullptr;
@@ -258,7 +311,7 @@ UWorldInfo UWorld::GetWorldInfo() const
 		WorldInfo.ObjctInfos[i] = new UObjectInfo();
 		const FTransform& Transform = actor->GetActorTransform();
 		WorldInfo.ObjctInfos[i]->Location = Transform.GetPosition();
-		WorldInfo.ObjctInfos[i]->Rotation = Transform.GetRotation();
+		WorldInfo.ObjctInfos[i]->Rotation = Transform.GetEulerRotation();
 		WorldInfo.ObjctInfos[i]->Scale = Transform.GetScale();
 		WorldInfo.ObjctInfos[i]->ObjectType = actor->GetTypeName();
 

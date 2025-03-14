@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Object/Actor/Actor.h"
+#include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 
 enum class ESelectedAxis : uint8
 {
@@ -17,23 +18,20 @@ enum class EGizmoType : uint8
 	Max
 };
 
-class AGizmoHandle : public AActor
+class AEditorGizmos : public AActor
 {
 public:
-	AGizmoHandle();
+	AEditorGizmos();
 
 public:
 	virtual void Tick(float DeltaTime) override;
 	void SetScaleByDistance();
-	void SetActive(bool bActive);
+	void SetActorVisibility(bool bNewActive);
 	void SetSelectedAxis(ESelectedAxis NewAxis) { SelectedAxis = NewAxis; }
 	ESelectedAxis GetSelectedAxis() const { return SelectedAxis; }
 	EGizmoType GetGizmoType() const { return GizmoType; }
-
+	
 private:
-	bool bIsActive = false;
-	TArray<class UCylinderComp*> CylinderComponents;
-
 	ESelectedAxis SelectedAxis = ESelectedAxis::None;
 	EGizmoType GizmoType = EGizmoType::Translate;
 
