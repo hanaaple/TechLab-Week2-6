@@ -52,7 +52,12 @@ int32 FName::GetNumber() const
 }
 bool FName::IsValid() const
 {
-    return Number+ComparisonIndex+DisplayIndex;
+    return ComparisonIndex != INDEX_NONE && DisplayIndex != INDEX_NONE;
+}
+void FName::SetIndex(const FName& Other)
+{
+    ComparisonIndex = Other.ComparisonIndex;
+    DisplayIndex = Other.DisplayIndex;
 }
 
 /*

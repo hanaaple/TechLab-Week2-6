@@ -23,7 +23,11 @@ protected:
 	FName Name; // FString 대신 FName 사용
 public:
 	//virtual void AutoSetName();
-	void SetName(const FName& NewName) { Name = NewName; }
+	void SetName(const FName& NewName)
+	{
+		std::cout<<Name<<" "<<NewName<<"\n";
+		Name.SetIndex(NewName);
+	}
 	//이름이 없으면 생성
 	virtual const FName& GetName()
 	{
@@ -70,6 +74,6 @@ return &ParentInstance; \
 }\
 virtual const FName& GetName()\
 {\
-	if (Name.IsValid())SetName(FName(GetClassFName().ToString(),GetUUID()));\
+	if (!Name.IsValid())SetName(FName(GetClassFName().ToString(),GetUUID()));\
 	return Name;\
 }

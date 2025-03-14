@@ -323,9 +323,21 @@ void UI::RenderPropertyWindow()
     if (selectedActor != nullptr)
     {
         FTransform selectedTransform = selectedActor->GetActorTransform();
+
+        //선택된 오브젝트의 이름을 표시하고 변경 가능하도록 함
+        uint32 bufferSize = 100;
+        char* SceneNameInput = new char[bufferSize];
+        strcpy_s(SceneNameInput, bufferSize,  selectedActor->GetName().ToString().ToStdString().c_str());
+    
+        if (ImGui::InputText("Object Name", SceneNameInput, bufferSize))
+        {
+            selectedActor->SetName(FName(SceneNameInput));
+        }
+
+        
         float position[] = { selectedTransform.GetPosition().X, selectedTransform.GetPosition().Y, selectedTransform.GetPosition().Z };
         float scale[] = { selectedTransform.GetScale().X, selectedTransform.GetScale().Y, selectedTransform.GetScale().Z };
-
+        
         if (ImGui::DragFloat3("Translation", position, 0.1f))
         {
             selectedTransform.SetPosition(position[0], position[1], position[2]);
