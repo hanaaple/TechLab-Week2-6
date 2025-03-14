@@ -48,7 +48,6 @@ private:
 	bool bIsPicked = false;
 public:
 	bool IsPicked() const { return bIsPicked; }
-
 public:
 	template<typename T>
 		requires std::derived_from<T, UActorComponent>

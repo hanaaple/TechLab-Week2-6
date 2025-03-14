@@ -7,7 +7,6 @@
 
 AActor::AActor() : Depth{ 0 }
 {
-	
 }
 
 void AActor::BeginPlay()

@@ -4,6 +4,8 @@
 
 class AAxis : public AActor
 {
+	DECLARE_OBJECT(AAxis, AActor)
+
 	using Super = AActor;
 public:
 	AAxis();

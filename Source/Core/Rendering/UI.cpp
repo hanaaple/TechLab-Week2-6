@@ -1,6 +1,7 @@
 ﻿#include "UI.h"
 
 #include <algorithm>
+#include <Object/Gizmo/Axis.h>
 
 #include "Object/Actor/Camera.h"
 #include "URenderer.h"
@@ -420,26 +421,34 @@ void UI::RenderSceneManager()
         return;
     }
 
-    // ✅ 씬의 모든 액터 가져오기
+    //  씬의 모든 액터 가져오기
     const TArray<AActor*>& Actors = World->GetActors();
-    static AActor* SelectedActor = nullptr;
 
+    AActor* selectedActor = FEditorManager::Get().GetSelectedActor();
     if (ImGui::CollapsingHeader("Primitives", ImGuiTreeNodeFlags_DefaultOpen))
     {
         for (AActor* Actor : Actors)
         {
+            if (Actor->IsA<AEditorGizmos>() || Actor->IsA<ACamera>()||Actor->IsA<AAxis>()||Actor->IsA<APicker>())continue;
+
+            ImGui::PushID(Actor->GetUUID()); // 각 오브젝트 UUID를 ID로 사용
+
             ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-            if (Actor == SelectedActor)
+            if (Actor == selectedActor)
                 nodeFlags |= ImGuiTreeNodeFlags_Selected;
+            FString Label = Actor->GetName();
 
             ImGui::TreeNodeEx(*Actor->GetClassFName().ToString(), nodeFlags);
 
             if (ImGui::IsItemClicked())
             {
-                SelectedActor = Actor;
-                UE_LOG("Selected Actor: %s", *SelectedActor->GetClassFName().ToString());
+                selectedActor = Actor;
+                UE_LOG("Selected Actor: %s", *selectedActor->GetClassFName().ToString());
             }
+            ImGui::PopID(); // ID 스택 해제
+
         }
+        FEditorManager::Get().SelectActor(selectedActor);
     }
 
     ImGui::End();
