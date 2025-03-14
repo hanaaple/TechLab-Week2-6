@@ -14,7 +14,11 @@ public:
     //대소문자 무시 비교(소문자 해시값으로 비교)
     bool operator==(const FName& Other) const;
     bool operator!=(const FName& Other) const;
-
+    // ✅ std::cout 지원을 위한 연산자 오버로딩 추가
+    friend std::ostream& operator<<(std::ostream& os, const FName& Name)
+    {
+        return os << Name.ToString().ToStdString();
+    }       
     // 정렬용 비교 함수
     int32 Compare(const FName& Other) const;
     //대소문자 고려 비교(해시값으로 비교).. 하지만 FMap에서 비교 시에 == 연산자를 사용해서 사용 불가
