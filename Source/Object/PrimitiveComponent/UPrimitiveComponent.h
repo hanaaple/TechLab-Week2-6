@@ -40,13 +40,11 @@ public:
 	virtual void RegisterComponentWithWorld(class UWorld* World);
 
 public:
-	void SetCanBeRendered(bool bRender) { bCanBeRendered = bRender; }
 
 	void SetIsOrthoGraphic(bool IsOrtho) { bIsOrthoGraphic = IsOrtho; }
 	bool GetIsOrthoGraphic() { return bIsOrthoGraphic;}
 	
 protected:
-	bool bCanBeRendered = false;
 	bool bUseVertexColor = true;
 	bool bIsOrthoGraphic = false;
 	FVector4 CustomColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -56,10 +54,7 @@ class UCubeComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
 public:
-	UCubeComp()
-	{
-		bCanBeRendered = true;
-	}
+	UCubeComp() = default;
 	virtual ~UCubeComp() = default;
 	EPrimitiveComponentType GetType() override
 	{
@@ -71,10 +66,7 @@ class USphereComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
 public:
-	USphereComp()
-	{
-		bCanBeRendered = true;
-	}
+	USphereComp() = default;
 	virtual ~USphereComp() = default;
 	EPrimitiveComponentType GetType() override
 	{
@@ -86,10 +78,7 @@ class UTriangleComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
 public:
-	UTriangleComp()
-	{
-		bCanBeRendered = true;
-	}
+	UTriangleComp() = default;
 	virtual ~UTriangleComp() = default;
 	EPrimitiveComponentType GetType() override
 	{
@@ -102,10 +91,7 @@ class ULineComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 
 public:
-	ULineComp()
-	{
-		bCanBeRendered = true;
-	}
+	ULineComp() = default;
 	virtual ~ULineComp() = default;
 	EPrimitiveComponentType GetType() override
 	{
@@ -118,10 +104,7 @@ class UCylinderComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 
 public:
-	UCylinderComp()
-	{
-		bCanBeRendered = true;
-	}
+	UCylinderComp() = default;
 	virtual ~UCylinderComp() = default;
 	EPrimitiveComponentType GetType() override
 	{
@@ -133,10 +116,7 @@ class UConeComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
 public:
-	UConeComp()
-	{
-		bCanBeRendered = true;
-	}
+	UConeComp() = default;
 	virtual ~UConeComp() = default;
 	EPrimitiveComponentType GetType() override
 	{

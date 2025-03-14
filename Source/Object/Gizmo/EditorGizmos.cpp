@@ -1,4 +1,4 @@
-﻿#include "GizmoHandle.h"
+﻿#include "EditorGizmos.h"
 
 #include "Object/Actor/Camera.h"
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
@@ -6,7 +6,7 @@
 #include "Static/FEditorManager.h"
 #include <Core/Input/PlayerInput.h>
 
-AGizmoHandle::AGizmoHandle()
+AEditorGizmos::AEditorGizmos()
 {
 	bIsGizmo = true;
 	// !NOTE : Z방향으로 서있음
@@ -14,14 +14,12 @@ AGizmoHandle::AGizmoHandle()
 	UCylinderComp* ZArrow = AddComponent<UCylinderComp>();
 	ZArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	ZArrow->SetCustomColor(FVector4(0.0f, 0.0f, 1.0f, 1.0f));
-	CylinderComponents.Add(ZArrow);
-
+	
 	// x
 	UCylinderComp* XArrow = AddComponent<UCylinderComp>();
 	XArrow->SetupAttachment(ZArrow);
 	XArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 90.0f, 0.0f), FVector(1, 1, 1)));
 	XArrow->SetCustomColor(FVector4(1.0f, 0.0f, 0.0f, 1.0f));
-	CylinderComponents.Add(XArrow);
 
 
 	// y
@@ -29,27 +27,28 @@ AGizmoHandle::AGizmoHandle()
 	YArrow->SetupAttachment(ZArrow);
 	YArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(90.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	YArrow->SetCustomColor(FVector4(0.0f, 1.0f, 0.0f, 1.0f));
-	CylinderComponents.Add(YArrow);
+
 	RootComponent = ZArrow;
 	
 	UEngine::Get().GetWorld()->AddZIgnoreComponent(ZArrow);
 	UEngine::Get().GetWorld()->AddZIgnoreComponent(XArrow);
 	UEngine::Get().GetWorld()->AddZIgnoreComponent(YArrow);
 
-	SetActive(false);
+	SetActorVisibility(false);
 }
 
-void AGizmoHandle::Tick(float DeltaTime)
+void AEditorGizmos::Tick(float DeltaTime)
 {
 	AActor* SelectedActor  = FEditorManager::Get().GetSelectedActor();
-	if (SelectedActor != nullptr && bIsActive)
+	if (SelectedActor != nullptr && RootComponent->GetVisibleFlag())
 	{
 		FTransform GizmoTr = RootComponent->TEMPGetComponentTransform();
 		GizmoTr.SetPosition(SelectedActor->GetActorTransform().GetPosition());
+		GizmoTr.SetRotation(SelectedActor->GetActorTransform().GetRotation());
 		SetActorTransform(GizmoTr);
 	}
 
-	SetScaleByDistance();
+	//SetScaleByDistance();
 	
 	AActor::Tick(DeltaTime);
 
@@ -113,7 +112,7 @@ void AGizmoHandle::Tick(float DeltaTime)
 
 }
 
-void AGizmoHandle::SetScaleByDistance()
+void AEditorGizmos::SetScaleByDistance()
 {
 	FTransform MyTransform = GetActorTransform();
 	
@@ -138,21 +137,17 @@ void AGizmoHandle::SetScaleByDistance()
 	MyTransform.SetScale(scaleFactor, scaleFactor, scaleFactor);
 }
 
-void AGizmoHandle::SetActive(bool bActive)
+void AEditorGizmos::SetActorVisibility(bool bNewActive)
 {
-	bIsActive = bActive;
-	for (auto& Cylinder : CylinderComponents)
-	{
-		Cylinder->SetCanBeRendered(bActive);
-	}
+	RootComponent->SetVisibility(bNewActive);
 }
 
-const char* AGizmoHandle::GetTypeName()
+const char* AEditorGizmos::GetTypeName()
 {
 	return "GizmoHandle";
 }
 
-void AGizmoHandle::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
+void AEditorGizmos::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
 {
 	const FVector& AP = AT.GetPosition();
 

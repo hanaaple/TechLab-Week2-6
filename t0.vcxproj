@@ -162,10 +162,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Core\Math\Plane.cpp" />
+    <ClCompile Include="Source\Core\Name\FName.cpp" />
+    <ClCompile Include="Source\Core\Name\FNameEntry.cpp" />
+    <ClCompile Include="Source\Core\Name\FNameTable.cpp" />
     <ClCompile Include="Source\Object\Actor\Camera.cpp" />
     <ClCompile Include="Source\Object\Actor\Cone.cpp" />
     <ClCompile Include="Source\Object\Actor\Cylinder.cpp" />
-    <ClCompile Include="Source\Object\Gizmo\GizmoHandle.cpp" />
+    <ClCompile Include="Source\Object\Gizmo\EditorGizmos.cpp" />
     <ClCompile Include="Source\Object\Actor\Arrow.cpp" />
     <ClCompile Include="Source\Core\Input\PlayerController.cpp" />
     <ClCompile Include="Source\Core\Input\PlayerInput.cpp" />
@@ -204,6 +207,9 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\Name\FName.h" />
+    <ClInclude Include="Source\Core\Name\FNameEntry.h" />
+    <ClInclude Include="Source\Core\Name\FNameTable.h" />
     <ClInclude Include="Source\Object\Actor\Camera.h" />
     <ClInclude Include="Source\Object\Actor\Cone.h" />
     <ClInclude Include="Source\Object\Actor\Cube.h" />
@@ -245,7 +251,7 @@
     <ClInclude Include="Source\Core\Rendering\UI.h" />
     <ClInclude Include="Source\Core\Rendering\URenderer.h" />
     <ClCompile Include="Source\Object\Actor\Picker.cpp" />
-    <ClInclude Include="Source\Object\Gizmo\GizmoHandle.h" />
+    <ClInclude Include="Source\Object\Gizmo\EditorGizmos.h" />
     <ClInclude Include="Source\Core\Container\CString.h" />
     <ClInclude Include="Source\Object\Actor\Picker.h" />
     <ClCompile Include="Source\Static\FEditorManager.cpp" />

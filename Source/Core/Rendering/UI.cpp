@@ -18,7 +18,7 @@
 #include "Object/Actor/Cylinder.h"
 #include "Static/FEditorManager.h"
 #include "Object/World/World.h"
-#include "Object/Gizmo/GizmoHandle.h"
+#include "Object/Gizmo/EditorGizmos.h"
 
 
 
@@ -349,7 +349,7 @@ void UI::RenderPropertyWindow()
         }
 		if (FEditorManager::Get().GetGizmoHandle() != nullptr)
 		{
-			AGizmoHandle* Gizmo = FEditorManager::Get().GetGizmoHandle();
+			AEditorGizmos* Gizmo = FEditorManager::Get().GetGizmoHandle();
             if(Gizmo->GetGizmoType() == EGizmoType::Translate)
 			{
 				ImGui::Text("GizmoType: Translate");

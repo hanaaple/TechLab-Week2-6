@@ -47,10 +47,11 @@ private:
 	void UpdateChildTransforms();
 	void UpdateComponentToWorld();
 protected:
+	void SetVisibility(bool bNewVisibility) const;
+	bool GetVisibleFlag() const	{ return bVisible; }
 	bool bCanEverTick = true;
 	
 private:
-
 	// (Relative Transform 변경시?)
 	// UpdateComponentToWorld  (매개변수) ->
 	// UpdateComponentToWorldWithParent   (ComponentToWorld = NewWorld) ->
@@ -96,6 +97,8 @@ private:
 	/* Component's World Transform */
 	FTransform ComponentToWorld;
 	
+private:
+	bool bVisible = true;
 	// debug
 protected:
 	bool bIsPicked = false;

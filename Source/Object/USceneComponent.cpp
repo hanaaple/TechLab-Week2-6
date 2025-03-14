@@ -118,6 +118,7 @@ void USceneComponent::ApplyParentWorldTransform()
 	SetRelativeTransform(NewMatrix.GetTransform());
 }
 
+
 void USceneComponent::UpdateChildTransforms()
 {
 	for (USceneComponent* ChildComp : AttachChildren)
@@ -148,5 +149,36 @@ void USceneComponent::UpdateComponentToWorld()
 	if (AttachChildren.Num() > 0)
 	{
 		UpdateChildTransforms();
+	}
+}
+
+void USceneComponent::SetVisibility(bool bNewVisibility) const
+{
+	// UE5 - Visibility 변경시 Flag Update
+
+	const TArray<USceneComponent*>& AttachedChildren = AttachChildren;
+	if (AttachedChildren.Num() <= 0)
+		return;
+	
+	TArray<USceneComponent*> ChildrenStack;
+
+	for (auto child : AttachedChildren)
+	{
+		ChildrenStack.Push(child);
+	}
+
+	while (ChildrenStack.Num() > 0)
+	{
+		USceneComponent* CurrentComp = ChildrenStack.Pop();
+		if (CurrentComp != nullptr)
+		{
+			for (auto child : CurrentComp->GetAttachChildren())
+			{
+				ChildrenStack.Push(child);
+			}
+
+			CurrentComp->SetVisibility(bNewVisibility);
+			
+		}
 	}
 }
