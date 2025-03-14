@@ -25,7 +25,7 @@ public:
 	//virtual void AutoSetName();
 	void SetName(const FName& NewName)
 	{
-		std::cout<<Name<<" "<<NewName<<"\n";
+		//std::cout<<Name<<" "<<NewName<<"\n";
 		Name.SetIndex(NewName);
 	}
 	//이름이 없으면 생성
