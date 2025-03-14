@@ -5,6 +5,7 @@
 class UActorComponent : public UObject
 {
 public:
+    DECLARE_OBJECT(UActorComponent, UObject)
 	UActorComponent() = default;
 
 	virtual void BeginPlay();

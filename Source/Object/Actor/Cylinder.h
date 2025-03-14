@@ -3,6 +3,7 @@
 
 class ACylinder : public AActor
 {
+    DECLARE_OBJECT(ACylinder, AActor)
     using Super = AActor;
 public:
     ACylinder();

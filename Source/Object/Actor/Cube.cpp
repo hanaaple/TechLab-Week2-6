@@ -9,6 +9,13 @@ ACube::ACube()
 	RootComponent = CubeComponent;
 
 	CubeComponent->SetRelativeTransform(FTransform());
+	std::cout << "ACube IsA AActor? " << IsA("AActor") << std::endl;
+	std::cout << "ACube IsA UObject? " << IsA("UObject") << std::endl;
+	std::cout << "ACube IsA ACube? " << IsA("ACube") << std::endl;
+	std::cout << "ACube IsA OtherClass? " << IsA("OtherClass") << std::endl;
+	//std::cout<<Super::GetClassFName().ToString().ToStdString()<<std::endl;
+	
+	//std::cout<<IsA(FName("UObject"))<<" "<<Super::IsA(FName("UObject"))<<std::endl;
 }
 
 void ACube::BeginPlay()
@@ -19,7 +26,6 @@ void ACube::BeginPlay()
 void ACube::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-    std::cout<<GetClassFName().ToString().ToStdString()<<std::endl;
 }
 
 const char* ACube::GetTypeName()

@@ -7,6 +7,7 @@
 // TODO: RTTI 구현하면 enable_shared_from_this 제거
 class UObject/* : public std::enable_shared_from_this<UObject>*/
 {
+	//DECLARE_OBJECT(UObject, UObject)
 	friend class FObjectFactory;
 
 	uint32 UUID = 0;
@@ -17,10 +18,11 @@ public:
 	UObject();
 	virtual ~UObject();
 public:
-	virtual FName GetClassFName() const { return StaticClassFName_Internal(); }
-	bool IsA(FName ClassName) const { return GetClassFName() == ClassName; }
-	bool IsA(const UObject* Other) const { return Other && GetClassFName() == Other->GetClassFName(); }
-	
+	static FName GetClassFName() { return StaticClassFName_Internal(); }
+	static FName GetParentClassFName() { return StaticClassFName_Internal(); }
+	//virtual const UObject* GetParentClass() const { return nullptr; }
+
+	static bool IsA(FName ClassName){if (ClassName==GetClassFName())return true;return false;}
 public:
 	uint32 GetUUID() const { return UUID; }
 	uint32 GetInternalIndex() const { return InternalIndex; }
@@ -30,4 +32,11 @@ public:
 public: \
 using Super = ParentClass; \
 static FName StaticClassFName_Internal() { return #ClassName; } \
-virtual FName GetClassFName() const override { return StaticClassFName_Internal(); }
+static FName GetClassFName() { return StaticClassFName_Internal(); } \
+static FName GetParentClassFName() { return Super::StaticClassFName_Internal(); } \
+static bool IsA(FName ClassName) \
+{ \
+if (GetClassFName() == ClassName) \
+return true; \
+return Super::IsA(ClassName); \
+}
