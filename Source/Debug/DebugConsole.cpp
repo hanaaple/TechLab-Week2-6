@@ -3,6 +3,7 @@
 #include <cstdarg>
 #include <algorithm>
 #include "Core/Container/String.h"
+#include "Core/Name/FName.h"
 
 #include "ImGui/imgui_internal.h"
 
@@ -102,7 +103,23 @@ void Debug::Log(const char* format, ...)
 
     items.emplace_back(buffer);
 }
+// ✅ 단일 FName 로그 지원
+void Debug::Log(const FName& name)
+{
+    items.emplace_back(name.ToString());
+}
 
+// ✅ 여러 개의 FName을 가변 인자로 지원
+void Debug::Log(std::initializer_list<FName> names, const FString* separator)
+{
+    FString logMessage;
+    for (const auto& name : names)
+    {
+        if (!logMessage.IsEmpty()&&separator!=nullptr) logMessage += *separator;  // 구분자 추가
+        logMessage += name.ToString();
+    }
+    items.emplace_back(logMessage);
+}
 ImVec2 Debug::ResizeToScreen(const ImVec2& vec2, ImVec2 PreRatio, ImVec2 CurRatio)
 {
     float min;
