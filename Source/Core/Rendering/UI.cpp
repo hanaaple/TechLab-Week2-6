@@ -436,9 +436,8 @@ void UI::RenderSceneManager()
             ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
             if (Actor == selectedActor)
                 nodeFlags |= ImGuiTreeNodeFlags_Selected;
-            FString Label = Actor->GetName();
 
-            ImGui::TreeNodeEx(*Actor->GetClassFName().ToString(), nodeFlags);
+            bool nodeOpen = ImGui::TreeNodeEx(*Actor->GetName().ToString(), nodeFlags);
 
             if (ImGui::IsItemClicked())
             {

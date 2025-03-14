@@ -40,7 +40,21 @@ int32 FName::Compare(const FName& Other) const
 FString FName::ToString() const
 {
     return FNameTable::Get().GetName(DisplayIndex);
+
 }
+const FString& FName::ToStringRef() const
+{
+    return FNameTable::Get().GetName(DisplayIndex); // ✅ 참조 반환
+}
+int32 FName::GetNumber() const
+{
+    return Number;
+}
+bool FName::IsValid() const
+{
+    return Number+ComparisonIndex+DisplayIndex;
+}
+
 /*
 bool FName::EqualsIgnoreCase(const FName& Other) const
 {

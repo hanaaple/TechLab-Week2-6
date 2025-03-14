@@ -17,13 +17,19 @@ protected:
 public:
 	UObject();
 	virtual ~UObject();
+	//virtual void PostInit(); // 객체 생성 후 실행될 함수 추가
 
-private:
+protected:
 	FName Name; // FString 대신 FName 사용
 public:
 	//virtual void AutoSetName();
 	void SetName(const FName& NewName) { Name = NewName; }
-	const FName& GetName() const { return Name; }
+	//이름이 없으면 생성
+	virtual const FName& GetName()
+	{
+		if (!Name.IsValid())SetName(FName(GetClassFName().ToStringRef(),GetUUID()));
+		return Name;
+	}
 	//FString GetName() const { return Name.ToString(); } // FString 변환
 public://RTTI
 	virtual FName GetClassFName() const{ return StaticClassFName_Internal(); }
@@ -62,6 +68,8 @@ virtual const UObject* GetParentClass() const override \
 static Super ParentInstance; /* 부모 인스턴스를 생성하여 반환 */ \
 return &ParentInstance; \
 }\
-private: \
-FName Name = FName(StaticClassFName_Internal().ToString(), this->GetUUID());\
-public:
+virtual const FName& GetName()\
+{\
+	if (Name.IsValid())SetName(FName(GetClassFName().ToString(),GetUUID()));\
+	return Name;\
+}
