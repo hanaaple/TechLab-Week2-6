@@ -20,6 +20,10 @@ void UWorld::BeginPlay()
 	for (const auto& Actor : Actors)
 	{
 		Actor->BeginPlay();
+		if (ActorsToSpawn.Find(Actor) != -1)
+		{
+			ActorsToSpawn.Remove(Actor);
+		}
 	}
 }
 
@@ -90,30 +94,19 @@ void UWorld::RenderPickingTexture(URenderer& Renderer)
 	Renderer.PreparePicking();
 	Renderer.PreparePickingShader();
 
-	for (auto& [PrimitiveType, RenderComponents] : RenderComponentTable)
+	for (auto& [MeshType, RenderComponents] : RenderComponentTable)
 	{
-		if (PrimitiveType == EPrimitiveComponentType::EPT_Line || PrimitiveType == EPrimitiveComponentType::EPT_BoundingBox)
+		TArray<UPrimitiveComponent*> BatchTargetComponents;
+		for (auto RenderComponent : RenderComponents)
 		{
-			TArray<FVertexSimple> Vertexs;
-			for (auto RenderComponent : RenderComponents){ 
-				if (RenderComponent->GetOwner()->GetDepth() > 0)
-				{
-					continue;
-				}
-				uint32 UUID = RenderComponent->GetUUID();
-				RenderComponent->UpdateConstantPicking(Renderer, APicker::EncodeUUID(UUID));
-				RenderComponent->Render();
-			}
-			
-			for (auto& LineGrid : LineGridVertices)
+			//TODO11
+			// Picking들도 정상적으로 렌더링 시켜야됨. 
+			if (RenderComponent->GetIsBatch())
 			{
-				Vertexs.Add(LineGrid);
+				BatchTargetComponents.Add(RenderComponent);
 			}
-			DrawBatch(Vertexs);
-		}
-		else
-		{
-			for (auto RenderComponent : RenderComponents){ 
+			else
+			{
 				if (RenderComponent->GetOwner()->GetDepth() > 0)
 				{
 					continue;
@@ -123,6 +116,7 @@ void UWorld::RenderPickingTexture(URenderer& Renderer)
 				RenderComponent->Render();
 			}
 		}
+		//DrawPickingBatch(BatchTargetComponents);
 	}
 
 	Renderer.PrepareZIgnore();
@@ -137,36 +131,28 @@ void UWorld::RenderPickingTexture(URenderer& Renderer)
 
 void UWorld::RenderMainTexture(URenderer& Renderer)
 {
+	// 셰이더 변경 불가
 	Renderer.PrepareMain();
 	Renderer.PrepareMainShader();
 
-	// if (is Batch)
-	// {}
-	// else if (is not Batch)
-	// {}
+	// 1. 같은 메쉬여도 배치 여부가 다를수 있다.
+	// 2. 다른 메쉬여도 같은 토폴로지, 같은 머터리얼과 셰이더, 트
+
+	// 같은 토폴로지, 셰이더, 다른 메시 -> 배치 렌더링
+	// 같은 토폴로지, 셰이더, 같은 메시 -> 인스턴싱
 	
-	for (auto& [PrimitiveType, RenderComponents] : RenderComponentTable)
+	for (auto& [MeshType, RenderComponents] : RenderComponentTable)
 	{
-		if (isPrimitiveType is Batch)
-		// if (PrimitiveType == EPrimitiveType::EPT_Line || PrimitiveType == EPrimitiveType::EPT_BoundingBox)
+		TArray<UPrimitiveComponent*> BatchTargetComponents;
+		for (auto RenderComponent : RenderComponents)
 		{
-			TArray<FVertexSimple> Vertexs;
-			for (auto RenderComponent : RenderComponents)
+			//TODO11
+			// 나쁜점 -> Render를 추상화해서 사용하는데 이걸 막음
+			if (RenderComponent->GetIsBatch() && RenderComponent->GetVisibleFlag())
 			{
-				if (RenderComponent->GetOwner()->GetDepth() > 0)
-				{
-					continue;
-				}
-				uint32 depth = RenderComponent->GetOwner()->GetDepth();
-				// RenderComponent->UpdateConstantDepth(Renderer, depth);
-				// RenderComponent->Render();
-				Vertexs.Add(RenderComponent->GetVertexData());
+				BatchTargetComponents.Add(RenderComponent);
 			}
-			DrawBatch(Vertexs);
-		}
-		else
-		{
-			for (auto RenderComponent : RenderComponents)
+			else
 			{
 				if (RenderComponent->GetOwner()->GetDepth() > 0)
 				{
@@ -177,6 +163,8 @@ void UWorld::RenderMainTexture(URenderer& Renderer)
 				RenderComponent->Render();
 			}
 		}
+
+		//DrawBatch(BatchTargetComponents);
 	}
 	
 	Renderer.PrepareZIgnore();
@@ -190,6 +178,18 @@ void UWorld::RenderMainTexture(URenderer& Renderer)
 void UWorld::DisplayPickingTexture(URenderer& Renderer)
 {
 	Renderer.RenderPickingTexture();
+}
+
+void UWorld::DrawBatch(TArray<UPrimitiveComponent*>& BatchTargets)
+{
+	//TODO11
+	// 이게 PrimitiveComponent->Render() 부분인데, 추상화되는 부분을 구체화시켜놓음. 막을 방법?
+	URenderer* Renderer = UEngine::Get().GetRenderer();
+	if (Renderer == nullptr)
+	{
+		return;
+	}
+	//Renderer->RenderBatch(BatchTargets);
 }
 
 void UWorld::ClearWorld()
@@ -259,7 +259,7 @@ void UWorld::LoadWorld(const char* SceneName)
 	for (uint32 i = 0; i < ActorCount; i++)
 	{
 		UObjectInfo* ObjectInfo = WorldInfo->ObjctInfos[i];
-		FTransform Transform = FTransform(ObjectInfo->Location, FQuat(), ObjectInfo->Scale);
+		FTransform Transform = FTransform(ObjectInfo->Location, FVector(), ObjectInfo->Scale);
 		Transform.Rotate(ObjectInfo->Rotation);
 
 		AActor* Actor = nullptr;
@@ -311,7 +311,7 @@ UWorldInfo UWorld::GetWorldInfo() const
 		WorldInfo.ObjctInfos[i] = new UObjectInfo();
 		const FTransform& Transform = actor->GetActorTransform();
 		WorldInfo.ObjctInfos[i]->Location = Transform.GetPosition();
-		WorldInfo.ObjctInfos[i]->Rotation = Transform.GetRotation();
+		WorldInfo.ObjctInfos[i]->Rotation = Transform.GetEulerRotation();
 		WorldInfo.ObjctInfos[i]->Scale = Transform.GetScale();
 		WorldInfo.ObjctInfos[i]->ObjectType = actor->GetTypeName();
 

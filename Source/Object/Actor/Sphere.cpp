@@ -8,7 +8,7 @@ ASphere::ASphere()
 	USphereComp* SphereComponent = AddComponent<USphereComp>();
 	RootComponent = SphereComponent;
 	
-	SetActorTransform(FTransform());
+	SetActorRelativeTransform(FTransform());
 }
 
 void ASphere::BeginPlay()

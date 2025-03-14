@@ -20,7 +20,7 @@ public:
 	void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 	virtual void Render();
 	
-	virtual EPrimitiveComponentType GetType() { return EPrimitiveComponentType::EPT_None; }
+	virtual EPrimitiveMeshType GetType() { return EPrimitiveMeshType::EPT_None; }
 
 	bool IsUseVertexColor() const { return bUseVertexColor; }
 
@@ -43,10 +43,12 @@ public:
 
 	void SetIsOrthoGraphic(bool IsOrtho) { bIsOrthoGraphic = IsOrtho; }
 	bool GetIsOrthoGraphic() { return bIsOrthoGraphic;}
-	
+	bool GetIsBatch() {return bIsBatch; }
+
 protected:
 	bool bUseVertexColor = true;
 	bool bIsOrthoGraphic = false;
+	bool bIsBatch = false;
 	FVector4 CustomColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 };
 
@@ -56,9 +58,9 @@ class UCubeComp : public UPrimitiveComponent
 public:
 	UCubeComp() = default;
 	virtual ~UCubeComp() = default;
-	EPrimitiveComponentType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveComponentType::EPT_Cube;
+		return EPrimitiveMeshType::EPT_Cube;
 	}
 };
 
@@ -68,9 +70,9 @@ class USphereComp : public UPrimitiveComponent
 public:
 	USphereComp() = default;
 	virtual ~USphereComp() = default;
-	EPrimitiveComponentType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveComponentType::EPT_Sphere;
+		return EPrimitiveMeshType::EPT_Sphere;
 	}
 };
 
@@ -80,9 +82,9 @@ class UTriangleComp : public UPrimitiveComponent
 public:
 	UTriangleComp() = default;
 	virtual ~UTriangleComp() = default;
-	EPrimitiveComponentType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveComponentType::EPT_Triangle;
+		return EPrimitiveMeshType::EPT_Triangle;
 	}
 };
 
@@ -93,9 +95,9 @@ class ULineComp : public UPrimitiveComponent
 public:
 	ULineComp() = default;
 	virtual ~ULineComp() = default;
-	EPrimitiveComponentType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveComponentType::EPT_Line;
+		return EPrimitiveMeshType::EPT_Line;
 	}
 };
 
@@ -106,9 +108,9 @@ class UCylinderComp : public UPrimitiveComponent
 public:
 	UCylinderComp() = default;
 	virtual ~UCylinderComp() = default;
-	EPrimitiveComponentType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveComponentType::EPT_Cylinder;
+		return EPrimitiveMeshType::EPT_Cylinder;
 	}
 };
 
@@ -118,8 +120,8 @@ class UConeComp : public UPrimitiveComponent
 public:
 	UConeComp() = default;
 	virtual ~UConeComp() = default;
-	EPrimitiveComponentType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveComponentType::EPT_Cone;
+		return EPrimitiveMeshType::EPT_Cone;
 	}
 };

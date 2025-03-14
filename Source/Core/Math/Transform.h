@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "Vector.h"
 #include "Matrix.h"
-#include "Core/Math/Plane.h"
 
 #define TORAD 0.0174532925199432957f
 
@@ -9,14 +8,14 @@ struct FTransform
 {
 protected:
 	FVector Position;
-	FQuat Rotation; TODO// -> FVector로 바꾸고 내부적으로 World 계산할때만 Quaternion으로 
+	FVector Rotation; 
 	FVector Scale;
 	int Depth;
 	
 public:
 	FTransform()
 		: Position(FVector(0, 0, 0))
-		, Rotation(FQuat(0, 0, 0, 1))
+		, Rotation(FVector(0, 0, 0))
 		, Scale(FVector(1, 1, 1))
 	{
 	}
@@ -28,13 +27,20 @@ public:
 	{
 	}
 
-	FTransform(FVector InPosition, FQuat InQuat, FVector InScale)
-		: Position(InPosition)
-		, Rotation(InQuat)
-		, Scale(InScale)
+	// FTransform(FVector InPosition, FQuat InQuat, FVector InScale)
+	// 	: Position(InPosition)
+	// 	, Rotation(InQuat)
+	// 	, Scale(InScale)
+	// {
+	// }
+
+	FTransform(const FMatrix& matrix)
 	{
+		Position = matrix.GetTranslation();
+		Rotation = matrix.GetEulerRotation();
+		Scale = matrix.GetScale();
 	}
-	        
+
 	inline FMatrix GetViewMatrix() const
 	{
 		return FMatrix::LookAtLH(Position, Position + GetForward(), GetUp());
@@ -50,22 +56,24 @@ public:
 	}
 	inline virtual void SetRotation(const FVector& InRotation)
 	{
-		Rotation = FQuat::EulerToQuaternion(InRotation);
-	}
-	
-	inline virtual void SetRotation(const FQuat& InRotation)
-	{
 		Rotation = InRotation;
 	}
+	//
+	// inline virtual void SetRotation(const FQuat& InRotation)
+	// {
+	// 	Rotation = InRotation;
+	// }
 	
 	inline virtual void SetRotation(float x, float y, float z)
 	{
 		SetRotation(FVector(x, y, z));
 	}
+	
 	inline void SetScale(FVector InScale)
 	{
 		Scale = InScale;
 	}
+	
 	inline void AddScale(FVector InScale)
 	{
 		Scale.X += InScale.X;
@@ -80,7 +88,12 @@ public:
 	{
 		return Position;
 	}
-	FQuat GetRotation() const 
+	// FQuat GetRotation() const 
+	// {
+	// 	return Rotation;
+	// }
+
+	FVector GetEulerRotation() const 
 	{
 		return Rotation;
 	}
@@ -89,9 +102,10 @@ public:
 	{
 		return Scale;
 	}
-
+	
 	FMatrix GetMatrix() const 
 	{
+		// 순서 맞음.
 		return FMatrix::GetScaleMatrix(Scale.X, Scale.Y, Scale.Z)
 			* FMatrix::GetRotateMatrix(Rotation)
 			* FMatrix::GetTranslateMatrix(Position.X, Position.Y, Position.Z);
@@ -130,29 +144,99 @@ public:
 	// InRotate는 Degree 단위
 	void Rotate(const FVector& InRotation)
 	{
-		RotateRoll(InRotation.X);
-		RotatePitch(InRotation.Y);
-		RotateYaw(InRotation.Z);
+		Rotation += InRotation;
 	}
 
 	void RotateYaw(float Angle)
 	{
-		FVector Axis = FVector(0, 0, 1);
-		Rotation = FQuat::MultiplyQuaternions(Rotation, FQuat(Axis, Angle));
-
-		//Rotation = FQuat::MultiplyQuaternions(Rotation, FQuat(0, 0, sin(Angle * TORAD / 2), cos(Angle * TORAD / 2)));
+		Rotation.Z += Angle;
 	}
 
 	void RotatePitch(float Angle)
 	{
-		FVector Axis = FVector(0, 1, 0).GetSafeNormal();
-		Rotation = FQuat::MultiplyQuaternions(Rotation, FQuat(Axis, Angle));
+		Rotation.Y += Angle;
 	}
 
 	void RotateRoll(float Angle)
 	{
-		FVector Axis = FVector(1, 0, 0).GetSafeNormal();
-		Rotation = FQuat::MultiplyQuaternions(Rotation, FQuat(Axis, Angle));
+		Rotation.X += Angle;
 	}
 
+	FTransform operator*(const FTransform& OtherMatrix) const
+	{
+		FTransform Result = GetMatrix() * OtherMatrix.GetMatrix();
+		
+		return Result;
+	}
+
+	FMatrix Inverse() const
+	{
+		return GetMatrix().Inverse();
+	}
+
+	// FTransform GetRelativeTransform(const FTransform& Other) const
+	// {
+	// 	// A * B(-1) = VQS(B)(-1) (VQS (A))
+	// 	// 
+	// 	// Scale = S(A)/S(B)
+	// 	// Rotation = Q(B)(-1) * Q(A)
+	// 	// Translation = 1/S(B) *[Q(B)(-1)*(T(A)-T(B))*Q(B)]
+	// 	// where A = this, B = Other
+	// 	FTransform Result;
+	//
+	// 	//if (AnyHasNegativeScale(Scale, Other.GetScale()))
+	// 	//{
+	// 	// @note, if you have 0 scale with negative, you're going to lose rotation as it can't convert back to quat
+	// 	//GetRelativeTransformUsingMatrixWithScale(&Result, this, &Other);
+	// 	//}
+	// 	//else
+	// 	FVector SafeRecipScale3D = GetSafeScaleReciprocal(Other.Scale, 1.e-8f);
+	// 	Result.Scale = Scale * SafeRecipScale3D;
+	//
+	// 	if (Other.Rotation.IsNormalized() == false)
+	// 	{
+	// 		return FTransform();
+	// 	}
+	//
+	// 	FQuat Inverse = Other.Rotation.Inverse();
+	// 	Result.Rotation = FQuat::MultiplyQuaternions(Inverse, Rotation);
+	//
+	// 	Result.Position = Inverse * (Position - Other.Position) * SafeRecipScale3D;
+	//
+	// 	return Result;
+	// }
+	// 	
+	//
+	// FVector GetSafeScaleReciprocal(const FVector& InScale, float Tolerance) const
+	// {
+	// 	FVector SafeReciprocalScale;
+	// 	if (FMath::Abs(InScale.X) <= Tolerance)
+	// 	{
+	// 		SafeReciprocalScale.X = 0.f;
+	// 	}
+	// 	else
+	// 	{
+	// 		SafeReciprocalScale.X = 1 / InScale.X;
+	// 	}
+	//
+	// 	if (FMath::Abs(InScale.Y) <= Tolerance)
+	// 	{
+	// 		SafeReciprocalScale.Y = 0.f;
+	// 	}
+	// 	else
+	// 	{
+	// 		SafeReciprocalScale.Y = 1 / InScale.Y;
+	// 	}
+	//
+	// 	if (FMath::Abs(InScale.Z) <= Tolerance)
+	// 	{
+	// 		SafeReciprocalScale.Z = 0.f;
+	// 	}
+	// 	else
+	// 	{
+	// 		SafeReciprocalScale.Z = 1 / InScale.Z;
+	// 	}
+	//
+	// 	return SafeReciprocalScale;
+	// }
 };

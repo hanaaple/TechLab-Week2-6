@@ -21,17 +21,7 @@ FTransform USceneComponent::GetRelativeTransform() const
 // 내 월드 트랜스폼 반환
 const FTransform& USceneComponent::GetComponentTransform() const
 {
-	if (AttachParent)
-	{
-		// 부모가 있을 경우 부모 월드 * 내 로컬
-		FMatrix ParentWorld = AttachParent->GetComponentTransform().GetMatrix();
-		FMatrix MyLocal = RelativeTransform.GetMatrix();
-
-		FMatrix NewMatrix = MyLocal * ParentWorld;
-		return NewMatrix.GetTransform();
-	}
-
-	return RelativeTransform;
+	return ComponentToWorld;
 }
 
 void USceneComponent::SetRelativeTransform(const FTransform& NewRelativeTransform)
@@ -44,30 +34,9 @@ void USceneComponent::SetRelativeTransform(const FTransform& NewRelativeTransfor
 
 void USceneComponent::SetWorldTransform(const FTransform& NewTransform)
 {	
-	ComponentToWorld = NewTransform;
-	
-	// -> ComponentToWorld = CalcNewComponentToWorld(RelativeTransform, Parent, SocketName); ????
-	// -> Relative -> Parent와 상대적 Transform을 구해서 넣어줘야됨.		NewTransform.GetRelativeTransform(ParentToWorld);
-	
-	
-	if (AttachParent != nullptr)
-	{
-		// Parent 기반 RelativeTransform Update
-		
-		const FTransform& ParentToWorld = AttachParent->GetComponentTransform();
-		// Parent World 기준 A의 RelativeTransform 새로 갱신?
-		RelativeTransform = NewTransform.GetRelativeTransform(ParentToWorld);
-		// 부모가 있다면, RelativeTransform = 부모의 Inverse(ComponentToWorld) * NewTransform 계산.
-	}
-	else
-	{
-		RelativeTransform = NewTransform;
-	}
+	ComponentToWorld = NewTransform;	
 
-	if (AttachChildren.Num() > 0)
-	{
-		UpdateChildTransforms();
-	}
+	UpdateRelativeTransform();
 }
 
 void USceneComponent::Pick(bool bPicked)
@@ -89,14 +58,17 @@ void USceneComponent::SetupAttachment(USceneComponent* InParent, EAttachmentRule
 		if (AttachmentRule == EAttachmentRule::KeepRelative)
 		{
 			// RelativeTransform 유지
+			UpdateComponentToWorld();
 		}
 		else if (AttachmentRule == EAttachmentRule::KeepWorld)
 		{
+			UpdateRelativeTransform();
 			// World 유지
 		}
 		else if (AttachmentRule == EAttachmentRule::SnapToTarget)
 		{
-			// RelativeTransform = FTransform()
+			RelativeTransform = FTransform();
+			UpdateComponentToWorld();
 		}
 		
 		// ApplyParentWorldTransform(InParent->GetComponentTransform());
@@ -107,16 +79,16 @@ void USceneComponent::SetupAttachment(USceneComponent* InParent, EAttachmentRule
 	}
 }
 
-void USceneComponent::ApplyParentWorldTransform()
-{
-	FMatrix ParentWorld = AttachParent->GetComponentTransform().GetMatrix();
-	FMatrix MyLocal = RelativeTransform.GetMatrix();
-
-	FMatrix NewMatrix = MyLocal * ParentWorld.Inverse();
-
-	// 내 로컬 트랜스폼 갱신
-	SetRelativeTransform(NewMatrix.GetTransform());
-}
+// void USceneComponent::ApplyParentWorldTransform()
+// {
+// 	FMatrix ParentWorld = AttachParent->GetComponentTransform().GetMatrix();
+// 	FMatrix MyLocal = RelativeTransform.GetMatrix();
+//
+// 	FMatrix NewMatrix = MyLocal * ParentWorld.Inverse();
+//
+// 	// 내 로컬 트랜스폼 갱신
+// 	SetRelativeTransform(NewMatrix.GetTransform());
+// }
 
 
 void USceneComponent::UpdateChildTransforms()
@@ -134,7 +106,15 @@ void USceneComponent::UpdateComponentToWorld()
 {
 	if (AttachParent != nullptr)
 	{
-		ComponentToWorld = .GetRelativeTransform(ParentToWorld); 
+		// FMatrix ParentWorld = AttachParent->GetComponentTransform().GetMatrix();
+		// FMatrix MyLocal = RelativeTransform.GetMatrix();
+		// FMatrix NewMatrix = MyLocal * ParentWorld.Inverse();
+		// ComponentToWorld = NewMatrix.GetTransform();
+
+		//ComponentToWorld = AttachParent->GetComponentTransform().GetRelativeTransform(RelativeTransform);
+
+		const FTransform& ParentToWorld = AttachParent->GetComponentTransform();
+		ComponentToWorld = RelativeTransform * ParentToWorld;
 	}
 	else
 	{
@@ -145,7 +125,30 @@ void USceneComponent::UpdateComponentToWorld()
 	{
 		UpdateChildTransforms();
 	}
-	
+}
+
+void USceneComponent::UpdateRelativeTransform()
+{
+	if (AttachParent != nullptr)
+	{
+		// Parent 기반 RelativeTransform Update
+		
+		//RelativeTransform = ComponentToWorld.GetRelativeTransform(ParentToWorld);
+
+		
+		// 부모가 있다면, RelativeTransform = 부모의 Inverse(ComponentToWorld) * NewTransform 계산.
+		//RelativeTransform = ComponentToWorld
+		
+
+
+		const FTransform& ParentToWorld = AttachParent->GetComponentTransform();
+		ComponentToWorld = RelativeTransform * ParentToWorld;
+	}
+	else
+	{
+		RelativeTransform = ComponentToWorld;
+	}
+
 	if (AttachChildren.Num() > 0)
 	{
 		UpdateChildTransforms();
@@ -172,7 +175,7 @@ void USceneComponent::SetVisibility(bool bNewVisibility) const
 		USceneComponent* CurrentComp = ChildrenStack.Pop();
 		if (CurrentComp != nullptr)
 		{
-			for (auto child : CurrentComp->GetAttachChildren())
+			for (auto child : CurrentComp->AttachChildren)
 			{
 				ChildrenStack.Push(child);
 			}

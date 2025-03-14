@@ -35,6 +35,7 @@ public:
 	void Render();
 	void RenderPickingTexture(URenderer& Renderer);
 	void DisplayPickingTexture(URenderer& Renderer);
+	void DrawBatch(TArray<UPrimitiveComponent*>& BatchTargets);
 	void RenderMainTexture(URenderer& Renderer);
 
 	void ClearWorld();
@@ -52,7 +53,7 @@ public:
 		{
 			RenderComponentTable.Add(Component->GetType(), TArray<UPrimitiveComponent*>());
 		}
-		RenderComponentTable[Component->GetType()].Add(Component);
+		RenderComponentTable[Component->GetType()].AddUnique(Component);
 	}
 	void RemoveRenderComponent(class UPrimitiveComponent* Component) { RenderComponentTable.Remove(Component->GetType()); }
 
@@ -68,7 +69,7 @@ protected:
 	TArray<UPrimitiveComponent*> ZIgnoreRenderComponents;
 	TArray<AActor*> ActorsToSpawn;
 	TArray<AActor*> PendingDestroyActors; // TODO: 추후에 TQueue로 변경
-	TMap<, TArray<UPrimitiveComponent*>> RenderComponentTable;
+	TMap<EPrimitiveMeshType, TArray<UPrimitiveComponent*>> RenderComponentTable;
 };
 
 template <typename T>

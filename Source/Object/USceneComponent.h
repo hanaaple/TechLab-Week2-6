@@ -20,6 +20,15 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
+	// Get Set
+public:
+	void SetVisibility(bool bNewVisibility) const;
+	bool GetVisibleFlag() const	{ return bVisible; }
+	void Pick(bool bPicked);
+	bool IsPicked() const { return bIsPicked; }
+	
+	// Transform
+public:
 	/**
 	 * @return Component's Relative(Local) Transform 
 	 */	
@@ -33,23 +42,15 @@ public:
 	void SetRelativeTransform(const FTransform& NewRelativeTransform);
 	void SetWorldTransform(const FTransform& NewTransform);
 
-	void Pick(bool bPicked);
-	bool IsPicked() const { return bIsPicked; }
-
 public:
 	/* SnapToTarget을 제외하여 KeepRelative, KeepWorld만 구현 */
 	void SetupAttachment(USceneComponent* InParent, EAttachmentRule AttachmentRule = EAttachmentRule::KeepWorld);
-	// const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
+	const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
 	
 private:
-	// 부모의 월드 트랜스폼을 받아서 자신의 로컬 트랜스폼을 갱신, 부모를 바꿀 때 사용
-	void ApplyParentWorldTransform();
 	void UpdateChildTransforms();
-	void UpdateComponentToWorld();
-protected:
-	void SetVisibility(bool bNewVisibility) const;
-	bool GetVisibleFlag() const	{ return bVisible; }
-	bool bCanEverTick = true;
+	void UpdateComponentToWorld();	// Relative 기반 World Update
+	void UpdateRelativeTransform();	// World 기반 Relative Update
 	
 private:
 	// (Relative Transform 변경시?)
@@ -99,6 +100,8 @@ private:
 	
 private:
 	bool bVisible = true;
+	bool bCanEverTick = true;
+	
 	// debug
 protected:
 	bool bIsPicked = false;

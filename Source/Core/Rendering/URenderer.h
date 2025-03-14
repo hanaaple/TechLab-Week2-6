@@ -4,14 +4,15 @@
 #include <d3d11.h>
 #include <memory>
 
-#include "UI.h"
+#include "UI.h" 
 #include "Core/Math/Vector.h"
-// #include "Object/Actor/Camera.h"
+
 #include "Core/Rendering/BufferCache.h"
 #include "Core/Math/Matrix.h"
 #include "Core/Engine.h"
 #include "Primitive/PrimitiveVertices.h"
 #include "Core/Math/Plane.h"
+#include "Core/Math/Transform.h"
 
 
 struct FVertexSimple;
@@ -82,6 +83,8 @@ public:
      */
     void RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, const BufferInfo& IndexBufferInfo) const;
 
+	void RenderBatch(TArray<UPrimitiveComponent*> BatchTargets, EPrimitiveMeshType MeshType);
+	
     /**
      * 정점 데이터로 Vertex Buffer를 생성합니다.
      * @param Vertices 버퍼로 변환할 정점 데이터 배열의 포인터
@@ -175,7 +178,6 @@ protected:
 
 	std::unique_ptr<FBufferCache> BufferCache;
 
-	FMatrix WorldMatrix;
     FMatrix ViewMatrix;
 	FMatrix ProjectionMatrix;
 

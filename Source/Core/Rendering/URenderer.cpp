@@ -253,6 +253,36 @@ void URenderer::RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, cons
     }
 }
 
+void URenderer::RenderBatch(TArray<UPrimitiveComponent*> BatchTargets, EPrimitiveMeshType MeshType)
+{
+    if (BufferCache == nullptr)
+    {
+        return;
+    }
+
+    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(MeshType);
+    if (VertexBufferInfo.GetBuffer() == nullptr)
+    {
+        return;
+    }    
+
+    //if (CurrentTopology != Info.GetTopology())
+    {
+        // TODO 토폴로지를 Engine, World(SceneManager) 단에서 넣어주는 경우 BufferInfo에서 Topology를 가지면 안됨.
+        DeviceContext->IASetPrimitiveTopology(VertexBufferInfo.GetTopology());
+        CurrentTopology = VertexBufferInfo.GetTopology();
+    }
+
+    //TODO11
+    // Vertex Color 유지, 커스텀 컬러 X
+    // UpdateConstant(UpdateInfo);
+    // 배칭 셰이더 파일을 따로 두냐, 어떻게 하냐에 따라 다를듯
+    
+    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(MeshType);
+    
+    RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
+}
+
 ID3D11Buffer* URenderer::CreateVertexBuffer(const FVertexSimple* Vertices, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage = D3D11_USAGE_DEFAULT) const
 {
     D3D11_BUFFER_DESC VertexBufferDesc = {};
@@ -298,10 +328,8 @@ void URenderer::UpdateConstant(const ConstantUpdateInfo& UpdateInfo) const
 
     D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR;
 
-    FMatrix MVP = 
-        FMatrix::Transpose(ProjectionMatrix) * 
-        FMatrix::Transpose(ViewMatrix) * 
-        FMatrix::Transpose(UpdateInfo.Transform.GetMatrix());    // 상수 버퍼를 CPU 메모리에 매핑
+    // 상수 버퍼를 CPU 메모리에 매핑
+    FMatrix MVP = FMatrix::Transpose(UpdateInfo.Transform.GetMatrix() * ViewMatrix * ProjectionMatrix);
 
     // D3D11_MAP_WRITE_DISCARD는 이전 내용을 무시하고 새로운 데이터로 덮어쓰기 위해 사용
     DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
@@ -546,7 +574,6 @@ void URenderer::CreateBufferCache()
 
 void URenderer::InitMatrix()
 {
-	WorldMatrix = FMatrix::Identity();
 	ViewMatrix = FMatrix::Identity();
 	ProjectionMatrix = FMatrix::Identity();
 }
@@ -623,7 +650,7 @@ void URenderer::UpdateConstantPicking(FVector4 UUIDColor) const
 
     D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR;
 
-    UUIDColor = FVector4(UUIDColor.X/255.0f, UUIDColor.Y/255.0f, UUIDColor.Z/255.0f, UUIDColor.W/255.0f);
+    UUIDColor = FVector4(UUIDColor.X, UUIDColor.Y, UUIDColor.Z, UUIDColor.W) / 255.0f;
     
     DeviceContext->Map(ConstantPickingBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
     {

@@ -15,6 +15,12 @@ void AActor::BeginPlay()
 	{
 		Component->BeginPlay();
 
+
+		//TODO11
+		// Primitive -> MeshComponent?
+		// OnAddComponent -> If Component is mesh (이건 어떻게하냐) -> RegistComponentToWorld
+		
+		// 자기가 메시 (Parent)인 경우 -> regist
 		if (UPrimitiveComponent* PrimitiveComponent = dynamic_cast<UPrimitiveComponent*>(Component))
 		{
 			PrimitiveComponent->RegisterComponentWithWorld(World);

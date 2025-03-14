@@ -7,7 +7,7 @@ struct FVertexSimple
     float R, G, B, A; // Color
 };
 
-enum class EPrimitiveComponentType : uint8
+enum class EPrimitiveMeshType : uint8
 {
 	EPT_None,
 	EPT_Triangle,
@@ -15,6 +15,7 @@ enum class EPrimitiveComponentType : uint8
 	EPT_Sphere,
 	EPT_Line,
 	EPT_BoundingBox,
+	EPT_GridLine,
 	EPT_Cylinder,
 	EPT_Cone,
 	EPT_Max,
