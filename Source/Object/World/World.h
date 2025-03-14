@@ -56,7 +56,7 @@ public:
 		RenderComponentTable[Component->GetType()].AddUnique(Component);
 	}
 	void RemoveRenderComponent(class UPrimitiveComponent* Component) { RenderComponentTable.Remove(Component->GetType()); }
-
+	const TArray<AActor*>& GetActors() const { return Actors; }
 private:
 	UWorldInfo GetWorldInfo() const;
 

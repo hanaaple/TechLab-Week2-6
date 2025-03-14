@@ -18,18 +18,46 @@ public:
 	UObject();
 	virtual ~UObject();
 public:
-	static FName GetClassFName() { return StaticClassFName_Internal(); }
-	static FName GetParentClassFName() { return StaticClassFName_Internal(); }
+	virtual FName GetClassFName() const{ return StaticClassFName_Internal(); }
+	virtual FName GetParentClassFName() const { return StaticClassFName_Internal(); }
 	//virtual const UObject* GetParentClass() const { return nullptr; }
-
-//
-	template<typename T>
-		requires std::derived_from<T, UObject>
-	static bool IsA()
+	virtual const UObject* GetParentClass() const { return nullptr; }
+	// Name 기반의 IsA 탐색 (기본적으로 FName을 이용한 비교)
+	bool IsA(const FName& ClassName) const
 	{
-		return IsAByName(T::GetClassFName());
+		const UObject* Current = this;
+		while (Current)
+		{
+			std::cout << "Checking: " << Current->GetClassFName().ToString().ToStdString() << std::endl;
+
+			if (Current->GetClassFName() == ClassName)
+			{
+				return true;
+			}
+			const UObject* Next = Current->GetParentClass();
+			if (Next == Current || Next == nullptr)
+			{
+				break;
+			}
+			Current = Next;
+		}
+		return false;
 	}
-	static bool IsA(FName ClassName){if (ClassName==GetClassFName())return true;return false;}
+	// Type 기반의 IsA 탐색 (템플릿을 이용한 비교)
+	template <typename T>
+	bool IsA() const
+	{
+		return IsA(T::StaticClassFName_Internal());
+	}
+//
+	/*template<typename T>
+		requires std::derived_from<T, UObject>
+	
+	static bool const IsA()
+	{
+		return IsA(T::StaticClassFName_Internal());
+	}
+	static bool const IsA(FName ClassName){if (ClassName==GetClassFName())return true;return false;}*/
 public:
 	uint32 GetUUID() const { return UUID; }
 	uint32 GetInternalIndex() const { return InternalIndex; }
@@ -39,8 +67,14 @@ public:
 public: \
 using Super = ParentClass; \
 static FName StaticClassFName_Internal() { return #ClassName; } \
-static FName GetClassFName() { return StaticClassFName_Internal(); } \
-static FName GetParentClassFName() { return Super::StaticClassFName_Internal(); } \
+virtual FName GetClassFName() const override { return StaticClassFName_Internal(); } \
+virtual FName GetParentClassFName() const override { return Super::StaticClassFName_Internal(); } \
+virtual const UObject* GetParentClass() const override \
+{ \
+static Super ParentInstance; /* 부모 인스턴스를 생성하여 반환 */ \
+return &ParentInstance; \
+}
+/*
 static bool IsA(FName ClassName) \
 { \
 if (GetClassFName() == ClassName) \
@@ -49,4 +83,4 @@ return Super::IsA(ClassName); \
 }\
 template<typename T> \
 requires std::derived_from<T, UObject>\
-static bool IsA() { return IsA(T::StaticClassFName_Internal()); }
+static bool IsA() { return IsA(T::StaticClassFName_Internal()); }*/

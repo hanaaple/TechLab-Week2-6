@@ -76,7 +76,7 @@ void UI::Update()
     
     RenderControlPanel();
     RenderPropertyWindow();
-
+    RenderSceneManager();
     Debug::ShowConsole(bWasWindowSizeUpdated, PreRatio, CurRatio);
 
     // ImGui 렌더링
@@ -108,7 +108,6 @@ void UI::OnUpdateWindowSize(UINT InScreenWidth, UINT InScreenHeight)
 void UI::RenderControlPanel()
 {
     ImGui::Begin("Jungle Control Panel");
-
     if (bWasWindowSizeUpdated)
     {
         auto* Window = ImGui::GetCurrentWindow();
@@ -402,3 +401,46 @@ void UI::RenderPropertyWindow()
     ImGui::End();
 }
 
+void UI::RenderSceneManager()
+{
+    ImGui::Begin("Scene Manager");
+
+    if (bWasWindowSizeUpdated)
+    {
+        auto* Window = ImGui::GetCurrentWindow();
+        ImGui::SetWindowPos(ResizeToScreen(Window->Pos));
+        ImGui::SetWindowSize(ResizeToScreen(Window->Size));
+    }
+
+    UWorld* World = UEngine::Get().GetWorld();
+    if (!World)
+    {
+        ImGui::Text("World is NULL");
+        ImGui::End();
+        return;
+    }
+
+    // ✅ 씬의 모든 액터 가져오기
+    const TArray<AActor*>& Actors = World->GetActors();
+    static AActor* SelectedActor = nullptr;
+
+    if (ImGui::CollapsingHeader("Primitives", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        for (AActor* Actor : Actors)
+        {
+            ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            if (Actor == SelectedActor)
+                nodeFlags |= ImGuiTreeNodeFlags_Selected;
+
+            ImGui::TreeNodeEx(*Actor->GetClassFName().ToString(), nodeFlags);
+
+            if (ImGui::IsItemClicked())
+            {
+                SelectedActor = Actor;
+                UE_LOG("Selected Actor: %s", *SelectedActor->GetClassFName().ToString());
+            }
+        }
+    }
+
+    ImGui::End();
+}

@@ -26,7 +26,7 @@ public:// UIWindows
     void RenderPrimitiveSelection();
     void RenderCameraSettings();
     void RenderPropertyWindow();
-
+	void RenderSceneManager();
 private:
 	// Mouse 전용
 	ImVec2 ResizeToScreenByCurrentRatio(const ImVec2& vec2) const
