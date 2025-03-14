@@ -90,7 +90,7 @@ public:
 
 public:
 	USceneComponent* GetRootComponent() const { return RootComponent; }
-	void SetRootComponent(USceneComponent* InRootComponent) { RootComponent = InRootComponent; }
+	virtual void SetRootComponent(USceneComponent* InRootComponent) { RootComponent = InRootComponent; }
 
 public:
 	void SetColor(FVector4 InColor);
