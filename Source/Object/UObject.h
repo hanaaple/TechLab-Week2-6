@@ -22,7 +22,12 @@ public:
 	static FName GetParentClassFName() { return StaticClassFName_Internal(); }
 	//virtual const UObject* GetParentClass() const { return nullptr; }
 
-	static bool IsA(FName ClassName){if (ClassName==GetClassFName())return true;return false;}
+	static bool IsAByName(FName ClassName){if (ClassName==GetClassFName())return true;return false;}
+	template<typename T>
+	bool IsA() const
+	{
+		return this->IsAByName(T::GetClassFName());
+	}
 public:
 	uint32 GetUUID() const { return UUID; }
 	uint32 GetInternalIndex() const { return InternalIndex; }
@@ -34,9 +39,11 @@ using Super = ParentClass; \
 static FName StaticClassFName_Internal() { return #ClassName; } \
 static FName GetClassFName() { return StaticClassFName_Internal(); } \
 static FName GetParentClassFName() { return Super::StaticClassFName_Internal(); } \
-static bool IsA(FName ClassName) \
+static bool IsAByName(FName ClassName) \
 { \
 if (GetClassFName() == ClassName) \
 return true; \
-return Super::IsA(ClassName); \
-}
+return Super::IsAByName(ClassName); \
+}\
+template<typename T> \
+bool IsA() const { return this->IsAByName(T::StaticClassFName_Internal()); }
