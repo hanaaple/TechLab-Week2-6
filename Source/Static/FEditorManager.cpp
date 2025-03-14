@@ -2,6 +2,7 @@
 #include "Core/Engine.h"
 #include "Object/World/World.h"
 #include "Object/Gizmo/GizmoHandle.h"
+#include "Object/Actor/ABoundingBox.h"
 #include "Core/Math/Vector.h"
 #include "Core/Math/Transform.h"
 
@@ -14,6 +15,11 @@ void FEditorManager::SelectActor(AActor* NewActor)
         GizmoHandle->SetActive(false);
     }
 
+    if (AABB == nullptr) {
+        AABB = UEngine::Get().GetWorld()->SpawnActor<ABoundingBoxActor>();
+        AABB->SetActive(false);
+    }
+
 	if (SelectedActor == NewActor)
 		return;
 	
@@ -21,6 +27,7 @@ void FEditorManager::SelectActor(AActor* NewActor)
     {
         SelectedActor->UnPick();
         GizmoHandle->SetActive(false);
+        AABB->SetActive(false);
     }
 
 	SelectedActor = NewActor;
@@ -29,6 +36,7 @@ void FEditorManager::SelectActor(AActor* NewActor)
     {
         SelectedActor->Pick();
         GizmoHandle->SetActive(true);
+        AABB->SetActive(true);
         //FVector Pos = SelectedActor->GetActorTransform().GetPosition();
 		//FTransform GizmoTransform = GizmoHandle->GetActorTransform();
 		//GizmoTransform.SetPosition(Pos);

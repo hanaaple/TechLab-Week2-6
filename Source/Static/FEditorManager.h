@@ -3,6 +3,8 @@
 
 class AGizmoHandle;
 
+class ABoundingBoxActor;
+
 class FEditorManager : public TSingleton<FEditorManager>
 {
 public:
@@ -21,4 +23,5 @@ private:
     ACamera* Camera = nullptr;
     AActor* SelectedActor = nullptr;
     AGizmoHandle* GizmoHandle = nullptr;
+    ABoundingBoxActor* AABB = nullptr;
 };

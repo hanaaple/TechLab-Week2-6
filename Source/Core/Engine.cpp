@@ -10,6 +10,7 @@
 #include "Object/Actor/Camera.h"
 #include "Object/Actor/Sphere.h"
 #include "Static/FEditorManager.h"
+#include "Object/Actor/AABBPicker.h"
 
 class AArrow;
 class APicker;
@@ -234,7 +235,9 @@ void UEngine::InitWorld()
     //World->SpawnActor<ASphere>();
     
     World->SpawnActor<AAxis>();
-    World->SpawnActor<APicker>();
+    //World->SpawnActor<APicker>();
+    World->SpawnActor<AAABBPicker>();
+    World->SpawnActor<AABBActor>();
 
 	World->BeginPlay();
 }

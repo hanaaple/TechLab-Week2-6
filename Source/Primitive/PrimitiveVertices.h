@@ -16,6 +16,7 @@ enum class EPrimitiveType : uint8
 	EPT_Line,
 	EPT_Cylinder,
 	EPT_Cone,
+	EPT_Box,
 	EPT_Max,
 };
 
