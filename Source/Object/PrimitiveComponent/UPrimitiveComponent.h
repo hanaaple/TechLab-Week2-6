@@ -4,6 +4,7 @@
 #include "Object/USceneComponent.h"
 #include "Primitive/PrimitiveVertices.h"
 #include "Core/Math/Plane.h"
+#include "Debug/DebugConsole.h"
 
 struct FAABB {
 	FVector Min;
@@ -11,8 +12,8 @@ struct FAABB {
 
 	void GenerateAABB(EPrimitiveMeshType type) {
 		TArray<FVertexSimple> vertices = UEngine::Get().GetRenderer()->BufferCache->GetVertexData(type);
-		FVector min = FVector(vertices[0].X, vertices[0].Y, vertices[0].Z);
-		FVector max = FVector(vertices[0].X, vertices[0].Y, vertices[0].Z);
+		FVector min = FVector(1000, 1000, 1000);
+		FVector max = -min;
 		for (const FVertexSimple& vertex : vertices) {
 			min.X = FMath::Min(min.X, vertex.X);
 			min.Y = FMath::Min(min.Y, vertex.Y);
@@ -20,23 +21,28 @@ struct FAABB {
 			max.X = FMath::Max(max.X, vertex.X);
 			max.Y = FMath::Max(max.Y, vertex.Y);
 			max.Z = FMath::Max(max.Z, vertex.Z);
+			UE_LOG("%f, %f, %f", vertex.X, vertex.Y, vertex.Z);
 		}
+		UE_LOG("min: %f, %f, %f", min.X, min.Y, min.Z);
+		UE_LOG("max: %f, %f, %f", max.X, max.Y, max.Z);
 		Min = min;
 		Max = max;
 	}
 
 	void UpdateAABB(FTransform transform, EPrimitiveMeshType type) {
 		TArray<FVertexSimple> vertices = UEngine::Get().GetRenderer()->BufferCache->GetVertexData(type);
-		FVector min = FVector(vertices[0].X, vertices[0].Y, vertices[0].Z);
-		FVector max = FVector(vertices[0].X, vertices[0].Y, vertices[0].Z);
+		FVector min = FVector(1000, 1000, 1000);
+		FVector max = -min;
 		FMatrix model =
 			FMatrix::GetScaleMatrix(transform.GetScale()) *
 			FMatrix::GetRotateMatrix(transform.GetEulerRotation()) *
 			FMatrix::GetTranslateMatrix(transform.GetPosition());
 
 		for (const FVertexSimple& vertex : vertices) {
-			FVector pos = FVector(vertex.X, vertex.Y, vertex.Z);
-			pos = model * pos;
+			FVector4 pos = FVector4(vertex.X, vertex.Y, vertex.Z, 1);
+			
+			
+			pos = pos * model;
 			min.X = FMath::Min(min.X, pos.X);
 			min.Y = FMath::Min(min.Y, pos.Y);
 			min.Z = FMath::Min(min.Z, pos.Z);

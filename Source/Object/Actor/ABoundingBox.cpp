@@ -48,7 +48,7 @@ void ABoundingBoxActor::UpdateTransform()
 		position = rootComp->GetComponentTransform().GetPosition();
 	}
 	FTransform transform = RootComponent->GetComponentTransform();
-	transform.SetPosition(position);
+	transform.SetPosition((Min + Max) / 2);
 	transform.SetScale(FVector(Max.X - Min.X, Max.Y - Min.Y, Max.Z - Min.Z));
 	transform.SetRotation(FVector(0, 0, 0));
 	RootComponent->SetRelativeTransform(transform);
