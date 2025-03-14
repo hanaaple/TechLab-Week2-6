@@ -11,7 +11,7 @@ void UPrimitiveComponent::BeginPlay()
 void UPrimitiveComponent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime); 
-	aabb.UpdateAABB(GetWorldTransform());
+	aabb.UpdateAABB(GetComponentTransform(), GetType());
 }
 
 void UPrimitiveComponent::UpdateConstantPicking(const URenderer& Renderer, const FVector4 UUIDColor)const

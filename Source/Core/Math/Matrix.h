@@ -32,6 +32,8 @@ struct alignas(16) FMatrix
 	FMatrix operator-=(const FMatrix& Other);
 	FMatrix operator*(const FMatrix& Other) const;
 	FMatrix operator*=(const FMatrix& Other);
+	FVector operator*(const FVector& Other) const;
+	FVector4 operator*(const FVector4& Other) const;
 	FMatrix operator*(float Other) const;
 	FMatrix operator*=(float Other);
 	bool operator==(const FMatrix& Other) const;

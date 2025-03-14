@@ -5,6 +5,7 @@
 #include "Object/Actor/Camera.h"
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 #include "Object/World/World.h"
+#include "Object/Actor/ABoundingBox.h"
 
 #include <windows.h>
 #include <cstdio>
@@ -33,14 +34,14 @@ void AAABBPicker::LateTick(float DeltaTime)
 		UEngine::Get().GetRenderer()->UpdateProjectionMatrix(camera);
 		FMatrix inverseProjection = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
 
-		FVector4 rayView = inverseProjection.TransformVector4(ndc);
+		FVector4 rayView = inverseProjection * ndc;
 		if (rayView.W != 0) {
 			rayView.X = rayView.X / rayView.W;
 			rayView.Y = rayView.Y / rayView.W;
 			rayView.Z = rayView.Z / rayView.W;
 			rayView.W = 1.0f;
 		}
-		FVector4 rayWorld = inverseView.TransformVector4(rayView);
+		FVector4 rayWorld = inverseView * rayView;
 		FVector rayDir = FVector(rayWorld.X, rayWorld.Y, rayWorld.Z) - rayOrigin;
 		rayDir.Normalize();
 		AActor* pickedActor = CheckCollision(rayOrigin, rayDir);
@@ -51,10 +52,12 @@ void AAABBPicker::LateTick(float DeltaTime)
 			if (pickedActor == FEditorManager::Get().GetSelectedActor())
 			{
 				FEditorManager::Get().SelectActor(nullptr);
+				FEditorManager::Get().GetAABB()->SetActorVisibility(false);
 			}
 			else
 			{
 				FEditorManager::Get().SelectActor(pickedActor);
+				UE_LOG("Pick - UUID: %d", pickedActor->GetUUID());
 			}
 		}
 	}
@@ -70,37 +73,50 @@ AActor* AAABBPicker::CheckCollision(FVector rayOrigin, FVector rayDir)
 {
 	UPrimitiveComponent* PickedComponent = nullptr;
 	UWorld* world = UEngine::Get().GetWorld();
-	TSet<UPrimitiveComponent*> components = world->GetRenderComponents();
+	TMap<EPrimitiveMeshType, TArray<UPrimitiveComponent*>> components = world->GetRenderComponents();
+	if (PickedComponent == nullptr) {
+		UE_LOG("nullptr init");
+	}
 	float dist = 10000;
-	for (UPrimitiveComponent* component : components) {
-		if (component != nullptr) {
-			if (component != nullptr) {
-				FAABB boundingBox = component->aabb;
+	for (auto& [MeshType, RenderComponents] : components) {
+		for (auto component : RenderComponents) {
+			if (component != nullptr && component->GetOwner()->GetTypeName() != "AABBActor") {
+				if (component != nullptr) {
+					FAABB boundingBox = component->aabb;
 
-				FVector center = (boundingBox.Max + boundingBox.Min) / 2.0f;
-				float t1 = (boundingBox.Min.X - rayOrigin.X) / rayDir.X;
-				float t2 = (boundingBox.Max.X - rayOrigin.X) / rayDir.X;
+					FVector center = (boundingBox.Max + boundingBox.Min) / 2.0f;
+					float t1 = (boundingBox.Min.X - rayOrigin.X) / rayDir.X;
+					float t2 = (boundingBox.Max.X - rayOrigin.X) / rayDir.X;
 
-				float t3 = (boundingBox.Min.Y - rayOrigin.Y) / rayDir.Y;
-				float t4 = (boundingBox.Max.Y - rayOrigin.Y) / rayDir.Y;
+					float t3 = (boundingBox.Min.Y - rayOrigin.Y) / rayDir.Y;
+					float t4 = (boundingBox.Max.Y - rayOrigin.Y) / rayDir.Y;
 
-				float t5 = (boundingBox.Min.Z - rayOrigin.Z) / rayDir.Z;
-				float t6 = (boundingBox.Max.Z - rayOrigin.Z) / rayDir.Z;
+					float t5 = (boundingBox.Min.Z - rayOrigin.Z) / rayDir.Z;
+					float t6 = (boundingBox.Max.Z - rayOrigin.Z) / rayDir.Z;
 
-				float tMax = FMath::Min(FMath::Max(t1, t2), FMath::Max(t3, t4));
-				tMax = FMath::Min(tMax, FMath::Max(t5, t6));
+					float tMax = FMath::Min(FMath::Max(t1, t2), FMath::Max(t3, t4));
+					tMax = FMath::Min(tMax, FMath::Max(t5, t6));
 
-				float tMin = FMath::Max(FMath::Min(t1, t2), FMath::Min(t3, t4));
-				tMin = FMath::Max(tMin, FMath::Min(t5, t6));
+					float tMin = FMath::Max(FMath::Min(t1, t2), FMath::Min(t3, t4));
+					tMin = FMath::Max(tMin, FMath::Min(t5, t6));
 
-				if (tMax >= tMin && tMax > 0) {
-					float objDist = FVector::Distance(center, rayOrigin);
-					if (objDist < dist) {
-						PickedComponent = component;
+					if (tMax >= tMin && tMax > 0) {
+						float objDist = FVector::Distance(center, rayOrigin);
+						if (objDist < dist) {
+							if (component->GetOwner()->GetTypeName() != "Actor") {
+								PickedComponent = component;
+								UE_LOG(PickedComponent->GetOwner()->GetTypeName());
+							}
+						}
 					}
 				}
 			}
 		}
 	}
-	return PickedComponent->GetOwner();
+	if (PickedComponent != nullptr) {
+		return PickedComponent->GetOwner();
+	}
+	else {
+		return nullptr;
+	}
 }

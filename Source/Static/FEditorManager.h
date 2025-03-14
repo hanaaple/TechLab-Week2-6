@@ -8,7 +8,7 @@ class ABoundingBoxActor;
 class FEditorManager : public TSingleton<FEditorManager>
 {
 public:
-    
+
     inline AActor* GetSelectedActor() const {return SelectedActor;}
     
     void SelectActor(AActor* NewActor);
@@ -19,6 +19,7 @@ public:
 
     AEditorGizmos* GetGizmoHandle() const {return GizmoHandle;}
     
+    ABoundingBoxActor* GetAABB() const { return AABB; }
 private:
     ACamera* Camera = nullptr;
     AActor* SelectedActor = nullptr;

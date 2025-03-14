@@ -12,9 +12,9 @@ public:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	void SetActive(bool bActive);
+	void SetActorVisibility(bool bNewActive);
 	void UpdateTransform();
-
+	virtual const char* GetTypeName() override;
 private:
 	bool bIsActive = false;
 	UBoundingBoxComp* boundingBoxComponent;

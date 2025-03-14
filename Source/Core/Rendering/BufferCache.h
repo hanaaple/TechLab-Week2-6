@@ -37,6 +37,7 @@ class FBufferCache
 private:
 	std::unordered_map <EPrimitiveMeshType, BufferInfo> VertexBufferCache;
 	std::unordered_map <EPrimitiveMeshType, BufferInfo> IndexBufferCache;
+	std::unordered_map <EPrimitiveMeshType, TArray<FVertexSimple>> VertexDataCache;
 
 public:
 	FBufferCache();
@@ -44,6 +45,7 @@ public:
 
 	BufferInfo& GetVertexBufferInfo(EPrimitiveMeshType Type);
 	BufferInfo& GetIndexBufferInfo(EPrimitiveMeshType Type);
+	TArray<FVertexSimple>& GetVertexData(EPrimitiveMeshType Type);
 
 	void Release();
 public:
@@ -54,4 +56,5 @@ public:
 private :
 	BufferInfo CreateVertexBufferInfo(EPrimitiveMeshType Type);
 	BufferInfo CreateIndexBufferInfo(EPrimitiveMeshType Type);
+	TArray<FVertexSimple> CreateVertexData(EPrimitiveMeshType Type);
 };

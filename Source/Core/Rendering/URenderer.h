@@ -175,7 +175,7 @@ protected:
     ID3D11DepthStencilState* GizmoDepthStencilState = nullptr; // 기즈모용 스텐실 스테이트. Z버퍼 테스트 하지않고 항상 앞에렌더
 	
 	// Buffer Cache
-
+public:
 	std::unique_ptr<FBufferCache> BufferCache;
 
     FMatrix ViewMatrix;

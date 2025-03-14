@@ -26,6 +26,7 @@ public:
 	bool GetVisibleFlag() const	{ return bVisible; }
 	void Pick(bool bPicked);
 	bool IsPicked() const { return bIsPicked; }
+	void SetVisibility(bool visibility);
 	
 	// Transform
 public:

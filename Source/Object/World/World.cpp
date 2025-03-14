@@ -6,6 +6,7 @@
 #include "Core/Input/PlayerInput.h"
 #include "Object/Actor/Camera.h"
 #include <Object/Gizmo/EditorGizmos.h>
+#include <Object/Actor/ABoundingBox.h>
 
 #include "Object/Actor/Cone.h"
 #include "Object/Actor/Cube.h"
@@ -202,7 +203,6 @@ void UWorld::ClearWorld()
 			DestroyActor(Actor);
 		}
 	}
-
 	UE_LOG("Clear World");
 }
 
@@ -291,6 +291,11 @@ void UWorld::LoadWorld(const char* SceneName)
 		
 		Actor->SetActorTransform(Transform);
 	}
+}
+
+TMap<EPrimitiveMeshType, TArray<UPrimitiveComponent*>> UWorld::GetRenderComponents()
+{
+	return RenderComponentTable;
 }
 
 UWorldInfo UWorld::GetWorldInfo() const

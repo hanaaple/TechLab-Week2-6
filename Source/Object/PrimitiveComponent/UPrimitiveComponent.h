@@ -9,8 +9,8 @@ struct FAABB {
 	FVector Min;
 	FVector Max;
 
-	void GenerateAABB(EPrimitiveType type) {
-		TArray<FVertexSimple> vertices = UEngine::Get().GetBufferCache()->GetVertexData(type);  
+	void GenerateAABB(EPrimitiveMeshType type) {
+		TArray<FVertexSimple> vertices = UEngine::Get().GetRenderer()->BufferCache->GetVertexData(type);
 		FVector min = FVector(vertices[0].X, vertices[0].Y, vertices[0].Z);
 		FVector max = FVector(vertices[0].X, vertices[0].Y, vertices[0].Z);
 		for (const FVertexSimple& vertex : vertices) {
@@ -25,18 +25,18 @@ struct FAABB {
 		Max = max;
 	}
 
-	void UpdateAABB(FTransform transform) {
-		TArray<FVertexSimple> vertices = UEngine::Get().GetBufferCache()->GetVertexData(type);
+	void UpdateAABB(FTransform transform, EPrimitiveMeshType type) {
+		TArray<FVertexSimple> vertices = UEngine::Get().GetRenderer()->BufferCache->GetVertexData(type);
 		FVector min = FVector(vertices[0].X, vertices[0].Y, vertices[0].Z);
 		FVector max = FVector(vertices[0].X, vertices[0].Y, vertices[0].Z);
 		FMatrix model =
 			FMatrix::GetScaleMatrix(transform.GetScale()) *
-			FMatrix::GetRotateMatrix(transform.GetRotation()) *
+			FMatrix::GetRotateMatrix(transform.GetEulerRotation()) *
 			FMatrix::GetTranslateMatrix(transform.GetPosition());
 
-		for (FVertexSimple vertex : vertices) {
-			FVector4 pos = FVector(vertex.X, vertex.Y, vertex.Z, 1.0f);
-			pos = model.TransformVector4(pos);
+		for (const FVertexSimple& vertex : vertices) {
+			FVector pos = FVector(vertex.X, vertex.Y, vertex.Z);
+			pos = model * pos;
 			min.X = FMath::Min(min.X, pos.X);
 			min.Y = FMath::Min(min.Y, pos.Y);
 			min.Z = FMath::Min(min.Z, pos.Z);
@@ -104,8 +104,8 @@ class UCubeComp : public UPrimitiveComponent
 public:
 	UCubeComp()
 	{
-		bCanBeRendered = true;
-		aabb.GenerateAABB(EPrimitiveType::EPT_Cube);
+		SetVisibility(true);
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cube);
 	}
 	virtual ~UCubeComp() = default;
 	EPrimitiveMeshType GetType() override
@@ -120,8 +120,8 @@ class USphereComp : public UPrimitiveComponent
 public:
 	USphereComp()
 	{
-		bCanBeRendered = true;
-		aabb.GenerateAABB(EPrimitiveType::EPT_Sphere);
+		SetVisibility(true);
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Sphere);
 	}
 	virtual ~USphereComp() = default;
 	EPrimitiveMeshType GetType() override
@@ -136,8 +136,8 @@ class UTriangleComp : public UPrimitiveComponent
 public:
 	UTriangleComp()
 	{
-		bCanBeRendered = true;
-		aabb.GenerateAABB(EPrimitiveType::EPT_Triangle);
+		SetVisibility(true);
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Triangle);
 	}
 	virtual ~UTriangleComp() = default;
 	EPrimitiveMeshType GetType() override
@@ -153,8 +153,8 @@ class ULineComp : public UPrimitiveComponent
 public:
 	ULineComp()
 	{
-		bCanBeRendered = true;
-		aabb.GenerateAABB(EPrimitiveType::EPT_Line);
+		SetVisibility(true);
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Line);
 	}
 	virtual ~ULineComp() = default;
 	EPrimitiveMeshType GetType() override
@@ -170,8 +170,8 @@ class UCylinderComp : public UPrimitiveComponent
 public:
 	UCylinderComp()
 	{
-		bCanBeRendered = true;
-		aabb.GenerateAABB(EPrimitiveType::EPT_Cylinder);
+		SetVisibility(true);
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cylinder);
 	}
 	virtual ~UCylinderComp() = default;
 	EPrimitiveMeshType GetType() override
@@ -186,8 +186,8 @@ class UConeComp : public UPrimitiveComponent
 public:
 	UConeComp()
 	{
-		bCanBeRendered = true;
-		aabb.GenerateAABB(EPrimitiveType::EPT_Cone);
+		SetVisibility(true);
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cone);
 	}
 	virtual ~UConeComp() = default;
 	EPrimitiveMeshType GetType() override
@@ -203,12 +203,12 @@ class UBoundingBoxComp : public UPrimitiveComponent
 public:
 	UBoundingBoxComp()
 	{
-		bCanBeRendered = false;
-		aabb.GenerateAABB(EPrimitiveType::EPT_Box);
+		SetVisibility(true);
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Box);
 	}
 	virtual ~UBoundingBoxComp() = default;
-	EPrimitiveType GetType() override
+	EPrimitiveMeshType GetType() override
 	{
-		return EPrimitiveType::EPT_Box;
+		return EPrimitiveMeshType::EPT_Box;
 	}
 };

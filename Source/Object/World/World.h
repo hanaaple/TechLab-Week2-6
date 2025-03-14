@@ -56,7 +56,7 @@ public:
 		RenderComponentTable[Component->GetType()].AddUnique(Component);
 	}
 	void RemoveRenderComponent(class UPrimitiveComponent* Component) { RenderComponentTable.Remove(Component->GetType()); }
-
+	TMap<EPrimitiveMeshType, TArray<UPrimitiveComponent*>> GetRenderComponents();
 private:
 	UWorldInfo GetWorldInfo() const;
 

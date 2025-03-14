@@ -12,29 +12,49 @@ ABoundingBoxActor::ABoundingBoxActor()
 	RootComponent = AABB;
 	Max = FVector(0.5f, 0.5f, 0.5f);
 	Min = FVector(-0.5f, -0.5f, -0.5f);
-	SetActive(false);
+	SetActorVisibility(false);
 }
 
 void ABoundingBoxActor::Tick(float DeltaTime)
 {
-	UpdateTransform();
+	AActor* SelectedActor = FEditorManager::Get().GetSelectedActor();
+	if (SelectedActor != nullptr && RootComponent && RootComponent->GetVisibleFlag())
+	{
+		UpdateTransform();
+	}
+	else if(SelectedActor == nullptr) {
+		SetActorVisibility(false);
+	}
+	AActor::Tick(DeltaTime);
 }
 
-void ABoundingBoxActor::SetActive(bool bActive)
+void ABoundingBoxActor::SetActorVisibility(bool bNewActive)
 {
-	bIsActive = bActive;
-	boundingBoxComponent->SetCanBeRendered(bActive);
+	if (RootComponent != nullptr) {
+		RootComponent->SetVisibility(bNewActive);
+	}
 }
+
 
 void ABoundingBoxActor::UpdateTransform()
 {
 	AActor* parentActor = FEditorManager::Get().GetSelectedActor();
+	FVector position;
 	if (parentActor != nullptr && !parentActor->IsGizmoActor()) {
-		Min = parentActor->GetRootComponent()->Children->aabb.Min;
-		Max = parentActor->GetRootComponent()->Children->aabb.Max;
+		USceneComponent* rootComp = parentActor->GetRootComponent();
+		UPrimitiveComponent* component = dynamic_cast<UPrimitiveComponent*>(rootComp);
+		Min = component->aabb.Min;
+		Max = component->aabb.Max;
+		position = rootComp->GetComponentTransform().GetPosition();
 	}
 	FTransform transform = RootComponent->GetComponentTransform();
+	transform.SetPosition(position);
 	transform.SetScale(FVector(Max.X - Min.X, Max.Y - Min.Y, Max.Z - Min.Z));
 	transform.SetRotation(FVector(0, 0, 0));
 	RootComponent->SetRelativeTransform(transform);
+}
+
+const char* ABoundingBoxActor::GetTypeName()
+{
+	return "AABBActor";
 }

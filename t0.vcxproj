@@ -165,6 +165,8 @@
     <ClCompile Include="Source\Core\Name\FName.cpp" />
     <ClCompile Include="Source\Core\Name\FNameEntry.cpp" />
     <ClCompile Include="Source\Core\Name\FNameTable.cpp" />
+    <ClCompile Include="Source\Object\Actor\AABBPicker.cpp" />
+    <ClCompile Include="Source\Object\Actor\ABoundingBox.cpp" />
     <ClCompile Include="Source\Object\Actor\Camera.cpp" />
     <ClCompile Include="Source\Object\Actor\Cone.cpp" />
     <ClCompile Include="Source\Object\Actor\Cylinder.cpp" />
@@ -211,6 +213,8 @@
     <ClInclude Include="Source\Core\Name\FName.h" />
     <ClInclude Include="Source\Core\Name\FNameEntry.h" />
     <ClInclude Include="Source\Core\Name\FNameTable.h" />
+    <ClInclude Include="Source\Object\Actor\AABBPicker.h" />
+    <ClInclude Include="Source\Object\Actor\ABoundingBox.h" />
     <ClInclude Include="Source\Object\Actor\Camera.h" />
     <ClInclude Include="Source\Object\Actor\Cone.h" />
     <ClInclude Include="Source\Object\Actor\Cube.h" />

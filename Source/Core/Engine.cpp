@@ -231,13 +231,12 @@ void UEngine::InitWorld()
     FEditorManager::Get().SetCamera(World->SpawnActor<ACamera>());
 
     //// Test
-    World->SpawnActor<AArrow>();
+    //World->SpawnActor<AArrow>();
     //World->SpawnActor<ASphere>();
     
     World->SpawnActor<AAxis>();
-    //World->SpawnActor<APicker>();
+    World->SpawnActor<APicker>();
     World->SpawnActor<AAABBPicker>();
-    World->SpawnActor<AABBActor>();
 
 	World->BeginPlay();
 }
