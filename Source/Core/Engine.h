@@ -11,14 +11,28 @@
 
 class UObject;
 class UWorld;
-
 enum class EScreenMode : uint8
 {
     Windowed,    // 창 모드
     Fullscreen,  // 전체화면 모드
     Borderless,  // 테두리 없는 창 모드
 };
+//View Mode (Lit, Unlit, Wireframe)
+enum class EViewModeIndex : uint32
+{
+    VMI_Lit,
+    VMI_Unlit,
+    VMI_Wireframe,
+};
 
+//Show Flag (프리미티브 렌더링 활성/비활성)
+enum class EEngineShowFlags : uint32
+{
+    SF_Primitives,
+    SF_Gizmo,
+    SF_BillboardText
+    
+};
 class UEngine : public TSingleton<UEngine>
 {
 public:
@@ -97,6 +111,21 @@ private:
 public:
     // TArray<std::shared_ptr<UObject>> GObjects;
     TMap<uint32, std::shared_ptr<UObject>> GObjects;
+public:
+    //View Mode 변경
+    void SetViewMode(EViewModeIndex NewMode);
+    EViewModeIndex GetViewMode() const { return ViewMode; }
+
+    void InitializeShowFlags();
+    //Show Flag 토글
+    void SetShowFlag(EEngineShowFlags Flag, bool bEnable);
+    bool IsShowFlagEnabled(EEngineShowFlags Flag) const;
+    const TMap<EEngineShowFlags, bool>& GetShowFlagStates() const;
+
+private:
+    EViewModeIndex ViewMode = EViewModeIndex::VMI_Lit;
+    //bool bShowPrimitives = true;
+    static TMap<EEngineShowFlags, bool> ShowFlagStates;
 };
 
 template <typename ObjectType> requires std::derived_from<ObjectType, UObject>

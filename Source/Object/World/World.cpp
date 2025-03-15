@@ -134,7 +134,9 @@ void UWorld::RenderMainTexture(URenderer& Renderer)
 	// 셰이더 변경 불가
 	Renderer.PrepareMain();
 	Renderer.PrepareMainShader();
-
+	//현재 View Mode 및 Show Flag 상태 가져오기
+	//EViewModeIndex CurrentViewMode = UEngine::Get().GetViewMode();
+    const auto& ShowFlagStates = UEngine::Get().GetShowFlagStates();
 	// 1. 같은 메쉬여도 배치 여부가 다를수 있다.
 	// 2. 다른 메쉬여도 같은 토폴로지, 같은 머터리얼과 셰이더, 트
 
@@ -146,7 +148,9 @@ void UWorld::RenderMainTexture(URenderer& Renderer)
 		TArray<UPrimitiveComponent*> BatchTargetComponents;
 		for (auto RenderComponent : RenderComponents)
 		{
-			//TODO11
+			AActor* OwnerActor = RenderComponent->GetOwner();
+
+			if (!Renderer.ShouldRenderActor(OwnerActor)) continue;
 			// 나쁜점 -> Render를 추상화해서 사용하는데 이걸 막음
 			if (RenderComponent->GetIsBatch() && RenderComponent->GetVisibleFlag())
 			{
@@ -154,11 +158,11 @@ void UWorld::RenderMainTexture(URenderer& Renderer)
 			}
 			else
 			{
-				if (RenderComponent->GetOwner()->GetDepth() > 0)
+				if (OwnerActor->GetDepth() > 0)
 				{
 					continue;
 				}
-				uint32 depth = RenderComponent->GetOwner()->GetDepth();
+				uint32 depth = OwnerActor->GetDepth();
 				// RenderComponent->UpdateConstantDepth(Renderer, depth);
 				RenderComponent->Render();
 			}

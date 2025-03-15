@@ -1,7 +1,6 @@
 ﻿#include "UI.h"
 
 #include <algorithm>
-#include <Object/Gizmo/Axis.h>
 
 #include "Object/Actor/Camera.h"
 #include "URenderer.h"
@@ -78,6 +77,7 @@ void UI::Update()
     RenderControlPanel();
     RenderPropertyWindow();
     RenderSceneManager();
+    RenderSettingsPanel();
     Debug::ShowConsole(bWasWindowSizeUpdated, PreRatio, CurRatio);
 
     // ImGui 렌더링
@@ -109,6 +109,7 @@ void UI::OnUpdateWindowSize(UINT InScreenWidth, UINT InScreenHeight)
 void UI::RenderControlPanel()
 {
     ImGui::Begin("Jungle Control Panel");
+
     if (bWasWindowSizeUpdated)
     {
         auto* Window = ImGui::GetCurrentWindow();
@@ -337,7 +338,7 @@ void UI::RenderPropertyWindow()
         
         float position[] = { selectedTransform.GetPosition().X, selectedTransform.GetPosition().Y, selectedTransform.GetPosition().Z };
         float scale[] = { selectedTransform.GetScale().X, selectedTransform.GetScale().Y, selectedTransform.GetScale().Z };
-        
+
         if (ImGui::DragFloat3("Translation", position, 0.1f))
         {
             selectedTransform.SetPosition(position[0], position[1], position[2]);
@@ -382,7 +383,7 @@ void UI::RenderPropertyWindow()
         for (auto Child : AttachedChildren)
         {
             ImGui::Text("UUID: %u", Child->GetUUID());
-            //std::cout<<Child->GetClassFName()<<std::endl;
+
             auto childTransform = Child->GetRelativeTransform();
             float childPosition[] = { childTransform.GetPosition().X, childTransform.GetPosition().Y, childTransform.GetPosition().Z};
             float childScale[] = { childTransform.GetScale().X, childTransform.GetScale().Y, childTransform.GetScale().Z };
@@ -468,6 +469,7 @@ void UI::RenderSceneManager()
         }
         FEditorManager::Get().SelectActor(selectedActor);
     }
+    
 
     ImGui::End();
 }
@@ -496,4 +498,75 @@ void UI::RenderComponentTree(USceneComponent* Component)
         ImGui::TreePop();
     }
     ImGui::PopID();
+}
+
+void UI::RenderSettingsPanel()
+{
+    ImGui::Begin("Render Settings");
+
+    // 2개의 컬럼 생성 (가운데 세로줄 포함)
+    ImGui::Columns(2, nullptr, true);
+
+    //첫 번째 컬럼 (View Mode 및 Grid Spacing)
+    ImGui::Text("View Mode");
+    ImGui::NextColumn(); // 다음 컬럼 이동
+
+    //두 번째 컬럼 (Show Flags)
+    ImGui::Text("Show Flags");
+    ImGui::NextColumn(); // 다음 컬럼 이동
+
+    //View Mode 드롭다운 (좌측 컬럼)
+    ImGui::PushItemWidth(-1);
+    static const char* ViewModeNames[] = { "Lit", "Unlit", "Wireframe" };
+    static int CurrentViewMode = static_cast<int>(UEngine::Get().GetViewMode());
+
+    if (ImGui::Combo("##ViewMode", &CurrentViewMode, ViewModeNames, IM_ARRAYSIZE(ViewModeNames)))
+    {
+        UEngine::Get().SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
+    }
+    ImGui::PopItemWidth();
+    ImGui::NextColumn();
+
+    //Show Flag 체크박스 (우측 컬럼)
+    const auto& ShowFlagStates = UEngine::Get().GetShowFlagStates();
+    for (auto& [Flag, bEnabled] : ShowFlagStates)
+    {
+        const char* FlagName = nullptr;
+        bool bChecked = bEnabled;
+
+        switch (Flag)
+        {
+        case EEngineShowFlags::SF_Primitives:
+            FlagName = "Primitives";
+            break;
+        case EEngineShowFlags::SF_Gizmo:
+            FlagName = "Gizmo";
+            break;
+        case EEngineShowFlags::SF_BillboardText:
+            FlagName = "Billboard Text";
+            break;
+        }
+
+        if (ImGui::Checkbox(FlagName, &bChecked))
+        {
+            UEngine::Get().SetShowFlag(Flag, bChecked);
+        }
+    }
+
+    //체크박스 목록 아래 가로 구분선 추가
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    //Grid Spacing UI (양쪽 컬럼을 합쳐 넓게 표시)
+    ImGui::Columns(1); // 컬럼 분할 해제 → 전체 너비 사용
+
+    static float GridSpacing = 10.0f; //임시 변수 (나중에 실제 값으로 변경 필요)
+    
+    ImGui::Text("Grid Spacing");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(-1);
+    ImGui::SliderFloat("##GridSpacing", &GridSpacing, 1.0f, 100.0f, "%.1f");
+
+    ImGui::End();
 }
