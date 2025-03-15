@@ -220,6 +220,10 @@ public:
 	void EnableLitMode();
 	void EnableUnlitMode();
 	const void ApplyCurrentRasterizerState() const;
+
+	//렌더링 여부 반환
+	static bool ShouldRenderActor(const AActor* OwnerActor);
+
 private:
 	ID3D11RasterizerState* WireframeRasterizerState = nullptr;
 	ID3D11RasterizerState* SolidRasterizerState = nullptr;

@@ -504,24 +504,31 @@ void UI::RenderSettingsPanel()
 {
     ImGui::Begin("Render Settings");
 
-    //  View Mode 선택
+    // 2개의 컬럼 생성 (가운데 세로줄 포함)
+    ImGui::Columns(2, nullptr, true);
+
+    //첫 번째 컬럼 (View Mode 및 Grid Spacing)
+    ImGui::Text("View Mode");
+    ImGui::NextColumn(); // 다음 컬럼 이동
+
+    //두 번째 컬럼 (Show Flags)
+    ImGui::Text("Show Flags");
+    ImGui::NextColumn(); // 다음 컬럼 이동
+
+    //View Mode 드롭다운 (좌측 컬럼)
+    ImGui::PushItemWidth(-1);
     static const char* ViewModeNames[] = { "Lit", "Unlit", "Wireframe" };
     static int CurrentViewMode = static_cast<int>(UEngine::Get().GetViewMode());
 
-    if (ImGui::Combo("View Mode", &CurrentViewMode, ViewModeNames, IM_ARRAYSIZE(ViewModeNames)))
+    if (ImGui::Combo("##ViewMode", &CurrentViewMode, ViewModeNames, IM_ARRAYSIZE(ViewModeNames)))
     {
         UEngine::Get().SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
     }
+    ImGui::PopItemWidth();
+    ImGui::NextColumn();
 
-    //  Show Flag 토글
-    /*
-    static bool bShowPrimitives = UEngine::Get().IsShowFlagEnabled(EEngineShowFlags::SF_Primitives);
-    if (ImGui::Checkbox("Show Primitives", &bShowPrimitives))
-    {
-        UEngine::Get().SetShowFlag(EEngineShowFlags::SF_Primitives,bShowPrimitives);
-    }*/
-    const auto& ShowFlagStates = UEngine::Get().GetShowFlagStates(); // ✅ 엔진에서 상태 가져오기
-
+    //Show Flag 체크박스 (우측 컬럼)
+    const auto& ShowFlagStates = UEngine::Get().GetShowFlagStates();
     for (auto& [Flag, bEnabled] : ShowFlagStates)
     {
         const char* FlagName = nullptr;
@@ -545,5 +552,21 @@ void UI::RenderSettingsPanel()
             UEngine::Get().SetShowFlag(Flag, bChecked);
         }
     }
+
+    //체크박스 목록 아래 가로 구분선 추가
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    //Grid Spacing UI (양쪽 컬럼을 합쳐 넓게 표시)
+    ImGui::Columns(1); // 컬럼 분할 해제 → 전체 너비 사용
+
+    static float GridSpacing = 10.0f; //임시 변수 (나중에 실제 값으로 변경 필요)
+    
+    ImGui::Text("Grid Spacing");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(-1);
+    ImGui::SliderFloat("##GridSpacing", &GridSpacing, 1.0f, 100.0f, "%.1f");
+
     ImGui::End();
 }

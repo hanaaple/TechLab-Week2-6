@@ -869,3 +869,24 @@ const void URenderer::ApplyCurrentRasterizerState() const
         }
     }
 }
+
+bool URenderer::ShouldRenderActor(const AActor* OwnerActor)
+{
+    if (!OwnerActor) return false;
+    const auto& ShowFlags = UEngine::Get().GetShowFlagStates();
+
+    //Primitives 비활성화 + Gizmo가 아닌 경우 렌더링 X
+    if (!ShowFlags[EEngineShowFlags::SF_Primitives] && !OwnerActor->IsGizmoActor()) 
+        return false;
+
+    //Gizmo 비활성화 + Gizmo인 경우 렌더링 X
+    if (!ShowFlags[EEngineShowFlags::SF_Gizmo] && OwnerActor->IsGizmoActor()) 
+        return false;
+    /*
+    //BillboardText 비활성화 + BillboardText인 경우 렌더링 X
+    if (!ShowFlags[EEngineShowFlags::SF_BillboardText] && OwnerActor->IsBillboardTextActor()) 
+        return false;
+    */
+
+    return true;
+}
