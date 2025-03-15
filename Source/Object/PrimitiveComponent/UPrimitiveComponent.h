@@ -1,9 +1,8 @@
 ﻿#pragma once
 
-#include "Core/Engine.h"
+#include "Core/Rendering/Material.h"
+#include "Core/Rendering/URenderer.h"
 #include "Object/USceneComponent.h"
-#include "Primitive/PrimitiveVertices.h"
-#include "Core/Math/Plane.h"
 
 
 class UPrimitiveComponent : public USceneComponent
@@ -11,18 +10,53 @@ class UPrimitiveComponent : public USceneComponent
 	using Super = USceneComponent;
     DECLARE_OBJECT(UPrimitiveComponent,Super)
 public:
-	UPrimitiveComponent() = default;
+	UPrimitiveComponent() : Super(), Depth(0)
+	{
+	}
 	virtual ~UPrimitiveComponent() = default;
 
 public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void Render();
+	virtual void Activate() override;
+	virtual void Deactivate() override;
+
+	
 	void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
 	void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
-	virtual void Render();
 	
-	virtual EPrimitiveMeshType GetType() { return EPrimitiveMeshType::EPT_None; }
+	virtual EPrimitiveMeshType GetMeshType() { return EPrimitiveMeshType::EPT_None; }
 
+
+public:
+	void SetDepth(int InDepth) { Depth = InDepth; }
+	int GetDepth() const { return Depth; }
+
+	//FMaterial* Material;
+
+	// Texture* texture;
+
+	
+	//UMaterial* GetMaterial() const { return CurFrameData.Material; }
+	//void SetMaterial(UMaterial* NewMaterial);
+	//void SetTopology(D3D11_PRIMITIVE_TOPOLOGY NewTopologyType);
+	//D3D11_PRIMITIVE_TOPOLOGY GetTopology() const { return CurFrameData.TopologyType; }
+	//ERenderMode GetERenderMode() const { return RenderMode; }
+
+private:
+	void CheckIsDirty();
+
+protected:
+	//FRenderData PrevFrameData;
+	//FRenderData CurFrameData;
+	
+	bool bIsDirty;	// if Material or Topology .... Changes
+
+public:
+	void* Texture;
+
+public:
 	bool IsUseVertexColor() const { return bUseVertexColor; }
 
 	void SetCustomColor(const FVector4& InColor)
@@ -36,21 +70,13 @@ public:
 		bUseVertexColor = bUse;
 	}
 	const FVector4& GetCustomColor() const { return CustomColor; }
-
-public:
-	virtual void RegisterComponentWithWorld(class UWorld* World);
-
-public:
-
-	void SetIsOrthoGraphic(bool IsOrtho) { bIsOrthoGraphic = IsOrtho; }
-	bool GetIsOrthoGraphic() { return bIsOrthoGraphic;}
-	bool GetIsBatch() {return bIsBatch; }
-
+	
 protected:
 	bool bUseVertexColor = true;
-	bool bIsOrthoGraphic = false;
-	bool bIsBatch = false;
 	FVector4 CustomColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+private:
+	uint32 Depth;
 };
 
 class UCubeComp : public UPrimitiveComponent
@@ -60,7 +86,7 @@ class UCubeComp : public UPrimitiveComponent
 public:
 	UCubeComp() = default;
 	virtual ~UCubeComp() = default;
-	EPrimitiveMeshType GetType() override
+	EPrimitiveMeshType GetMeshType() override
 	{
 		return EPrimitiveMeshType::EPT_Cube;
 	}
@@ -73,7 +99,7 @@ class USphereComp : public UPrimitiveComponent
 public:
 	USphereComp() = default;
 	virtual ~USphereComp() = default;
-	EPrimitiveMeshType GetType() override
+	EPrimitiveMeshType GetMeshType() override
 	{
 		return EPrimitiveMeshType::EPT_Sphere;
 	}
@@ -86,7 +112,7 @@ class UTriangleComp : public UPrimitiveComponent
 public:
 	UTriangleComp() = default;
 	virtual ~UTriangleComp() = default;
-	EPrimitiveMeshType GetType() override
+	EPrimitiveMeshType GetMeshType() override
 	{
 		return EPrimitiveMeshType::EPT_Triangle;
 	}
@@ -100,7 +126,7 @@ class ULineComp : public UPrimitiveComponent
 public:
 	ULineComp() = default;
 	virtual ~ULineComp() = default;
-	EPrimitiveMeshType GetType() override
+	EPrimitiveMeshType GetMeshType() override
 	{
 		return EPrimitiveMeshType::EPT_Line;
 	}
@@ -114,7 +140,7 @@ class UCylinderComp : public UPrimitiveComponent
 public:
 	UCylinderComp() = default;
 	virtual ~UCylinderComp() = default;
-	EPrimitiveMeshType GetType() override
+	EPrimitiveMeshType GetMeshType() override
 	{
 		return EPrimitiveMeshType::EPT_Cylinder;
 	}
@@ -127,7 +153,7 @@ class UConeComp : public UPrimitiveComponent
 public:
 	UConeComp() = default;
 	virtual ~UConeComp() = default;
-	EPrimitiveMeshType GetType() override
+	EPrimitiveMeshType GetMeshType() override
 	{
 		return EPrimitiveMeshType::EPT_Cone;
 	}

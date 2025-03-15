@@ -1,17 +1,13 @@
 ﻿#include "FEditorManager.h"
-#include "Core/Engine.h"
 #include "Object/World/World.h"
 #include "Object/Gizmo/EditorGizmos.h"
-#include "Core/Math/Vector.h"
-#include "Core/Math/Transform.h"
 
 void FEditorManager::SelectActor(AActor* NewActor)
 {
-    if (GizmoHandle == nullptr)
+    if (ControlGizmo == nullptr)
     {
-		GizmoHandle = UEngine::Get().GetWorld()->SpawnActor<AEditorGizmos>();
-    	GizmoHandle->SetDepth(1);
-        GizmoHandle->SetActorVisibility(false);
+    	ControlGizmo = UEngine::Get().GetWorld()->SpawnActor<AEditorGizmos>();
+    	ControlGizmo->SetActorVisibility(false);
     }
 
 	if (SelectedActor == NewActor)
@@ -20,7 +16,7 @@ void FEditorManager::SelectActor(AActor* NewActor)
     if (SelectedActor != nullptr && SelectedActor != NewActor)
     {
         SelectedActor->UnPick();
-        GizmoHandle->SetActorVisibility(false);
+        ControlGizmo->SetActorVisibility(false);
     }
 
 	SelectedActor = NewActor;
@@ -28,7 +24,7 @@ void FEditorManager::SelectActor(AActor* NewActor)
     if (SelectedActor != nullptr)
     {
         SelectedActor->Pick();
-        GizmoHandle->SetActorVisibility(true);
+        ControlGizmo->SetActorVisibility(true);
         //FVector Pos = SelectedActor->GetActorTransform().GetPosition();
 		//FTransform GizmoTransform = GizmoHandle->GetActorTransform();
 		//GizmoTransform.SetPosition(Pos);

@@ -14,7 +14,7 @@ AArrow::AArrow()
 	ConeComp->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 1.0f), FVector(), FVector(1.2f, 1.2f, 0.5f)));
 
 	ConeComp->SetupAttachment(RootComponent, EEndPlayReason::EAttachmentRule::KeepWorld);
-	/*
+	
 	for (int i=0;i<10;i++)
 	{
 		UConeComp* ConeComp1 = AddComponent<UConeComp>();
@@ -27,7 +27,7 @@ AArrow::AArrow()
 			//ConeComp1->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 1.0f), FVector(), FVector(1.2f, 1.2f, 0.5f)));
 			ConeComp2->SetupAttachment(ConeComp1, EEndPlayReason::EAttachmentRule::KeepWorld);
 		}
-	}*/
+	}
 }
 
 void AArrow::BeginPlay()

@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "Core/Container/String.h"
-#include "Core/Name/FNameEntry.h"
 #include "Core/Name/FNameTable.h"
 
 class FName

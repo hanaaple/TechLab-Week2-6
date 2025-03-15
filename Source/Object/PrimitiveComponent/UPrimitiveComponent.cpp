@@ -1,7 +1,21 @@
 ﻿#include "UPrimitiveComponent.h"
 #include "Object/World/World.h"
-#include "Object/Actor/Actor.h"
 
+void UPrimitiveComponent::Activate()
+{
+	Super::Activate();
+
+	GetOwner()->GetWorld()->AddRenderComponent(this);
+}
+
+void UPrimitiveComponent::Deactivate()
+{
+	USceneComponent::Deactivate();
+
+	UWorld* World = GetOwner()->GetWorld();
+	
+	World->RemoveRenderComponent(this);
+}
 
 void UPrimitiveComponent::BeginPlay()
 {
@@ -10,17 +24,9 @@ void UPrimitiveComponent::BeginPlay()
 
 void UPrimitiveComponent::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime); 
-}
+	Super::Tick(DeltaTime);
 
-void UPrimitiveComponent::UpdateConstantPicking(const URenderer& Renderer, const FVector4 UUIDColor)const
-{
-	Renderer.UpdateConstantPicking(UUIDColor);
-}
-
-void UPrimitiveComponent::UpdateConstantDepth(const URenderer& Renderer, const int Depth)const
-{
-	Renderer.UpdateConstantDepth(Depth);
+	CheckIsDirty();
 }
 
 void UPrimitiveComponent::Render()
@@ -45,7 +51,61 @@ void UPrimitiveComponent::Render()
 	Renderer->RenderPrimitive(this);
 }
 
-void UPrimitiveComponent::RegisterComponentWithWorld(UWorld* World)
+// void UPrimitiveComponent::SetMaterial(UMaterial* NewMaterial)
+// {
+// 	// 이거의 타이밍? 
+// 	// if (CurFrameData.Material != NewMaterial)
+// 	// {
+// 	// 	if (bIsDirty == false)
+// 	// 	{
+// 	// 		PrevFrameData = CurFrameData;
+// 	// 		bIsDirty = true;
+// 	// 	}
+// 	// 	
+// 	// 	CurFrameData.Material = NewMaterial;
+// 	// }
+// }
+//
+// void UPrimitiveComponent::SetTopology(D3D11_PRIMITIVE_TOPOLOGY NewTopologyType)
+// {
+// 	// if (CurFrameData.TopologyType != NewTopologyType)
+// 	// {
+// 	// 	if (bIsDirty == false)
+// 	// 	{
+// 	// 		PrevFrameData = CurFrameData;
+// 	// 		bIsDirty = true;
+// 	// 	}
+// 	// 	CurFrameData.TopologyType = NewTopologyType;
+// 	// }
+//}
+
+void UPrimitiveComponent::UpdateConstantPicking(const URenderer& Renderer, const FVector4 UUIDColor)const
 {
-	World->AddRenderComponent(this);
+	Renderer.UpdateConstantPicking(UUIDColor);
+}
+
+void UPrimitiveComponent::UpdateConstantDepth(const URenderer& Renderer, const int Depth)const
+{
+	Renderer.UpdateConstantDepth(Depth);
+}
+
+void UPrimitiveComponent::CheckIsDirty()
+{
+
+	// 1. 변경사항이 있는가 -> batch나 Instancing이었던 경우 Update해줘야됨.
+
+	// 2. 변경사항이 없다. ->
+
+	// 2.1. 배치나 인스턴싱인 경우
+	// 2.2. 개별 렌더링 -> 바로 렌더링
+
+	
+	if (bIsDirty)
+	{
+		
+	}
+	else
+	{
+		
+	}
 }

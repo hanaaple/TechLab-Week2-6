@@ -1,18 +1,15 @@
 ﻿#include "Engine.h"
 
 #include <iostream>
+
 #include "Object/ObjectFactory.h"
 #include "Object/World/World.h"
-#include "Debug/DebugConsole.h"
 #include "Object/Gizmo/Axis.h"
 #include "Core/Input/PlayerInput.h"
 #include "Core/Input/PlayerController.h"
 #include "Object/Actor/Camera.h"
-#include "Object/Actor/Sphere.h"
 #include "Static/FEditorManager.h"
 
-class AArrow;
-class APicker;
 // ImGui WndProc 정의
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -140,7 +137,8 @@ void UEngine::Run()
 		if (World)
 		{
 			World->Tick(DeltaTime);
-			World->Render();
+		    World->UpdateRenderComponents();
+		    World->Render();
 		    World->LateTick(DeltaTime);
 		}
 
@@ -231,7 +229,6 @@ void UEngine::InitWorld()
 
     //// Test
     World->SpawnActor<AArrow>();
-    //World->SpawnActor<ASphere>();
     
     World->SpawnActor<AAxis>();
     World->SpawnActor<APicker>();
