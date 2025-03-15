@@ -442,8 +442,7 @@ void UI::RenderSceneManager()
 
         for (AActor* Actor : Actors)
         {
-            if (Actor->IsA<AEditorGizmos>() || Actor->IsA<ACamera>()||Actor->IsA<AAxis>()||Actor->IsA<APicker>())continue;
-
+            if (Actor->IsGizmoActor() || Actor->IsA<ACamera>()||Actor->IsA<AAxis>()||Actor->IsA<APicker>())continue;
             ImGui::PushID(Actor->GetUUID()); // 각 오브젝트 UUID를 ID로 사용
 
             ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
