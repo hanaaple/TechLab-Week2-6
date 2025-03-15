@@ -1,7 +1,6 @@
 ﻿#include "UI.h"
 
 #include <algorithm>
-#include <Object/Gizmo/Axis.h>
 
 #include "Object/Actor/Camera.h"
 #include "URenderer.h"
@@ -78,6 +77,7 @@ void UI::Update()
     RenderControlPanel();
     RenderPropertyWindow();
     RenderSceneManager();
+    RenderSettingsPanel();
     Debug::ShowConsole(bWasWindowSizeUpdated, PreRatio, CurRatio);
 
     // ImGui 렌더링
@@ -109,6 +109,7 @@ void UI::OnUpdateWindowSize(UINT InScreenWidth, UINT InScreenHeight)
 void UI::RenderControlPanel()
 {
     ImGui::Begin("Jungle Control Panel");
+
     if (bWasWindowSizeUpdated)
     {
         auto* Window = ImGui::GetCurrentWindow();
@@ -337,7 +338,7 @@ void UI::RenderPropertyWindow()
         
         float position[] = { selectedTransform.GetPosition().X, selectedTransform.GetPosition().Y, selectedTransform.GetPosition().Z };
         float scale[] = { selectedTransform.GetScale().X, selectedTransform.GetScale().Y, selectedTransform.GetScale().Z };
-        
+
         if (ImGui::DragFloat3("Translation", position, 0.1f))
         {
             selectedTransform.SetPosition(position[0], position[1], position[2]);
@@ -382,7 +383,7 @@ void UI::RenderPropertyWindow()
         for (auto Child : AttachedChildren)
         {
             ImGui::Text("UUID: %u", Child->GetUUID());
-            //std::cout<<Child->GetClassFName()<<std::endl;
+
             auto childTransform = Child->GetRelativeTransform();
             float childPosition[] = { childTransform.GetPosition().X, childTransform.GetPosition().Y, childTransform.GetPosition().Z};
             float childScale[] = { childTransform.GetScale().X, childTransform.GetScale().Y, childTransform.GetScale().Z };
@@ -468,6 +469,7 @@ void UI::RenderSceneManager()
         }
         FEditorManager::Get().SelectActor(selectedActor);
     }
+    
 
     ImGui::End();
 }
@@ -496,4 +498,52 @@ void UI::RenderComponentTree(USceneComponent* Component)
         ImGui::TreePop();
     }
     ImGui::PopID();
+}
+
+void UI::RenderSettingsPanel()
+{
+    ImGui::Begin("Render Settings");
+
+    //  View Mode 선택
+    static const char* ViewModeNames[] = { "Lit", "Unlit", "Wireframe" };
+    static int CurrentViewMode = static_cast<int>(UEngine::Get().GetViewMode());
+
+    if (ImGui::Combo("View Mode", &CurrentViewMode, ViewModeNames, IM_ARRAYSIZE(ViewModeNames)))
+    {
+        UEngine::Get().SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
+    }
+
+    //  Show Flag 토글
+    /*
+    static bool bShowPrimitives = UEngine::Get().IsShowFlagEnabled(EEngineShowFlags::SF_Primitives);
+    if (ImGui::Checkbox("Show Primitives", &bShowPrimitives))
+    {
+        UEngine::Get().SetShowFlag(EEngineShowFlags::SF_Primitives,bShowPrimitives);
+    }*/
+    const auto& ShowFlagStates = UEngine::Get().GetShowFlagStates(); // ✅ 엔진에서 상태 가져오기
+
+    for (auto& [Flag, bEnabled] : ShowFlagStates)
+    {
+        const char* FlagName = nullptr;
+        bool bChecked = bEnabled;
+
+        switch (Flag)
+        {
+        case EEngineShowFlags::SF_Primitives:
+            FlagName = "Primitives";
+            break;
+        case EEngineShowFlags::SF_Gizmo:
+            FlagName = "Gizmo";
+            break;
+        case EEngineShowFlags::SF_BillboardText:
+            FlagName = "Billboard Text";
+            break;
+        }
+
+        if (ImGui::Checkbox(FlagName, &bChecked))
+        {
+            UEngine::Get().SetShowFlag(Flag, bChecked);
+        }
+    }
+    ImGui::End();
 }

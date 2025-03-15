@@ -134,7 +134,9 @@ void UWorld::RenderMainTexture(URenderer& Renderer)
 	// 셰이더 변경 불가
 	Renderer.PrepareMain();
 	Renderer.PrepareMainShader();
-
+	//현재 View Mode 및 Show Flag 상태 가져오기
+	//EViewModeIndex CurrentViewMode = UEngine::Get().GetViewMode();
+	bool bShowPrimitives = UEngine::Get().IsShowFlagEnabled(EEngineShowFlags::SF_Primitives);
 	// 1. 같은 메쉬여도 배치 여부가 다를수 있다.
 	// 2. 다른 메쉬여도 같은 토폴로지, 같은 머터리얼과 셰이더, 트
 
@@ -146,6 +148,7 @@ void UWorld::RenderMainTexture(URenderer& Renderer)
 		TArray<UPrimitiveComponent*> BatchTargetComponents;
 		for (auto RenderComponent : RenderComponents)
 		{
+			if (!bShowPrimitives&&!RenderComponent->GetOwner()->IsGizmoActor())continue;
 			//TODO11
 			// 나쁜점 -> Render를 추상화해서 사용하는데 이걸 막음
 			if (RenderComponent->GetIsBatch() && RenderComponent->GetVisibleFlag())

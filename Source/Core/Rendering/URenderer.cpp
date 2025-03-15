@@ -171,8 +171,8 @@ void URenderer::Prepare() const
 
     // Rasterization할 Viewport를 설정 
     DeviceContext->RSSetViewports(1, &ViewportInfo);
-    DeviceContext->RSSetState(RasterizerState);
-
+    //DeviceContext->RSSetState(RasterizerState);
+    ApplyCurrentRasterizerState();
     /**
      * OutputMerger 설정
      * 렌더링 파이프라인의 최종 단계로써, 어디에 그릴지(렌더 타겟)와 어떻게 그릴지(블렌딩)를 지정
@@ -818,4 +818,54 @@ void URenderer::RenderPickingTexture()
     SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer));
     DeviceContext->CopyResource(backBuffer, PickingFrameBuffer);
     backBuffer->Release();
+}
+void URenderer::EnableWireframeMode()
+{
+    if (!WireframeRasterizerState)
+    {
+        D3D11_RASTERIZER_DESC WireframeDesc = {};
+        WireframeDesc.FillMode = D3D11_FILL_WIREFRAME;  // 와이어프레임 모드
+        WireframeDesc.CullMode = D3D11_CULL_BACK;
+        WireframeDesc.FrontCounterClockwise = FALSE;
+        Device->CreateRasterizerState(&WireframeDesc, &WireframeRasterizerState);
+    }
+    //DeviceContext->RSSetState(WireframeRasterizerState);
+}
+
+void URenderer::EnableLitMode()
+{
+    if (!SolidRasterizerState)
+    {
+        D3D11_RASTERIZER_DESC SolidDesc = {};
+        SolidDesc.FillMode = D3D11_FILL_SOLID;  //  일반 모드
+        SolidDesc.CullMode = D3D11_CULL_BACK;
+        SolidDesc.FrontCounterClockwise = FALSE;
+        Device->CreateRasterizerState(&SolidDesc, &SolidRasterizerState);
+    }
+    //DeviceContext->RSSetState(SolidRasterizerState);
+}
+
+void URenderer::EnableUnlitMode()
+{
+    EnableLitMode();  //  Unlit 모드는 Rasterizer 상태는 유지, Shader만 변경
+}
+//현재 View Mode에 맞는 Rasterizer State 적용
+const void URenderer::ApplyCurrentRasterizerState() const
+{
+    EViewModeIndex CurrentViewMode = UEngine::Get().GetViewMode();
+
+    if (CurrentViewMode == EViewModeIndex::VMI_Wireframe)
+    {
+        if (WireframeRasterizerState)
+        {
+            DeviceContext->RSSetState(WireframeRasterizerState);
+        }
+    }
+    else
+    {
+        if (SolidRasterizerState)
+        {
+            DeviceContext->RSSetState(SolidRasterizerState);
+        }
+    }
 }

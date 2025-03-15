@@ -213,5 +213,16 @@ public:
 
 	void RenderPickingTexture();
 	FMatrix GetProjectionMatrix() const { return ProjectionMatrix; }
+
+public:
+	//View Mode 변경 함수
+	void EnableWireframeMode();
+	void EnableLitMode();
+	void EnableUnlitMode();
+	const void ApplyCurrentRasterizerState() const;
+private:
+	ID3D11RasterizerState* WireframeRasterizerState = nullptr;
+	ID3D11RasterizerState* SolidRasterizerState = nullptr;
 #pragma endregion picking
+
 };

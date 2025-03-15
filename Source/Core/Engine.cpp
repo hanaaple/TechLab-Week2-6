@@ -85,8 +85,8 @@ void UEngine::Initialize(
     InitializedScreenHeight = ScreenHeight;
     
     ui.Initialize(WindowHandle, *Renderer, ScreenWidth, ScreenHeight);
-    
-	UE_LOG("Engine Initialized!");
+    InitializeShowFlags();
+    UE_LOG("Engine Initialized!");
 }
 
 void UEngine::Run()
@@ -273,4 +273,56 @@ UObject* UEngine::GetObjectByUUID(uint32 InUUID) const
         return Obj->get();
     }
     return nullptr;
+}
+
+TMap<EEngineShowFlags, bool> UEngine::ShowFlagStates;
+
+void UEngine::InitializeShowFlags()
+{
+    ShowFlagStates.Add(EEngineShowFlags::SF_Primitives, true);
+    ShowFlagStates.Add(EEngineShowFlags::SF_Gizmo, true);
+    ShowFlagStates.Add(EEngineShowFlags::SF_BillboardText, true);
+}
+
+//  View Mode 변경
+void UEngine::SetViewMode(EViewModeIndex NewMode)
+{
+    ViewMode = NewMode;
+    // View Mode에 따른 셰이더 변경
+    if (ViewMode == EViewModeIndex::VMI_Wireframe)
+    {
+        Renderer->EnableWireframeMode();
+    }
+    else if (ViewMode == EViewModeIndex::VMI_Unlit)
+    {
+        Renderer->EnableUnlitMode();
+    }
+    else
+    {
+        Renderer->EnableLitMode();
+    }
+}
+
+//  Show Flag 설정
+void UEngine::SetShowFlag(EEngineShowFlags Flag, bool bEnable)
+{
+    ShowFlagStates[Flag] = bEnable;
+    //bShowPrimitives = bEnable;
+    //Renderer->SetShowPrimitives(bShowPrimitives); //  렌더러에 전달
+}
+
+//  Show Flag 상태 확인
+bool UEngine::IsShowFlagEnabled(EEngineShowFlags Flag) const
+{
+    if (Flag == EEngineShowFlags::SF_Primitives)
+    {
+        return ShowFlagStates[Flag];
+        //return bShowPrimitives;
+    }
+    return false;
+}
+
+const TMap<EEngineShowFlags, bool>& UEngine::GetShowFlagStates() const
+{
+    return ShowFlagStates;
 }
