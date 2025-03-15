@@ -21,7 +21,6 @@
 #include "Object/Gizmo/EditorGizmos.h"
 
 
-
 void UI::Initialize(HWND hWnd, const URenderer& Renderer, UINT ScreenWidth, UINT ScreenHeight)
 {
     // ImGui 초기화
@@ -39,10 +38,10 @@ void UI::Initialize(HWND hWnd, const URenderer& Renderer, UINT ScreenWidth, UINT
     ImGui_ImplWin32_Init(hWnd);
     ImGui_ImplDX11_Init(Renderer.GetDevice(), Renderer.GetDeviceContext());
 
-	ScreenSize = ImVec2(static_cast<float>(ScreenWidth), static_cast<float>(ScreenHeight));
+    ScreenSize = ImVec2(static_cast<float>(ScreenWidth), static_cast<float>(ScreenHeight));
     InitialScreenSize = ScreenSize;
     bIsInitialized = true;
-    
+
     io.DisplaySize = ScreenSize;
 
     PreRatio = GetRatio();
@@ -52,7 +51,8 @@ void UI::Initialize(HWND hWnd, const URenderer& Renderer, UINT ScreenWidth, UINT
 void UI::Update()
 {
     POINT mousePos;
-    if (GetCursorPos(&mousePos)) {
+    if (GetCursorPos(&mousePos))
+    {
         HWND hwnd = GetActiveWindow();
         ScreenToClient(hwnd, &mousePos);
 
@@ -61,7 +61,7 @@ void UI::Update()
         //UE_LOG("MousePos: (%.1f, %.1f), DisplaySize: (%.1f, %.1f)\n",CalculatedMousePos.x, CalculatedMousePos.y, GetRatio().x, GetRatio().y);
     }
 
-    
+
     // ImGui Frame 생성
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
@@ -73,7 +73,7 @@ void UI::Update()
         CurRatio = GetRatio();
         UE_LOG("Current Ratio: %f, %f", CurRatio.x, CurRatio.y);
     }
-    
+
     RenderControlPanel();
     RenderPropertyWindow();
     RenderSceneManager();
@@ -100,8 +100,8 @@ void UI::OnUpdateWindowSize(UINT InScreenWidth, UINT InScreenHeight)
     // ImGUI 리소스 다시 생성
     ImGui_ImplDX11_InvalidateDeviceObjects();
     ImGui_ImplDX11_CreateDeviceObjects();
-   // ImGui 창 크기 업데이트
-	ScreenSize = ImVec2(static_cast<float>(InScreenWidth), static_cast<float>(InScreenHeight));
+    // ImGui 창 크기 업데이트
+    ScreenSize = ImVec2(static_cast<float>(InScreenWidth), static_cast<float>(InScreenHeight));
 
     bWasWindowSizeUpdated = true;
 }
@@ -117,14 +117,14 @@ void UI::RenderControlPanel()
         ImGui::SetWindowPos(ResizeToScreen(Window->Pos));
         ImGui::SetWindowSize(ResizeToScreen(Window->Size));
     }
-    
+
     ImGui::Text("Hello, Jungle World!");
     ImGui::Text("FPS: %.3f (what is that ms)", ImGui::GetIO().Framerate);
 
     RenderMemoryUsage();
     RenderPrimitiveSelection();
     RenderCameraSettings();
-    
+
     ImGui::End();
 }
 
@@ -155,14 +155,14 @@ void UI::RenderMemoryUsage()
 
 void UI::RenderPrimitiveSelection()
 {
-    const char* items[] = { "Sphere", "Cube", "Cylinder", "Cone" };
+    const char* items[] = {"Sphere", "Cube", "Cylinder", "Cone"};
 
     ImGui::Combo("Primitive", &currentItem, items, IM_ARRAYSIZE(items));
 
     if (ImGui::Button("Spawn"))
     {
         UWorld* World = UEngine::Get().GetWorld();
-        for (int i = 0 ;  i < NumOfSpawn; i++)
+        for (int i = 0; i < NumOfSpawn; i++)
         {
             if (strcmp(items[currentItem], "Sphere") == 0)
             {
@@ -195,19 +195,19 @@ void UI::RenderPrimitiveSelection()
     uint32 bufferSize = 100;
     char* SceneNameInput = new char[bufferSize];
     strcpy_s(SceneNameInput, bufferSize, *World->SceneName);
-    
-	if (ImGui::InputText("Scene Name", SceneNameInput, bufferSize))
-	{
-		World->SceneName = SceneNameInput;
-	}
-    
+
+    if (ImGui::InputText("Scene Name", SceneNameInput, bufferSize))
+    {
+        World->SceneName = SceneNameInput;
+    }
+
     if (ImGui::Button("New Scene"))
     {
         World->ClearWorld();
     }
     if (ImGui::Button("Save Scene"))
     {
-        World->SaveWorld();   
+        World->SaveWorld();
     }
     if (ImGui::Button("Load Scene"))
     {
@@ -251,7 +251,7 @@ void UI::RenderCameraSettings()
         Camera->SetFieldOfVew(FOV);
     }
 
-    float NearFar[2] = { Camera->GetNear(), Camera->GetFar() };
+    float NearFar[2] = {Camera->GetNear(), Camera->GetFar()};
     if (ImGui::DragFloat2("Near, Far", NearFar, 0.1f))
     {
         NearFar[0] = FMath::Max(0.01f, NearFar[0]);
@@ -274,7 +274,7 @@ void UI::RenderCameraSettings()
             }
         }
     }
-    
+
     FVector CameraPosition = Camera->GetActorTransform().GetPosition();
     if (ImGui::DragFloat3("Camera Location", reinterpret_cast<float*>(&CameraPosition), 0.1f))
     {
@@ -284,14 +284,14 @@ void UI::RenderCameraSettings()
     }
 
     FVector PrevEulerAngle = Camera->GetActorTransform().GetEulerRotation();
-    FVector UIEulerAngle = { PrevEulerAngle.X, PrevEulerAngle.Y, PrevEulerAngle.Z };
+    FVector UIEulerAngle = {PrevEulerAngle.X, PrevEulerAngle.Y, PrevEulerAngle.Z};
     if (ImGui::DragFloat3("Camera Rotation", reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
     {
         FTransform Transform = Camera->GetActorTransform();
 
         //FVector DeltaEulerAngle = UIEulerAngle - PrevEulerAngle;
         //Transform.Rotate(DeltaEulerAngle);
-        
+
         UIEulerAngle.Y = FMath::Clamp(UIEulerAngle.Y, -Camera->MaxYDegree, Camera->MaxYDegree);
         Transform.SetRotation(UIEulerAngle);
         Camera->SetActorTransform(Transform);
@@ -306,6 +306,7 @@ void UI::RenderCameraSettings()
     ImGui::Text("Camera GetUp(): (%.2f %.2f %.2f)", Up.X, Up.Y, Up.Z);
     ImGui::Text("Camera GetRight(): (%.2f %.2f %.2f)", Right.X, Right.Y, Right.Z);
 }
+
 void UI::RenderSettingsPanel()
 {
     ImGui::Begin("Render Settings");
@@ -323,7 +324,7 @@ void UI::RenderSettingsPanel()
 
     //View Mode 드롭다운 (좌측 컬럼)
     ImGui::PushItemWidth(-1);
-    static const char* ViewModeNames[] = { "Lit", "Unlit", "Wireframe" };
+    static const char* ViewModeNames[] = {"Lit", "Unlit", "Wireframe"};
     static int CurrentViewMode = static_cast<int>(UEngine::Get().GetViewMode());
 
     if (ImGui::Combo("##ViewMode", &CurrentViewMode, ViewModeNames, IM_ARRAYSIZE(ViewModeNames)))
@@ -368,7 +369,7 @@ void UI::RenderSettingsPanel()
     ImGui::Columns(1); // 컬럼 분할 해제 → 전체 너비 사용
 
     static float GridSpacing = 10.0f; //임시 변수 (나중에 실제 값으로 변경 필요)
-    
+
     ImGui::Text("Grid Spacing");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(-1);
@@ -376,6 +377,7 @@ void UI::RenderSettingsPanel()
 
     ImGui::End();
 }
+
 void UI::RenderPropertyWindow()
 {
     ImGui::Begin("Properties");
@@ -402,8 +404,12 @@ void UI::RenderPropertyWindow()
             selectedActor->SetName(FName(SceneNameInput));
         }
 
-        float position[] = { selectedTransform.GetPosition().X, selectedTransform.GetPosition().Y, selectedTransform.GetPosition().Z };
-        float scale[] = { selectedTransform.GetScale().X, selectedTransform.GetScale().Y, selectedTransform.GetScale().Z };
+        float position[] = {
+            selectedTransform.GetPosition().X, selectedTransform.GetPosition().Y, selectedTransform.GetPosition().Z
+        };
+        float scale[] = {
+            selectedTransform.GetScale().X, selectedTransform.GetScale().Y, selectedTransform.GetScale().Z
+        };
 
         if (ImGui::DragFloat3("Translation", position, 0.1f))
         {
@@ -429,8 +435,11 @@ void UI::RenderPropertyWindow()
         if (FEditorManager::Get().GetGizmoHandle() != nullptr)
         {
             AEditorGizmos* Gizmo = FEditorManager::Get().GetGizmoHandle();
-            const char* GizmoTypeStr = (Gizmo->GetGizmoType() == EGizmoType::Translate) ? "Translate" :
-                                       (Gizmo->GetGizmoType() == EGizmoType::Rotate) ? "Rotate" : "Scale";
+            const char* GizmoTypeStr = (Gizmo->GetGizmoType() == EGizmoType::Translate)
+                                           ? "Translate"
+                                           : (Gizmo->GetGizmoType() == EGizmoType::Rotate)
+                                           ? "Rotate"
+                                           : "Scale";
             ImGui::Text("GizmoType: %s", GizmoTypeStr);
         }
 
@@ -441,7 +450,7 @@ void UI::RenderPropertyWindow()
         if (USceneComponent* RootComponent = selectedActor->GetRootComponent())
         {
             RenderComponentTree(RootComponent, true,
-                    true,ImGuiTreeNodeFlags_OpenOnArrow);
+                                true, ImGuiTreeNodeFlags_OpenOnArrow);
             //RenderComponentTree(RootComponent, true);  // Transform UI 표시 활성화
         }
     }
@@ -484,7 +493,7 @@ void UI::RenderSceneManager()
                 nodeFlags |= ImGuiTreeNodeFlags_Selected;
 
             bool nodeOpen = ImGui::TreeNodeEx(*Actor->GetName().ToString(), nodeFlags);
-            
+
             if (ImGui::IsItemClicked())
             {
                 selectedActor = Actor;
@@ -493,7 +502,8 @@ void UI::RenderSceneManager()
             if (nodeOpen)
             {
                 RenderComponentTree(Actor->GetRootComponent(), false,
-                    false,ImGuiTreeNodeFlags_OpenOnArrow|ImGuiTreeNodeFlags_DefaultOpen); // Transform UI 표시 X
+                                    true, ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen);
+                // Transform UI 표시 X
                 ImGui::TreePop();
             }
 
@@ -506,13 +516,14 @@ void UI::RenderSceneManager()
     ImGui::End();
 }
 
-void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform,bool bShowUUID,ImGuiTreeNodeFlags nodeFlags)
+void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bool bShowUUID,
+                             ImGuiTreeNodeFlags nodeFlags)
 {
     if (!Component) return;
 
     //ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
     FString ChildLabel = Component->GetName().ToString();
-    if (bShowUUID) ChildLabel+= ("/" + FString::FromInt(Component->GetUUID()));
+    if (bShowUUID) ChildLabel += ("/" + FString::FromInt(Component->GetUUID()));
 
     ImGui::PushID(Component->GetUUID());
     bool bNodeOpen = ImGui::TreeNodeEx(*ChildLabel, nodeFlags);
@@ -522,8 +533,13 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform,boo
         if (bShowTransform)
         {
             FTransform ComponentTransform = Component->GetRelativeTransform();
-            float position[] = { ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y, ComponentTransform.GetPosition().Z };
-            float scale[] = { ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z };
+            float position[] = {
+                ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y,
+                ComponentTransform.GetPosition().Z
+            };
+            float scale[] = {
+                ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z
+            };
 
             if (ImGui::DragFloat3(("Translation##" + std::to_string(Component->GetUUID())).c_str(), position, 0.1f))
             {
@@ -533,7 +549,8 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform,boo
 
             FVector PrevEulerAngle = ComponentTransform.GetEulerRotation();
             FVector UIEulerAngle = PrevEulerAngle;
-            if (ImGui::DragFloat3(("Rotation##" + std::to_string(Component->GetUUID())).c_str(), reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
+            if (ImGui::DragFloat3(("Rotation##" + std::to_string(Component->GetUUID())).c_str(),
+                                  reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
             {
                 ComponentTransform.SetRotation(UIEulerAngle);
                 Component->SetRelativeTransform(ComponentTransform);
@@ -544,12 +561,18 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform,boo
                 ComponentTransform.SetScale(scale[0], scale[1], scale[2]);
                 Component->SetRelativeTransform(ComponentTransform);
             }
+            ComponentTransform = Component->GetComponentTransform();
+            ImGui::Text("%u, World Position %f, %f, %f", Component->GetUUID(), ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y, ComponentTransform.GetPosition().Z);
+            ImGui::Text("%u, World Rotation %f, %f, %f", Component->GetUUID(), ComponentTransform.GetEulerRotation().X, ComponentTransform.GetEulerRotation().Y, ComponentTransform.GetEulerRotation().Z);
+            ImGui::Text("%u, World Scale %f, %f, %f", Component->GetUUID(), ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z);
         }
 
         for (auto* Child : Component->GetAttachChildren())
         {
+            if (!bShowTransform && Child->GetAttachChildren().Num() == 0)nodeFlags |= ImGuiTreeNodeFlags_Leaf;
+            else nodeFlags &= ~ImGuiTreeNodeFlags_Leaf;
             if (Child)
-                RenderComponentTree(Child, bShowTransform,bShowUUID,nodeFlags);
+                RenderComponentTree(Child, bShowTransform, bShowUUID, nodeFlags);
         }
 
         ImGui::TreePop();
