@@ -452,18 +452,18 @@ void UI::RenderSceneManager()
 
             bool nodeOpen = ImGui::TreeNodeEx(*Actor->GetName().ToString(), nodeFlags);
             // 자식 오브젝트 트리 노드 표시
-            
+            if (ImGui::IsItemClicked())
+            {
+                selectedActor = Actor;
+                UE_LOG("Selected Actor: %s", *selectedActor->GetClassFName().ToString());
+            }
             if (nodeOpen)
             {
                 RenderComponentTree(Actor->GetRootComponent());
                 ImGui::TreePop();
             }
         
-            if (ImGui::IsItemClicked())
-            {
-                selectedActor = Actor;
-                UE_LOG("Selected Actor: %s", *selectedActor->GetClassFName().ToString());
-            }
+            
             ImGui::PopID(); // ID 스택 해제
 
         }
