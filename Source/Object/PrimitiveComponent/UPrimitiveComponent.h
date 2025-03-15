@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "Core/Rendering/Material.h"
 #include "Core/Rendering/URenderer.h"
 #include "Object/USceneComponent.h"
 
@@ -31,6 +32,12 @@ public:
 public:
 	void SetDepth(int InDepth) { Depth = InDepth; }
 	int GetDepth() const { return Depth; }
+
+	//FMaterial* Material;
+
+	// Texture* texture;
+
+	
 	//UMaterial* GetMaterial() const { return CurFrameData.Material; }
 	//void SetMaterial(UMaterial* NewMaterial);
 	//void SetTopology(D3D11_PRIMITIVE_TOPOLOGY NewTopologyType);
@@ -45,6 +52,9 @@ protected:
 	//FRenderData CurFrameData;
 	
 	bool bIsDirty;	// if Material or Topology .... Changes
+
+public:
+	void* Texture;
 
 public:
 	bool IsUseVertexColor() const { return bUseVertexColor; }

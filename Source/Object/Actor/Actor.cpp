@@ -8,6 +8,7 @@ void AActor::BeginPlay()
 	for (auto& Component : Components)
 	{
 		Component->BeginPlay();
+		Component->Activate();
 	}
 }
 

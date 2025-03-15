@@ -15,11 +15,6 @@ void UPrimitiveComponent::Deactivate()
 	UWorld* World = GetOwner()->GetWorld();
 	
 	World->RemoveRenderComponent(this);
-
-	if (World->ContainsZIgnoreComponent(this))
-	{
-		World->RemoveZIgnoreComponent(this);
-	}
 }
 
 void UPrimitiveComponent::BeginPlay()

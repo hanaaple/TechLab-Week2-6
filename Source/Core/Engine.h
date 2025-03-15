@@ -44,7 +44,7 @@ public:
      */
     void Shutdown();
 
-	class URenderer* GetRenderer() const { return Renderer.get(); }
+	URenderer* GetRenderer() const { return Renderer.get(); }
 	float GetScreenRatio() const { return static_cast<float>(ScreenWidth) / ScreenHeight; }
     int GetScreenWidth() const { return ScreenWidth; }
     int GetScreenHeight() const { return ScreenHeight; }
@@ -90,7 +90,7 @@ private:
 	UI ui;
 
 private:
-    class UWorld* World;
+    UWorld* World;
 
 public:
     // TArray<std::shared_ptr<UObject>> GObjects;

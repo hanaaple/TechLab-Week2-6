@@ -31,6 +31,8 @@ void URenderer::Release()
     ReleaseDepthStencilBuffer();
     ReleaseDeviceAndSwapChain();
     ReleaseBufferCache();
+    ReleaseSamplerState();
+    ReleaseTextureSRVs();
 }
 
 void URenderer::CreateShader()
@@ -222,6 +224,9 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
         //CurrentTopology = PrimitiveComp->GetTopology();
     }
 
+
+    // TODO CurrentTexture null 여부에 따라 Constant Buffer에 넘겨주기
+    
     ConstantUpdateInfo UpdateInfo{ 
         PrimitiveComp->GetComponentTransform(), 
         PrimitiveComp->GetCustomColor(), 
@@ -233,15 +238,17 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
     RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
 }
 
-void URenderer::RenderBatch(TArray<UPrimitiveComponent*> BatchTargets, EPrimitiveMeshType MeshType)
+void URenderer::RenderBatch(FBatchRenderContext& BatchRenderContext)
 {
     if (BufferCache == nullptr)
     {
         return;
     }
 
-    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(MeshType);
-    if (VertexBufferInfo.GetBuffer() == nullptr)
+    //TODO if Depth > 0 Check
+    
+    //BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(MeshType);
+    // if (VertexBufferInfo.GetBuffer() == nullptr)
     {
         return;
     }    
@@ -258,9 +265,9 @@ void URenderer::RenderBatch(TArray<UPrimitiveComponent*> BatchTargets, EPrimitiv
     // UpdateConstant(UpdateInfo);
     // 배칭 셰이더 파일을 따로 두냐, 어떻게 하냐에 따라 다를듯
     
-    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(MeshType);
+    //BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(MeshType);
     
-    RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
+    //RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
 }
 
 void URenderer::RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, const BufferInfo& IndexBufferInfo) const
@@ -570,6 +577,40 @@ void URenderer::CreateBufferCache()
     BufferCache = std::make_unique<FBufferCache>();
 }
 
+void URenderer::CreateSamplerState()
+{
+    D3D11_SAMPLER_DESC samplerDesc = {};
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    Device->CreateSamplerState(&samplerDesc, &SamplerState);
+}
+
+void URenderer::ReleaseSamplerState()
+{
+    if (SamplerState)
+    {
+        SamplerState->Release();
+        SamplerState = nullptr;
+    }
+}
+
+void URenderer::ReleaseTextureSRVs()
+{
+    // if (TextureSRV)
+    // {
+    //     TextureSRV->Release();
+    //     TextureSRV = nullptr;
+    // }
+    //
+    // // 텍스처 객체 해제
+    // if (texture)
+    // {
+    //     texture->Release();
+    //     texture = nullptr;
+    // }
+}
+
 void URenderer::InitMatrix()
 {
 	ViewMatrix = FMatrix::Identity();
@@ -686,6 +727,11 @@ void URenderer::PrepareMain()
 void URenderer::PrepareMainShader()
 {
     DeviceContext->PSSetShader(SimplePixelShader, nullptr, 0);
+
+
+    // shader 파일에 샘플러 바인딩
+    //DeviceContext->PSSetSamplers()
+    //DeviceContext->PSSetShaderResources(0, 0, nullptr);
 }
 
 FVector4 URenderer::GetPixel(FVector MPos)
@@ -806,6 +852,31 @@ void URenderer::OnUpdateWindowSize(int Width, int Height)
         // 뎁스 스텐실 버퍼를 다시 생성
         ReleaseDepthStencilBuffer();
         CreateDepthStencilBuffer();
+    }
+}
+
+void URenderer::PrepareTexture(void* Texture)
+{
+    // 여기서 ResourceView를 들고 있고 매핑된 거로 가져오기,샘플러 유지
+    if (Texture == CurrentTexture)
+    {
+        return;
+    }
+
+    CurrentTexture = Texture;
+    ID3D11ShaderResourceView* TextureSRV = nullptr;
+    //ID3D11ShaderResourceView* TextureSRV = TextureLoader::Get().GetTextureSRV(Texture);
+    //ID3D11ShaderResourceView* TextureSRV = TextureMap[Texture];
+
+    if (Texture != nullptr)
+    {
+        DeviceContext->PSSetShaderResources(0, 1, &TextureSRV);
+        DeviceContext->PSSetSamplers(0, 1, &SamplerState);   
+    }
+    else
+    {
+        DeviceContext->PSSetShaderResources(0, 1, nullptr);
+        DeviceContext->PSSetSamplers(0, 1, nullptr);
     }
 }
 

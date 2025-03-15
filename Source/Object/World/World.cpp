@@ -94,16 +94,7 @@ void UWorld::Render()
 	Renderer->UpdateViewMatrix(cam->GetActorTransform());
 	Renderer->UpdateProjectionMatrix(cam);
 	
-	// if (APlayerInput::Get().GetMouseDown(false))
-	// {
-	// 	RenderPickingTexture(*Renderer);
-	// }
-	
 	RenderMainTargets(*Renderer);
-
-	
-	// DisplayPickingTexture(*Renderer);
-
 }
 
 // void UWorld::RenderPickingTexture(URenderer& Renderer)
@@ -150,17 +141,18 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 {
 	// Depth Stencil, RenderTarget, BlendState 변경
 	Renderer.PrepareMain();
+	Renderer.PrepareMainShader();	// 우선 Shader 1개로만
 	
 	//for (const auto& MaterialMapped : BatchRenders)
 	{
 		//for (const auto& TopologyMapped : MaterialMapped.Value)
-		// for (auto& TopologyMapped : BatchRenders)
-		// {
-		// 	for (auto& [_, BatchContext] : TopologyMapped.Value)
-		// 	{
-		// 		DrawBatch(Renderer, BatchContext);
-		// 	}
-		// }
+		for (auto& TopologyMapped : BatchRenders)
+		{
+			for (auto& [_, BatchContext] : TopologyMapped.Value)
+			{
+				DrawBatch(Renderer, BatchContext);
+			}
+		}
 	}
 
 	//for (const auto& MaterialMapped : InstancingRenders)
@@ -174,17 +166,15 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 		// 	}
 		// }
 	}
-	
-	// 셰이더 변경 불가
-	Renderer.PrepareMain();
-	Renderer.PrepareMainShader();
-	for (auto* RenderTarget : IndividualRenders)
+
+	TArray<UPrimitiveComponent*> ZIgnoreRenderComponents;
+	for (auto* RenderTarget : RenderComponents)
 	{
-		//Renderer.PrepareMainShader();
-		// RenderTarget의 Material로 Set
-		
+		Renderer.PrepareTexture(RenderTarget->Texture);
+		// Texture 변경
 		if (RenderTarget->GetDepth() > 0)
 		{
+			ZIgnoreRenderComponents.Add(RenderTarget);
 			continue;
 		}
 		RenderTarget->Render();
@@ -194,7 +184,6 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 	Renderer.PrepareZIgnore();
 	for (auto& RenderComponent: ZIgnoreRenderComponents)
 	{
-		uint32 depth = RenderComponent->GetDepth();
 		RenderComponent->Render();
 	}
 	// 1. 같은 메쉬여도 배치 여부가 다를수 있다.
@@ -210,10 +199,9 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 // 	Renderer.RenderPickingTexture();
 // }
 
-void UWorld::DrawBatch(URenderer& Renderer)
+void UWorld::DrawBatch(URenderer& Renderer, FBatchRenderContext BatchRenderContext)
 {
-	//FBatchRenderContext& BatchRenderContext
-	//Renderer.RenderBatch(BatchRenderContext);
+	Renderer.RenderBatch(BatchRenderContext);
 }
 
 void UWorld::ClearWorld()
@@ -250,11 +238,6 @@ bool UWorld::DestroyActor(AActor* InActor)
 	// 제거 대기열에 추가
 	PendingDestroyActors.Add(InActor);
 	return true;
-}
-
-void UWorld::AddZIgnoreComponent(UPrimitiveComponent* InComponent)
-{
-	ZIgnoreRenderComponents.Add(InComponent);
 }
 
 void UWorld::AddRenderComponent(UPrimitiveComponent* Component)

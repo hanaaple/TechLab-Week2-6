@@ -7,7 +7,6 @@ class UActorComponent : public UObject
 public:
     DECLARE_OBJECT(UActorComponent, UObject)
 	UActorComponent() : Super(){
-    	UActorComponent::Activate();
     }
 
 	virtual void BeginPlay();

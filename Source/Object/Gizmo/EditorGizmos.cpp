@@ -28,10 +28,6 @@ AEditorGizmos::AEditorGizmos()
 	YArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(90.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	YArrow->SetCustomColor(FVector4(0.0f, 1.0f, 0.0f, 1.0f));
 	//RootComponent = ZArrow;
-	
-	UEngine::Get().GetWorld()->AddZIgnoreComponent(ZArrow);
-	UEngine::Get().GetWorld()->AddZIgnoreComponent(XArrow);
-	UEngine::Get().GetWorld()->AddZIgnoreComponent(YArrow);
 
 	ZArrow->SetDepth(1);
 	YArrow->SetDepth(1);

@@ -4,6 +4,7 @@
 #include "Core/Container/Array.h"
 #include "Core/Container/Set.h"
 #include "Core/Container/String.h"
+#include "Core/Rendering/BatchRenderContext.h"
 #include "Object/UObject.h"
 #include "Object/ObjectFactory.h"
 
@@ -35,17 +36,12 @@ public:
 	void Render();
 	//void RenderPickingTexture(URenderer& Renderer);
 	//void DisplayPickingTexture(URenderer& Renderer);
-	void DrawBatch(URenderer& Renderer);
-	//void DrawBatch(URenderer& Renderer, FBatchRenderContext& BatchRenderContext);
+	void DrawBatch(URenderer& Renderer, FBatchRenderContext BatchRenderContext);
 	void RenderMainTargets(URenderer& Renderer);
 
 	void ClearWorld();
 	void LoadWorld(const char* SceneName);
 	void SaveWorld();
-
-	void AddZIgnoreComponent(UPrimitiveComponent* InComponent);
-	void RemoveZIgnoreComponent(UPrimitiveComponent* InComponent) {ZIgnoreRenderComponents.Remove(InComponent); }
-	bool ContainsZIgnoreComponent(UPrimitiveComponent* InComponent) {return ZIgnoreRenderComponents.Find(InComponent) != -1; }
 	
 	void AddRenderComponent(class UPrimitiveComponent* Component);
 	void RemoveRenderComponent(class UPrimitiveComponent* Component) { RenderComponents.Remove(Component); }
@@ -62,13 +58,12 @@ protected:
 	TArray<AActor*> ActorsToSpawn;	// PlayBegin() Before Tick()
 	TArray<AActor*> PendingDestroyActors; // TODO: 추후에 TQueue로 변경
 	
-	TArray<UPrimitiveComponent*> RenderComponents;
-	TArray<UPrimitiveComponent*> ZIgnoreRenderComponents;	
+	TArray<UPrimitiveComponent*> RenderComponents;	
 	TArray<UPrimitiveComponent*> IndividualRenders;
 	
 	//TArray<UPrimitiveComponent*> InstancingRenders;
 	//TMap<UMaterial*, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<uint8, FBatchRenderContext>>> BatchRenders;
-	//TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<uint8, FBatchRenderContext>> BatchRenders;
+	TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<uint8, FBatchRenderContext>> BatchRenders;
 };
 
 template <typename T>
