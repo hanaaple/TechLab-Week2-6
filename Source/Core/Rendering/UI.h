@@ -72,8 +72,9 @@ private:
 			return PreRatio.y;
 		}
 	}
-	void RenderComponentTree(USceneComponent* Component);
-	void RenderComponentTree2(USceneComponent* Component);
+	void RenderComponentTree(USceneComponent* Component, bool bShowTransform,
+		bool bShowUUID,ImGuiTreeNodeFlags nodeFlags);
+
 
 	bool bWasWindowSizeUpdated = true;
 	

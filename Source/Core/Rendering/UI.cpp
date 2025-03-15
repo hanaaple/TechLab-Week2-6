@@ -306,230 +306,6 @@ void UI::RenderCameraSettings()
     ImGui::Text("Camera GetUp(): (%.2f %.2f %.2f)", Up.X, Up.Y, Up.Z);
     ImGui::Text("Camera GetRight(): (%.2f %.2f %.2f)", Right.X, Right.Y, Right.Z);
 }
-
-void UI::RenderPropertyWindow()
-{
-    ImGui::Begin("Properties");
-
-    if (bWasWindowSizeUpdated)
-    {
-        auto* Window = ImGui::GetCurrentWindow();
-        ImGui::SetWindowPos(ResizeToScreen(Window->Pos));
-        ImGui::SetWindowSize(ResizeToScreen(Window->Size));
-    }
-
-    AActor* selectedActor = FEditorManager::Get().GetSelectedActor();
-    if (selectedActor != nullptr)
-    {
-        FTransform selectedTransform = selectedActor->GetActorTransform();
-
-        // 선택된 오브젝트의 이름을 표시하고 변경 가능하도록 함
-        uint32 bufferSize = 100;
-        char SceneNameInput[100];
-        strcpy_s(SceneNameInput, bufferSize, selectedActor->GetName().ToString().ToStdString().c_str());
-
-        if (ImGui::InputText("Object Name", SceneNameInput, bufferSize))
-        {
-            selectedActor->SetName(FName(SceneNameInput));
-        }
-
-        float position[] = { selectedTransform.GetPosition().X, selectedTransform.GetPosition().Y, selectedTransform.GetPosition().Z };
-        float scale[] = { selectedTransform.GetScale().X, selectedTransform.GetScale().Y, selectedTransform.GetScale().Z };
-
-        if (ImGui::DragFloat3("Translation", position, 0.1f))
-        {
-            selectedTransform.SetPosition(position[0], position[1], position[2]);
-            selectedActor->SetActorTransform(selectedTransform);
-        }
-
-        FVector PrevEulerAngle = selectedTransform.GetEulerRotation();
-        FVector UIEulerAngle = PrevEulerAngle;
-        if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
-        {
-            FVector DeltaEulerAngle = UIEulerAngle - PrevEulerAngle;
-            selectedTransform.Rotate(DeltaEulerAngle);
-            UE_LOG("Rotation: %.2f, %.2f, %.2f", DeltaEulerAngle.X, DeltaEulerAngle.Y, DeltaEulerAngle.Z);
-            selectedActor->SetActorTransform(selectedTransform);
-        }
-        if (ImGui::DragFloat3("Scale", scale, 0.1f))
-        {
-            selectedTransform.SetScale(scale[0], scale[1], scale[2]);
-            selectedActor->SetActorTransform(selectedTransform);
-        }
-
-        if (FEditorManager::Get().GetGizmoHandle() != nullptr)
-        {
-            AEditorGizmos* Gizmo = FEditorManager::Get().GetGizmoHandle();
-            if (Gizmo->GetGizmoType() == EGizmoType::Translate)
-            {
-                ImGui::Text("GizmoType: Translate");
-            }
-            else if (Gizmo->GetGizmoType() == EGizmoType::Rotate)
-            {
-                ImGui::Text("GizmoType: Rotate");
-            }
-            else if (Gizmo->GetGizmoType() == EGizmoType::Scale)
-            {
-                ImGui::Text("GizmoType: Scale");
-            }
-        }
-
-        //  계층 구조로 자식 트리 출력
-        ImGui::Separator();
-        ImGui::Text("Children");
-
-        USceneComponent* RootComponent = selectedActor->GetRootComponent();
-        if (RootComponent)
-        {
-            RenderComponentTree2(RootComponent); // 재귀적으로 트리 출력
-        }
-    }
-    ImGui::End();
-}
-
-
-
-void UI::RenderSceneManager()
-{
-    ImGui::Begin("Scene Manager");
-
-    if (bWasWindowSizeUpdated)
-    {
-        auto* Window = ImGui::GetCurrentWindow();
-        ImGui::SetWindowPos(ResizeToScreen(Window->Pos));
-        ImGui::SetWindowSize(ResizeToScreen(Window->Size));
-    }
-
-    UWorld* World = UEngine::Get().GetWorld();
-    if (!World)
-    {
-        ImGui::Text("World is NULL");
-        ImGui::End();
-        return;
-    }
-
-    //  씬의 모든 액터 가져오기
-    const TArray<AActor*>& Actors = World->GetActors();
-
-    AActor* selectedActor = FEditorManager::Get().GetSelectedActor();
-    if (ImGui::CollapsingHeader("Primitives", ImGuiTreeNodeFlags_DefaultOpen))
-    {
-
-        for (AActor* Actor : Actors)
-        {
-            if (Actor->IsGizmoActor())continue;
-            ImGui::PushID(Actor->GetUUID()); // 각 오브젝트 UUID를 ID로 사용
-
-            ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
-            if (Actor == selectedActor)
-                nodeFlags |= ImGuiTreeNodeFlags_Selected;
-
-            bool nodeOpen = ImGui::TreeNodeEx(*Actor->GetName().ToString(), nodeFlags);
-            // 자식 오브젝트 트리 노드 표시
-            if (ImGui::IsItemClicked())
-            {
-                selectedActor = Actor;
-                UE_LOG("Selected Actor: %s", *selectedActor->GetClassFName().ToString());
-            }
-            if (nodeOpen)
-            {
-                RenderComponentTree(Actor->GetRootComponent());
-                ImGui::TreePop();
-            }
-        
-            
-            ImGui::PopID(); // ID 스택 해제
-
-        }
-        FEditorManager::Get().SelectActor(selectedActor);
-    }
-    
-
-    ImGui::End();
-}
-void UI::RenderComponentTree2(USceneComponent* Component)
-{
-    if (!Component) return;
-
-    // 자식이 있는지 확인하여 Leaf Node 여부 결정
-    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
-
-    // Label 생성: "이름/UUID" 형식 유지
-    FString ChildLabel = Component->GetName().ToString();
-    ChildLabel += "/";
-    ChildLabel += FString::FromInt(Component->GetUUID());
-
-    ImGui::PushID(Component->GetUUID()); // 각 오브젝트 UUID를 ID로 사용
-    bool nodeOpen = ImGui::TreeNodeEx(*ChildLabel, nodeFlags);
-
-    if (nodeOpen)
-    {
-        // 🌟 현재 컴포넌트의 Transform UI 표시
-        FTransform ComponentTransform = Component->GetRelativeTransform();
-
-        float position[] = { ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y, ComponentTransform.GetPosition().Z };
-        float scale[] = { ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z };
-
-        if (ImGui::DragFloat3(("Translation##" + std::to_string(Component->GetUUID())).c_str(), position, 0.1f))
-        {
-            ComponentTransform.SetPosition(position[0], position[1], position[2]);
-            Component->SetRelativeTransform(ComponentTransform);
-        }
-
-        FVector PrevEulerAngle = ComponentTransform.GetEulerRotation();
-        FVector UIEulerAngle = PrevEulerAngle;
-        if (ImGui::DragFloat3(("Rotation##" + std::to_string(Component->GetUUID())).c_str(), reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
-        {
-            ComponentTransform.SetRotation(UIEulerAngle);
-            Component->SetRelativeTransform(ComponentTransform);
-        }
-
-        if (ImGui::DragFloat3(("Scale##" + std::to_string(Component->GetUUID())).c_str(), scale, 0.1f))
-        {
-            ComponentTransform.SetScale(scale[0], scale[1], scale[2]);
-            Component->SetRelativeTransform(ComponentTransform);
-        }
-
-        // 🌟 재귀적으로 자식 탐색하여 출력
-        const TArray<USceneComponent*>& AttachedChildren = Component->GetAttachChildren();
-        for (auto* Child : AttachedChildren)
-        {
-            if (Child)
-                RenderComponentTree2(Child);
-        }
-
-        ImGui::TreePop();
-    }
-    ImGui::PopID();
-}
-
-void UI::RenderComponentTree(USceneComponent* Component)
-{
-    if (!Component) return;
-
-    //  자식이 있는지 확인하여 Leaf Node 여부 결정
-    ImGuiTreeNodeFlags nodeFlags = (Component->GetAttachChildren().Num() == 0) 
-        ? ImGuiTreeNodeFlags_Leaf 
-        : ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
-
-    // 부모 노드를 출력
-    ImGui::PushID(Component->GetUUID()); // 각 오브젝트 UUID를 ID로 사용
-    bool nodeOpen = ImGui::TreeNodeEx(*Component->GetName().ToString(), nodeFlags);
-
-    if (nodeOpen)
-    {
-        //  자식 노드 재귀 탐색
-        const TArray<USceneComponent*>& AttachedChildren = Component->GetAttachChildren();
-        for (auto* Child : AttachedChildren)
-        {
-            if (Child)
-                RenderComponentTree(Child);
-        }
-        ImGui::TreePop();
-    }
-    ImGui::PopID();
-}
-
 void UI::RenderSettingsPanel()
 {
     ImGui::Begin("Render Settings");
@@ -599,4 +375,185 @@ void UI::RenderSettingsPanel()
     ImGui::SliderFloat("##GridSpacing", &GridSpacing, 1.0f, 100.0f, "%.1f");
 
     ImGui::End();
+}
+void UI::RenderPropertyWindow()
+{
+    ImGui::Begin("Properties");
+
+    if (bWasWindowSizeUpdated)
+    {
+        auto* Window = ImGui::GetCurrentWindow();
+        ImGui::SetWindowPos(ResizeToScreen(Window->Pos));
+        ImGui::SetWindowSize(ResizeToScreen(Window->Size));
+    }
+
+    AActor* selectedActor = FEditorManager::Get().GetSelectedActor();
+    if (selectedActor != nullptr)
+    {
+        FTransform selectedTransform = selectedActor->GetActorTransform();
+
+        // 선택된 오브젝트의 이름을 표시하고 변경 가능하도록 함
+        uint32 bufferSize = 100;
+        char SceneNameInput[100];
+        strcpy_s(SceneNameInput, bufferSize, selectedActor->GetName().ToString().ToStdString().c_str());
+
+        if (ImGui::InputText("Object Name", SceneNameInput, bufferSize))
+        {
+            selectedActor->SetName(FName(SceneNameInput));
+        }
+
+        float position[] = { selectedTransform.GetPosition().X, selectedTransform.GetPosition().Y, selectedTransform.GetPosition().Z };
+        float scale[] = { selectedTransform.GetScale().X, selectedTransform.GetScale().Y, selectedTransform.GetScale().Z };
+
+        if (ImGui::DragFloat3("Translation", position, 0.1f))
+        {
+            selectedTransform.SetPosition(position[0], position[1], position[2]);
+            selectedActor->SetActorTransform(selectedTransform);
+        }
+
+        FVector PrevEulerAngle = selectedTransform.GetEulerRotation();
+        FVector UIEulerAngle = PrevEulerAngle;
+        if (ImGui::DragFloat3("Rotation", reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
+        {
+            FVector DeltaEulerAngle = UIEulerAngle - PrevEulerAngle;
+            selectedTransform.Rotate(DeltaEulerAngle);
+            selectedActor->SetActorTransform(selectedTransform);
+        }
+
+        if (ImGui::DragFloat3("Scale", scale, 0.1f))
+        {
+            selectedTransform.SetScale(scale[0], scale[1], scale[2]);
+            selectedActor->SetActorTransform(selectedTransform);
+        }
+
+        if (FEditorManager::Get().GetGizmoHandle() != nullptr)
+        {
+            AEditorGizmos* Gizmo = FEditorManager::Get().GetGizmoHandle();
+            const char* GizmoTypeStr = (Gizmo->GetGizmoType() == EGizmoType::Translate) ? "Translate" :
+                                       (Gizmo->GetGizmoType() == EGizmoType::Rotate) ? "Rotate" : "Scale";
+            ImGui::Text("GizmoType: %s", GizmoTypeStr);
+        }
+
+        //  계층 구조로 자식 트리 출력
+        ImGui::Separator();
+        ImGui::Text("Children");
+
+        if (USceneComponent* RootComponent = selectedActor->GetRootComponent())
+        {
+            RenderComponentTree(RootComponent, true,
+                    true,ImGuiTreeNodeFlags_OpenOnArrow);
+            //RenderComponentTree(RootComponent, true);  // Transform UI 표시 활성화
+        }
+    }
+
+    ImGui::End();
+}
+
+void UI::RenderSceneManager()
+{
+    ImGui::Begin("Scene Manager");
+
+    if (bWasWindowSizeUpdated)
+    {
+        auto* Window = ImGui::GetCurrentWindow();
+        ImGui::SetWindowPos(ResizeToScreen(Window->Pos));
+        ImGui::SetWindowSize(ResizeToScreen(Window->Size));
+    }
+
+    UWorld* World = UEngine::Get().GetWorld();
+    if (!World)
+    {
+        ImGui::Text("World is NULL");
+        ImGui::End();
+        return;
+    }
+
+    //  씬의 모든 액터 가져오기
+    const TArray<AActor*>& Actors = World->GetActors();
+    AActor* selectedActor = FEditorManager::Get().GetSelectedActor();
+
+    if (ImGui::CollapsingHeader("Primitives", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        for (AActor* Actor : Actors)
+        {
+            if (Actor->IsGizmoActor()) continue;
+            ImGui::PushID(Actor->GetUUID());
+
+            ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+            if (Actor == selectedActor)
+                nodeFlags |= ImGuiTreeNodeFlags_Selected;
+
+            bool nodeOpen = ImGui::TreeNodeEx(*Actor->GetName().ToString(), nodeFlags);
+            
+            if (ImGui::IsItemClicked())
+            {
+                selectedActor = Actor;
+            }
+
+            if (nodeOpen)
+            {
+                RenderComponentTree(Actor->GetRootComponent(), false,
+                    false,ImGuiTreeNodeFlags_OpenOnArrow|ImGuiTreeNodeFlags_DefaultOpen); // Transform UI 표시 X
+                ImGui::TreePop();
+            }
+
+            ImGui::PopID();
+        }
+
+        FEditorManager::Get().SelectActor(selectedActor);
+    }
+
+    ImGui::End();
+}
+
+void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform,bool bShowUUID,ImGuiTreeNodeFlags nodeFlags)
+{
+    if (!Component) return;
+
+    //ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
+    FString ChildLabel = Component->GetName().ToString();
+    if (bShowUUID) ChildLabel+= ("/" + FString::FromInt(Component->GetUUID()));
+
+    ImGui::PushID(Component->GetUUID());
+    bool bNodeOpen = ImGui::TreeNodeEx(*ChildLabel, nodeFlags);
+
+    if (bNodeOpen)
+    {
+        if (bShowTransform)
+        {
+            FTransform ComponentTransform = Component->GetRelativeTransform();
+            float position[] = { ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y, ComponentTransform.GetPosition().Z };
+            float scale[] = { ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z };
+
+            if (ImGui::DragFloat3(("Translation##" + std::to_string(Component->GetUUID())).c_str(), position, 0.1f))
+            {
+                ComponentTransform.SetPosition(position[0], position[1], position[2]);
+                Component->SetRelativeTransform(ComponentTransform);
+            }
+
+            FVector PrevEulerAngle = ComponentTransform.GetEulerRotation();
+            FVector UIEulerAngle = PrevEulerAngle;
+            if (ImGui::DragFloat3(("Rotation##" + std::to_string(Component->GetUUID())).c_str(), reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
+            {
+                ComponentTransform.SetRotation(UIEulerAngle);
+                Component->SetRelativeTransform(ComponentTransform);
+            }
+
+            if (ImGui::DragFloat3(("Scale##" + std::to_string(Component->GetUUID())).c_str(), scale, 0.1f))
+            {
+                ComponentTransform.SetScale(scale[0], scale[1], scale[2]);
+                Component->SetRelativeTransform(ComponentTransform);
+            }
+        }
+
+        for (auto* Child : Component->GetAttachChildren())
+        {
+            if (Child)
+                RenderComponentTree(Child, bShowTransform,bShowUUID,nodeFlags);
+        }
+
+        ImGui::TreePop();
+    }
+
+    ImGui::PopID();
 }
