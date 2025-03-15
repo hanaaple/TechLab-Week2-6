@@ -4,6 +4,7 @@
 #include "ImGui/imgui.h"
 
 
+class USceneComponent;
 class AActor;
 class URenderer;
 
@@ -69,6 +70,7 @@ private:
 			return PreRatio.y;
 		}
 	}
+	void RenderComponentTree(USceneComponent* Component);
 	bool bWasWindowSizeUpdated = true;
 	
     ImVec2 ScreenSize;

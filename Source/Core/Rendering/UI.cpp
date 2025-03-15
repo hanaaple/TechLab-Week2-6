@@ -382,7 +382,7 @@ void UI::RenderPropertyWindow()
         for (auto Child : AttachedChildren)
         {
             ImGui::Text("UUID: %u", Child->GetUUID());
-
+            //std::cout<<Child->GetClassFName()<<std::endl;
             auto childTransform = Child->GetRelativeTransform();
             float childPosition[] = { childTransform.GetPosition().X, childTransform.GetPosition().Y, childTransform.GetPosition().Z};
             float childScale[] = { childTransform.GetScale().X, childTransform.GetScale().Y, childTransform.GetScale().Z };
@@ -439,18 +439,26 @@ void UI::RenderSceneManager()
     AActor* selectedActor = FEditorManager::Get().GetSelectedActor();
     if (ImGui::CollapsingHeader("Primitives", ImGuiTreeNodeFlags_DefaultOpen))
     {
+
         for (AActor* Actor : Actors)
         {
             if (Actor->IsA<AEditorGizmos>() || Actor->IsA<ACamera>()||Actor->IsA<AAxis>()||Actor->IsA<APicker>())continue;
 
             ImGui::PushID(Actor->GetUUID()); // 각 오브젝트 UUID를 ID로 사용
 
-            ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
             if (Actor == selectedActor)
                 nodeFlags |= ImGuiTreeNodeFlags_Selected;
 
             bool nodeOpen = ImGui::TreeNodeEx(*Actor->GetName().ToString(), nodeFlags);
-
+            // 자식 오브젝트 트리 노드 표시
+            
+            if (nodeOpen)
+            {
+                RenderComponentTree(Actor->GetRootComponent());
+                ImGui::TreePop();
+            }
+        
             if (ImGui::IsItemClicked())
             {
                 selectedActor = Actor;
@@ -463,4 +471,30 @@ void UI::RenderSceneManager()
     }
 
     ImGui::End();
+}
+void UI::RenderComponentTree(USceneComponent* Component)
+{
+    if (!Component) return;
+
+    //  자식이 있는지 확인하여 Leaf Node 여부 결정
+    ImGuiTreeNodeFlags nodeFlags = (Component->GetAttachChildren().Num() == 0) 
+        ? ImGuiTreeNodeFlags_Leaf 
+        : ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+
+    // 부모 노드를 출력
+    ImGui::PushID(Component->GetUUID()); // 각 오브젝트 UUID를 ID로 사용
+    bool nodeOpen = ImGui::TreeNodeEx(*Component->GetName().ToString(), nodeFlags);
+
+    if (nodeOpen)
+    {
+        //  자식 노드 재귀 탐색
+        const TArray<USceneComponent*>& AttachedChildren = Component->GetAttachChildren();
+        for (auto* Child : AttachedChildren)
+        {
+            if (Child)
+                RenderComponentTree(Child);
+        }
+        ImGui::TreePop();
+    }
+    ImGui::PopID();
 }
