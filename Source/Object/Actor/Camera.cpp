@@ -1,6 +1,5 @@
 ﻿#include "Camera.h"
 
-#include "Core/Rendering/URenderer.h"
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 
 

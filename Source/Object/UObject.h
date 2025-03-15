@@ -15,8 +15,8 @@ class UObject/* : public std::enable_shared_from_this<UObject>*/
 protected:
 	static FName StaticClassFName_Internal() { return "UObject"; }
 public:
-	UObject();
-	virtual ~UObject();
+	UObject() = default;
+	virtual ~UObject() = default;
 	//virtual void PostInit(); // 객체 생성 후 실행될 함수 추가
 
 protected:

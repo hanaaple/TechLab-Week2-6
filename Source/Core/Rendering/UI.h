@@ -1,12 +1,14 @@
 ﻿#pragma once
 #define _TCHAR_DEFINED
 #include <Windows.h>
+
 #include "ImGui/imgui.h"
 
+#include "URenderer.h"
+
+//class AActor;
 
 class USceneComponent;
-class AActor;
-class URenderer;
 
 class UI
 {

@@ -1,24 +1,17 @@
 ﻿#include "UI.h"
 
-#include <algorithm>
-
-#include "Object/Actor/Camera.h"
-#include "URenderer.h"
-#include "Core/HAL/PlatformMemory.h"
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
-#include "Debug/DebugConsole.h"
 #include "ImGui/imgui_internal.h"
-#include "Object/Actor/Actor.h"
-#include "Object/PrimitiveComponent/UPrimitiveComponent.h"
+
+#include "Static/FEditorManager.h"
+
 #include "Object/Actor/Sphere.h"
 #include "Object/Actor/Cube.h"
-#include "Object/Actor/Arrow.h"
 #include "Object/Actor/Cone.h"
 #include "Object/Actor/Cylinder.h"
-#include "Static/FEditorManager.h"
-#include "Object/World/World.h"
 #include "Object/Gizmo/EditorGizmos.h"
+#include "Object/World/World.h"
 
 
 void UI::Initialize(HWND hWnd, const URenderer& Renderer, UINT ScreenWidth, UINT ScreenHeight)
