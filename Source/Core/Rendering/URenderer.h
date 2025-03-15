@@ -14,6 +14,7 @@
 #include "Core/Name/FName.h"
 
 
+class AActor;
 struct FVertexSimple;
 struct FVector4;
 

@@ -181,9 +181,10 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 	
 
 	Renderer.PrepareZIgnore();
-	for (auto& RenderComponent: ZIgnoreRenderComponents)
+	for (auto& RenderTarget: ZIgnoreRenderComponents)
 	{
-		RenderComponent->Render();
+		Renderer.PrepareTexture(RenderTarget->Texture);
+		RenderTarget->Render();
 	}
 	// 1. 같은 메쉬여도 배치 여부가 다를수 있다.
 	// 2. 다른 메쉬여도 같은 토폴로지, 같은 머터리얼과 셰이더, 트
