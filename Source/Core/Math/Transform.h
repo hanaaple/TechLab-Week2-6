@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Vector.h"
 #include "Matrix.h"
+#include "Plane.h"
 
 #define TORAD 0.0174532925199432957f
 
@@ -107,7 +108,7 @@ public:
 	{
 		// 순서 맞음.
 		return FMatrix::GetScaleMatrix(Scale.X, Scale.Y, Scale.Z)
-			* FMatrix::GetRotateMatrix(Rotation)
+			* FMatrix::GetRotateMatrix(FQuat(Rotation))
 			* FMatrix::GetTranslateMatrix(Position.X, Position.Y, Position.Z);
 	}
 
@@ -163,7 +164,7 @@ public:
 	}
 
 	FTransform operator*(const FTransform& OtherMatrix) const
-	{
+	{		
 		FTransform Result = GetMatrix() * OtherMatrix.GetMatrix();
 		
 		return Result;
@@ -173,70 +174,4 @@ public:
 	{
 		return GetMatrix().Inverse();
 	}
-
-	// FTransform GetRelativeTransform(const FTransform& Other) const
-	// {
-	// 	// A * B(-1) = VQS(B)(-1) (VQS (A))
-	// 	// 
-	// 	// Scale = S(A)/S(B)
-	// 	// Rotation = Q(B)(-1) * Q(A)
-	// 	// Translation = 1/S(B) *[Q(B)(-1)*(T(A)-T(B))*Q(B)]
-	// 	// where A = this, B = Other
-	// 	FTransform Result;
-	//
-	// 	//if (AnyHasNegativeScale(Scale, Other.GetScale()))
-	// 	//{
-	// 	// @note, if you have 0 scale with negative, you're going to lose rotation as it can't convert back to quat
-	// 	//GetRelativeTransformUsingMatrixWithScale(&Result, this, &Other);
-	// 	//}
-	// 	//else
-	// 	FVector SafeRecipScale3D = GetSafeScaleReciprocal(Other.Scale, 1.e-8f);
-	// 	Result.Scale = Scale * SafeRecipScale3D;
-	//
-	// 	if (Other.Rotation.IsNormalized() == false)
-	// 	{
-	// 		return FTransform();
-	// 	}
-	//
-	// 	FQuat Inverse = Other.Rotation.Inverse();
-	// 	Result.Rotation = FQuat::MultiplyQuaternions(Inverse, Rotation);
-	//
-	// 	Result.Position = Inverse * (Position - Other.Position) * SafeRecipScale3D;
-	//
-	// 	return Result;
-	// }
-	// 	
-	//
-	// FVector GetSafeScaleReciprocal(const FVector& InScale, float Tolerance) const
-	// {
-	// 	FVector SafeReciprocalScale;
-	// 	if (FMath::Abs(InScale.X) <= Tolerance)
-	// 	{
-	// 		SafeReciprocalScale.X = 0.f;
-	// 	}
-	// 	else
-	// 	{
-	// 		SafeReciprocalScale.X = 1 / InScale.X;
-	// 	}
-	//
-	// 	if (FMath::Abs(InScale.Y) <= Tolerance)
-	// 	{
-	// 		SafeReciprocalScale.Y = 0.f;
-	// 	}
-	// 	else
-	// 	{
-	// 		SafeReciprocalScale.Y = 1 / InScale.Y;
-	// 	}
-	//
-	// 	if (FMath::Abs(InScale.Z) <= Tolerance)
-	// 	{
-	// 		SafeReciprocalScale.Z = 0.f;
-	// 	}
-	// 	else
-	// 	{
-	// 		SafeReciprocalScale.Z = 1 / InScale.Z;
-	// 	}
-	//
-	// 	return SafeReciprocalScale;
-	// }
 };
