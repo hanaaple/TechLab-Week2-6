@@ -2,8 +2,8 @@
 
 UObject::UObject()
 {
+    //AutoSetName();
 }
-
 UObject::~UObject()
 {
 }

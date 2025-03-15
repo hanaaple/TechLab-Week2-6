@@ -9,9 +9,10 @@
 
 class USceneComponent : public UActorComponent
 {
-	friend class AActor;
 	using Super = UActorComponent;
 	using EAttachmentRule = EEndPlayReason::EAttachmentRule;
+	friend class AActor;
+    DECLARE_OBJECT(USceneComponent,Super)
 public:
 	USceneComponent() = default;
 

@@ -1,6 +1,7 @@
 ﻿#include "UI.h"
 
 #include <algorithm>
+#include <Object/Gizmo/Axis.h>
 
 #include "Object/Actor/Camera.h"
 #include "URenderer.h"
@@ -76,7 +77,7 @@ void UI::Update()
     
     RenderControlPanel();
     RenderPropertyWindow();
-
+    RenderSceneManager();
     Debug::ShowConsole(bWasWindowSizeUpdated, PreRatio, CurRatio);
 
     // ImGui 렌더링
@@ -108,7 +109,6 @@ void UI::OnUpdateWindowSize(UINT InScreenWidth, UINT InScreenHeight)
 void UI::RenderControlPanel()
 {
     ImGui::Begin("Jungle Control Panel");
-
     if (bWasWindowSizeUpdated)
     {
         auto* Window = ImGui::GetCurrentWindow();
@@ -323,9 +323,21 @@ void UI::RenderPropertyWindow()
     if (selectedActor != nullptr)
     {
         FTransform selectedTransform = selectedActor->GetActorTransform();
+
+        //선택된 오브젝트의 이름을 표시하고 변경 가능하도록 함
+        uint32 bufferSize = 100;
+        char* SceneNameInput = new char[bufferSize];
+        strcpy_s(SceneNameInput, bufferSize,  selectedActor->GetName().ToString().ToStdString().c_str());
+    
+        if (ImGui::InputText("Object Name", SceneNameInput, bufferSize))
+        {
+            selectedActor->SetName(FName(SceneNameInput));
+        }
+
+        
         float position[] = { selectedTransform.GetPosition().X, selectedTransform.GetPosition().Y, selectedTransform.GetPosition().Z };
         float scale[] = { selectedTransform.GetScale().X, selectedTransform.GetScale().Y, selectedTransform.GetScale().Z };
-
+        
         if (ImGui::DragFloat3("Translation", position, 0.1f))
         {
             selectedTransform.SetPosition(position[0], position[1], position[2]);
@@ -370,7 +382,7 @@ void UI::RenderPropertyWindow()
         for (auto Child : AttachedChildren)
         {
             ImGui::Text("UUID: %u", Child->GetUUID());
-
+            //std::cout<<Child->GetClassFName()<<std::endl;
             auto childTransform = Child->GetRelativeTransform();
             float childPosition[] = { childTransform.GetPosition().X, childTransform.GetPosition().Y, childTransform.GetPosition().Z};
             float childScale[] = { childTransform.GetScale().X, childTransform.GetScale().Y, childTransform.GetScale().Z };
@@ -402,3 +414,86 @@ void UI::RenderPropertyWindow()
     ImGui::End();
 }
 
+void UI::RenderSceneManager()
+{
+    ImGui::Begin("Scene Manager");
+
+    if (bWasWindowSizeUpdated)
+    {
+        auto* Window = ImGui::GetCurrentWindow();
+        ImGui::SetWindowPos(ResizeToScreen(Window->Pos));
+        ImGui::SetWindowSize(ResizeToScreen(Window->Size));
+    }
+
+    UWorld* World = UEngine::Get().GetWorld();
+    if (!World)
+    {
+        ImGui::Text("World is NULL");
+        ImGui::End();
+        return;
+    }
+
+    //  씬의 모든 액터 가져오기
+    const TArray<AActor*>& Actors = World->GetActors();
+
+    AActor* selectedActor = FEditorManager::Get().GetSelectedActor();
+    if (ImGui::CollapsingHeader("Primitives", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+
+        for (AActor* Actor : Actors)
+        {
+            if (Actor->IsGizmoActor())continue;
+            ImGui::PushID(Actor->GetUUID()); // 각 오브젝트 UUID를 ID로 사용
+
+            ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+            if (Actor == selectedActor)
+                nodeFlags |= ImGuiTreeNodeFlags_Selected;
+
+            bool nodeOpen = ImGui::TreeNodeEx(*Actor->GetName().ToString(), nodeFlags);
+            // 자식 오브젝트 트리 노드 표시
+            if (ImGui::IsItemClicked())
+            {
+                selectedActor = Actor;
+                UE_LOG("Selected Actor: %s", *selectedActor->GetClassFName().ToString());
+            }
+            if (nodeOpen)
+            {
+                RenderComponentTree(Actor->GetRootComponent());
+                ImGui::TreePop();
+            }
+        
+            
+            ImGui::PopID(); // ID 스택 해제
+
+        }
+        FEditorManager::Get().SelectActor(selectedActor);
+    }
+
+    ImGui::End();
+}
+void UI::RenderComponentTree(USceneComponent* Component)
+{
+    if (!Component) return;
+
+    //  자식이 있는지 확인하여 Leaf Node 여부 결정
+    ImGuiTreeNodeFlags nodeFlags = (Component->GetAttachChildren().Num() == 0) 
+        ? ImGuiTreeNodeFlags_Leaf 
+        : ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+
+    // 부모 노드를 출력
+    ImGui::PushID(Component->GetUUID()); // 각 오브젝트 UUID를 ID로 사용
+    bool nodeOpen = ImGui::TreeNodeEx(*Component->GetName().ToString(), nodeFlags);
+
+    if (nodeOpen)
+    {
+        //  자식 노드 재귀 탐색
+        const TArray<USceneComponent*>& AttachedChildren = Component->GetAttachChildren();
+        for (auto* Child : AttachedChildren)
+        {
+            if (Child)
+                RenderComponentTree(Child);
+        }
+        ImGui::TreePop();
+    }
+    ImGui::PopID();
+}

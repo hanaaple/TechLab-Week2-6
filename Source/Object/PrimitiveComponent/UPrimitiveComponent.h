@@ -9,6 +9,7 @@
 class UPrimitiveComponent : public USceneComponent
 {
 	using Super = USceneComponent;
+    DECLARE_OBJECT(UPrimitiveComponent,Super)
 public:
 	UPrimitiveComponent() = default;
 	virtual ~UPrimitiveComponent() = default;
@@ -55,6 +56,7 @@ protected:
 class UCubeComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UCubeComp,Super)
 public:
 	UCubeComp() = default;
 	virtual ~UCubeComp() = default;
@@ -67,6 +69,7 @@ public:
 class USphereComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(USphereComp,Super)
 public:
 	USphereComp() = default;
 	virtual ~USphereComp() = default;
@@ -79,6 +82,7 @@ public:
 class UTriangleComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UTriangleComp,Super)
 public:
 	UTriangleComp() = default;
 	virtual ~UTriangleComp() = default;
@@ -91,6 +95,7 @@ public:
 class ULineComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(ULineComp,Super)
 
 public:
 	ULineComp() = default;
@@ -104,6 +109,7 @@ public:
 class UCylinderComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UCylinderComp,Super)
 
 public:
 	UCylinderComp() = default;
@@ -117,6 +123,7 @@ public:
 class UConeComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UConeComp,Super)
 public:
 	UConeComp() = default;
 	virtual ~UConeComp() = default;

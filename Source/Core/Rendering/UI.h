@@ -4,6 +4,7 @@
 #include "ImGui/imgui.h"
 
 
+class USceneComponent;
 class AActor;
 class URenderer;
 
@@ -26,7 +27,7 @@ public:// UIWindows
     void RenderPrimitiveSelection();
     void RenderCameraSettings();
     void RenderPropertyWindow();
-
+	void RenderSceneManager();
 private:
 	// Mouse 전용
 	ImVec2 ResizeToScreenByCurrentRatio(const ImVec2& vec2) const
@@ -69,6 +70,7 @@ private:
 			return PreRatio.y;
 		}
 	}
+	void RenderComponentTree(USceneComponent* Component);
 	bool bWasWindowSizeUpdated = true;
 	
     ImVec2 ScreenSize;

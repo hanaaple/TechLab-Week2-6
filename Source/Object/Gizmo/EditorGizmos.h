@@ -20,6 +20,7 @@ enum class EGizmoType : uint8
 
 class AEditorGizmos : public AActor
 {
+    DECLARE_OBJECT(AEditorGizmos, AActor)
 public:
 	AEditorGizmos();
 
