@@ -1,9 +1,5 @@
 ﻿#pragma once
-#include "UObject.h"
-#include "Core/Math/Vector.h"
-#include "Core/Container/Set.h"
 #include "Core/Math/Transform.h"
-#include "Core/Math/Matrix.h"
 #include "Object/ActorComponent/ActorComponent.h"
 
 
@@ -26,7 +22,6 @@ public:
 	void SetVisibility(bool bNewVisibility) const;
 	bool GetVisibleFlag() const	{ return bVisible; }
 	void Pick(bool bPicked);
-	bool IsPicked() const { return bIsPicked; }
 	
 	// Transform
 public:
@@ -101,7 +96,6 @@ private:
 	
 private:
 	bool bVisible = true;
-	bool bCanEverTick = true;
 	
 	// debug
 protected:

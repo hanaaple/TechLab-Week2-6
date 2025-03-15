@@ -1,12 +1,14 @@
 ﻿#pragma once
 #define _TCHAR_DEFINED
 #include <Windows.h>
+
 #include "ImGui/imgui.h"
 
+#include "URenderer.h"
+
+//class AActor;
 
 class USceneComponent;
-class AActor;
-class URenderer;
 
 class UI
 {
@@ -15,7 +17,7 @@ public:
     int NumOfSpawn = 0;
 	bool bIsInitialized = false;
     
-    void Initialize(HWND hWnd, const class URenderer& Renderer, UINT ScreenWidth, UINT ScreenHeight);
+    void Initialize(HWND hWnd, const URenderer& Renderer, UINT ScreenWidth, UINT ScreenHeight);
     void Update();
     void Shutdown();
 

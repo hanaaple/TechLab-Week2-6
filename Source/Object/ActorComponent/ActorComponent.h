@@ -6,12 +6,16 @@ class UActorComponent : public UObject
 {
 public:
     DECLARE_OBJECT(UActorComponent, UObject)
-	UActorComponent() = default;
+	UActorComponent() : Super(){
+    	UActorComponent::Activate();
+    }
 
 	virtual void BeginPlay();
 	virtual void Tick(float DeltaTime);
 	virtual void EndPlay(const EEndPlayReason::Type Reason);
-
+	virtual void Activate(){ bIsActive = true;}
+	virtual void Deactivate(){ bIsActive = false;}
+	
 	bool CanEverTick() const { return bCanEverTick; }
 
 	virtual class AActor* GetOwner() const;
@@ -19,6 +23,7 @@ public:
 
 protected:
 	bool bCanEverTick = true;
+	bool bIsActive;
 	class AActor* Owner = nullptr;
 };
 

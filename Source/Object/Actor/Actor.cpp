@@ -1,30 +1,13 @@
 ﻿#include "Actor.h"
-#include "Object/USceneComponent.h"
 #include "Debug/DebugConsole.h"
 #include "Object/World/World.h"
-#include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 #include "Static/FEditorManager.h"
-
-AActor::AActor() : Depth{ 0 }
-{
-}
 
 void AActor::BeginPlay()
 {
 	for (auto& Component : Components)
 	{
 		Component->BeginPlay();
-
-
-		//TODO11
-		// Primitive -> MeshComponent?
-		// OnAddComponent -> If Component is mesh (이건 어떻게하냐) -> RegistComponentToWorld
-		
-		// 자기가 메시 (Parent)인 경우 -> regist
-		if (UPrimitiveComponent* PrimitiveComponent = dynamic_cast<UPrimitiveComponent*>(Component))
-		{
-			PrimitiveComponent->RegisterComponentWithWorld(World);
-		}
 	}
 }
 
@@ -54,15 +37,6 @@ void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	for (auto& Component : Components)
 	{		
 		Component->EndPlay(EndPlayReason);
-		if (const auto PrimitiveComp = dynamic_cast<UPrimitiveComponent*>(Component))
-		{
-			if (World->ContainsZIgnoreComponent(PrimitiveComp))
-			{
-				World->RemoveZIgnoreComponent(PrimitiveComp);
-			}
-			
-			GetWorld()->RemoveRenderComponent(PrimitiveComp);
-		}
 		if (FEditorManager::Get().GetSelectedActor() == this)
 		{
 			FEditorManager::Get().SelectActor(nullptr);
@@ -76,7 +50,6 @@ void AActor::Pick()
 {
 	if (RootComponent)
 	{
-		bIsPicked = true;
 		RootComponent->Pick(true);
 	}
 }
@@ -85,7 +58,6 @@ void AActor::UnPick()
 {
 	if (RootComponent)
 	{
-		bIsPicked = false;
 		RootComponent->Pick(false);
 	}	
 }

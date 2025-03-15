@@ -4,7 +4,7 @@
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 #include "Object/World/World.h"
 #include "Static/FEditorManager.h"
-#include <Core/Input/PlayerInput.h>
+#include "Core/Input/PlayerInput.h"
 
 AEditorGizmos::AEditorGizmos()
 {
@@ -33,6 +33,10 @@ AEditorGizmos::AEditorGizmos()
 	UEngine::Get().GetWorld()->AddZIgnoreComponent(XArrow);
 	UEngine::Get().GetWorld()->AddZIgnoreComponent(YArrow);
 
+	ZArrow->SetDepth(1);
+	YArrow->SetDepth(1);
+	XArrow->SetDepth(1);
+	
 	SetActorVisibility(false);
 }
 

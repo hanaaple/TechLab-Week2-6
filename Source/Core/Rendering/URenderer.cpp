@@ -206,20 +206,20 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
         return;
     }
 
-    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(PrimitiveComp->GetType());
+    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(PrimitiveComp->GetMeshType());
     
     if (VertexBufferInfo.GetBuffer() == nullptr)
     {
         return;
     }
 
-    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(PrimitiveComp->GetType());
+    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(PrimitiveComp->GetMeshType());
 
     //if (CurrentTopology != Info.GetTopology())
     {
         // TODO 토폴로지를 Engine, World(SceneManager) 단에서 넣어주는 경우 BufferInfo에서 Topology를 가지면 안됨.
-        DeviceContext->IASetPrimitiveTopology(VertexBufferInfo.GetTopology());
-        CurrentTopology = VertexBufferInfo.GetTopology();
+        //DeviceContext->IASetPrimitiveTopology(PrimitiveComp->GetTopology());
+        //CurrentTopology = PrimitiveComp->GetTopology();
     }
 
     ConstantUpdateInfo UpdateInfo{ 
@@ -231,26 +231,6 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
     UpdateConstant(UpdateInfo);
     
     RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
-}
-
-
-
-void URenderer::RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, const BufferInfo& IndexBufferInfo) const
-{
-    UINT VertexBufferOffset = 0;
-    ID3D11Buffer* VertexBuffer = VertexBufferInfo.GetBuffer();
-    DeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &VertexStride, &VertexBufferOffset);
-    
-    if (IndexBufferInfo.GetBuffer() == nullptr)
-    {
-        DeviceContext->Draw(VertexBufferInfo.GetSize(), 0);
-    }
-    else
-    {
-        UINT IndexBufferOffset = 0;
-        DeviceContext->IASetIndexBuffer(IndexBufferInfo.GetBuffer(), DXGI_FORMAT_R32_UINT, IndexBufferOffset);
-        DeviceContext->DrawIndexed(IndexBufferInfo.GetSize(), IndexBufferOffset, 0);
-    }
 }
 
 void URenderer::RenderBatch(TArray<UPrimitiveComponent*> BatchTargets, EPrimitiveMeshType MeshType)
@@ -269,8 +249,8 @@ void URenderer::RenderBatch(TArray<UPrimitiveComponent*> BatchTargets, EPrimitiv
     //if (CurrentTopology != Info.GetTopology())
     {
         // TODO 토폴로지를 Engine, World(SceneManager) 단에서 넣어주는 경우 BufferInfo에서 Topology를 가지면 안됨.
-        DeviceContext->IASetPrimitiveTopology(VertexBufferInfo.GetTopology());
-        CurrentTopology = VertexBufferInfo.GetTopology();
+        //DeviceContext->IASetPrimitiveTopology(PrimitiveComp->GetTopology());
+        //CurrentTopology = PrimitiveComp->GetTopology();
     }
 
     //TODO11
@@ -281,6 +261,24 @@ void URenderer::RenderBatch(TArray<UPrimitiveComponent*> BatchTargets, EPrimitiv
     BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(MeshType);
     
     RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
+}
+
+void URenderer::RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, const BufferInfo& IndexBufferInfo) const
+{
+    UINT VertexBufferOffset = 0;
+    ID3D11Buffer* VertexBuffer = VertexBufferInfo.GetBuffer();
+    DeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &VertexStride, &VertexBufferOffset);
+    
+    if (IndexBufferInfo.GetBuffer() == nullptr)
+    {
+        DeviceContext->Draw(VertexBufferInfo.GetSize(), 0);
+    }
+    else
+    {
+        UINT IndexBufferOffset = 0;
+        DeviceContext->IASetIndexBuffer(IndexBufferInfo.GetBuffer(), DXGI_FORMAT_R32_UINT, IndexBufferOffset);
+        DeviceContext->DrawIndexed(IndexBufferInfo.GetSize(), IndexBufferOffset, 0);
+    }
 }
 
 ID3D11Buffer* URenderer::CreateVertexBuffer(const FVertexSimple* Vertices, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage = D3D11_USAGE_DEFAULT) const

@@ -4,13 +4,10 @@
 #include <d3d11.h>
 #include <memory>
 
-#include "UI.h" 
 #include "Core/Math/Vector.h"
 
 #include "Core/Rendering/BufferCache.h"
 #include "Core/Math/Matrix.h"
-#include "Core/Engine.h"
-#include "Primitive/PrimitiveVertices.h"
 #include "Core/Math/Plane.h"
 #include "Core/Math/Transform.h"
 
@@ -75,6 +72,7 @@ public:
     void PrepareShader() const;
 
 	void RenderPrimitive(class UPrimitiveComponent* PrimitiveComp);
+	void RenderBatch(TArray<UPrimitiveComponent*> BatchTargets, EPrimitiveMeshType MeshType);
 
     /**
      * Buffer에 있는 Vertex를 그립니다.
@@ -82,8 +80,6 @@ public:
      * @param numVertices 버텍스 버퍼에 저장된 버텍스의 총 개수
      */
     void RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, const BufferInfo& IndexBufferInfo) const;
-
-	void RenderBatch(TArray<UPrimitiveComponent*> BatchTargets, EPrimitiveMeshType MeshType);
 	
     /**
      * 정점 데이터로 Vertex Buffer를 생성합니다.

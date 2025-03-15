@@ -1,12 +1,12 @@
 ﻿#pragma once
 #include "Object/Actor/Actor.h"
+#include "Object/Actor/Camera.h"
 
 class AEditorGizmos;
 
 class FEditorManager : public TSingleton<FEditorManager>
 {
 public:
-    
     inline AActor* GetSelectedActor() const {return SelectedActor;}
     
     void SelectActor(AActor* NewActor);
@@ -15,10 +15,10 @@ public:
 
     void SetCamera(ACamera* NewCamera);
 
-    AEditorGizmos* GetGizmoHandle() const {return GizmoHandle;}
+    AEditorGizmos* GetGizmoHandle() const {return ControlGizmo;}
     
 private:
     ACamera* Camera = nullptr;
     AActor* SelectedActor = nullptr;
-    AEditorGizmos* GizmoHandle = nullptr;
+    AEditorGizmos* ControlGizmo = nullptr;
 };
