@@ -73,6 +73,8 @@ private:
 		}
 	}
 	void RenderComponentTree(USceneComponent* Component);
+	void RenderComponentTree2(USceneComponent* Component);
+
 	bool bWasWindowSizeUpdated = true;
 	
     ImVec2 ScreenSize;
