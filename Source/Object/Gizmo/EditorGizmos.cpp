@@ -9,29 +9,27 @@
 AEditorGizmos::AEditorGizmos()
 {
 	bIsGizmo = true;
-	// !NOTE : Z방향으로 서있음
-	// z
+	
 	UCylinderComp* ZArrow = AddComponent<UCylinderComp>();
 	ZArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	ZArrow->SetCustomColor(FVector4(0.0f, 0.0f, 1.0f, 1.0f));
 	
-	// x
 	UCylinderComp* XArrow = AddComponent<UCylinderComp>();
 	XArrow->SetupAttachment(ZArrow);
 	XArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 90.0f, 0.0f), FVector(1, 1, 1)));
 	XArrow->SetCustomColor(FVector4(1.0f, 0.0f, 0.0f, 1.0f));
 
 
-	// y
 	UCylinderComp* YArrow = AddComponent<UCylinderComp>();
 	YArrow->SetupAttachment(ZArrow);
 	YArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(90.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	YArrow->SetCustomColor(FVector4(0.0f, 1.0f, 0.0f, 1.0f));
-	//RootComponent = ZArrow;
 
-	ZArrow->SetDepth(1);
-	YArrow->SetDepth(1);
-	XArrow->SetDepth(1);
+	RootComponent = ZArrow;
+
+	ZArrow->SetDepth(1001);
+	YArrow->SetDepth(1001);
+	XArrow->SetDepth(1001);
 	
 	SetActorVisibility(false);
 }
@@ -39,12 +37,14 @@ AEditorGizmos::AEditorGizmos()
 void AEditorGizmos::Tick(float DeltaTime)
 {
 	AActor* SelectedActor  = FEditorManager::Get().GetSelectedActor();
-	if (SelectedActor != nullptr && RootComponent && RootComponent->GetVisibleFlag())
+	if (SelectedActor != nullptr && RootComponent
+		//&& RootComponent->GetVisibleFlag()
+		)
 	{
-		FTransform GizmoTr = RootComponent->GetComponentTransform();
-		GizmoTr.SetPosition(SelectedActor->GetActorTransform().GetPosition());
-		GizmoTr.SetRotation(SelectedActor->GetActorTransform().GetEulerRotation());
-		SetActorTransform(GizmoTr);
+		FTransform GizmoTransform = RootComponent->GetComponentTransform();
+		GizmoTransform.SetPosition(SelectedActor->GetActorTransform().GetPosition());
+		GizmoTransform.SetRotation(SelectedActor->GetActorTransform().GetEulerRotation());
+		SetActorTransform(GizmoTransform);
 	}
 
 	//SetScaleByDistance();

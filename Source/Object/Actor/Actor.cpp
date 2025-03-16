@@ -8,7 +8,6 @@ void AActor::BeginPlay()
 	for (auto& Component : Components)
 	{
 		Component->BeginPlay();
-		Component->Activate();
 	}
 }
 
@@ -45,6 +44,15 @@ void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		UEngine::Get().GObjects.Remove(Component->GetUUID());
 	}
 	Components.Empty();
+}
+
+void AActor::ActivateComponent()
+{
+	for (auto* Component : ToActiveComponents)
+	{
+		Component->Activate();
+	}
+	ToActiveComponents.Empty();
 }
 
 void AActor::Pick()

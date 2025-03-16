@@ -11,7 +11,6 @@ protected:
 	FVector Position;
 	FVector Rotation; 
 	FVector Scale;
-	int Depth;
 	
 public:
 	FTransform()
