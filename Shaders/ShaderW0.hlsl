@@ -82,7 +82,9 @@ PS_OUTPUT mainPS(PS_INPUT input) : SV_TARGET
     //output.color = sourceTex.Sample(samp, input.uv);
     
     // 텍스처 샘플링
-    float4 texColor = sourceTex.Sample(samp, input.uv * float2(width, height) + float2(u, v));
+    float correctedV = 1.0 - (v + height);
+    float4 texColor = sourceTex.Sample(samp, input.uv * float2(width, height) + float2(u, correctedV));
+    //float4 texColor = sourceTex.Sample(samp, input.uv * float2(width, height) + float2(u, v));
 
     // 배경이 특정 색(예: 검은색)일 경우 픽셀 버리기
     if (length(texColor.rgb - float3(0, 0, 0)) < 0.05)

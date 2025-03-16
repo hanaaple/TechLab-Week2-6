@@ -67,7 +67,8 @@ void UTextureLoader::LoadCharInfo(float bitmapWidth, float bitmapHeight, float r
 		* / bitmapWidth, bitmapHeight : 0 ~ 1로 정규화.
 		directX는 좌표계까 좌측 상단부터(0, 0)이라서 방향 반전.*/
 		float u = (col * colSize) / bitmapWidth;
-		float v = 1.0f - ((row * rowSize) / bitmapHeight);
+		//float v = ((row * rowSize) / bitmapHeight);
+		float v = 1.0f - ((row * rowSize) / bitmapHeight) - cellHeightUV;
 
 		charInfoMap.Add(idx, { u, v, cellWidthUV, cellHeightUV });
 	}
@@ -88,5 +89,5 @@ void UTextureLoader::DrawText(const std::string& text) {
 	//	}
 	//}
 
-	UEngine::Get().GetRenderer()->UpdateConstantUV('h');
+	UEngine::Get().GetRenderer()->UpdateConstantUV('!');
 }

@@ -732,13 +732,14 @@ void URenderer::UpdateConstantDepth(int Depth) const
 }
 
 void URenderer::UpdateConstantUV(char c) const {
+    int correct_c = c - 32;
     if (!ConstantsUVBuffer) return;
     D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR;
     DeviceContext->Map(ConstantsUVBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
     {
         FUVConstants* Constants = static_cast<FUVConstants*>(ConstantBufferMSR.pData);
         
-        CharacterInfo curCharInfo = UTextureLoader::Get().charInfoMap[c];
+        CharacterInfo curCharInfo = UTextureLoader::Get().charInfoMap[correct_c];
         
         Constants->U = curCharInfo.u;
         Constants->V = curCharInfo.v;
