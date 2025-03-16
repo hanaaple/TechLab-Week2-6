@@ -165,7 +165,6 @@
     <ClCompile Include="Source\Core\Name\FName.cpp" />
     <ClCompile Include="Source\Core\Name\FNameEntry.cpp" />
     <ClCompile Include="Source\Core\Name\FNameTable.cpp" />
-    <ClCompile Include="Source\Core\Rendering\BatchRenderContext.cpp" />
     <ClCompile Include="Source\Core\Rendering\Material.cpp" />
     <ClCompile Include="Source\Object\Actor\Camera.cpp" />
     <ClCompile Include="Source\Object\Actor\Cone.cpp" />

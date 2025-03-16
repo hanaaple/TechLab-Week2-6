@@ -41,6 +41,7 @@ public:
 public:
 	/* SnapToTarget을 제외하여 KeepRelative, KeepWorld만 구현 */
 	void SetupAttachment(USceneComponent* InParent, EAttachmentRule AttachmentRule = EAttachmentRule::KeepWorld);
+	void RemoveChild(USceneComponent* Child);
 	const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
 	
 private:
