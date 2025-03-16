@@ -196,3 +196,15 @@ inline bool FVector::operator!=(const FVector& Other) const
 {
     return X != Other.X || Y != Other.Y || Z != Other.Z;
 }
+
+struct FVector2 {
+    float X, Y;
+    FVector2() : X(0), Y(0) {};
+    FVector2(float X, float Y) : X(X), Y(Y) {};
+    static const FVector2 ZeroVector;
+    static const FVector2 OneVector;
+
+public:
+    static FVector2 Zero() { return { 0, 0 }; }
+    static FVector2 One() { return { 1, 1 }; }
+};

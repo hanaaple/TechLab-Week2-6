@@ -81,10 +81,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)Binaries\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediate\Build\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)ThirdParty;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Binaries\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediate\Build\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)ThirdParty;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -188,6 +192,8 @@
     <ClCompile Include="Source\Core\Math\Matrix.cpp" />
     <ClCompile Include="Source\Core\Math\Vector.cpp" />
     <ClCompile Include="Source\JsonSaveHelper.cpp" />
+    <ClCompile Include="Source\Texture\TextComponent.cpp" />
+    <ClCompile Include="Source\Texture\TextureLoader.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_demo.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_draw.cpp" />
@@ -240,6 +246,8 @@
     <ClInclude Include="Source\Core\Math\Transform.h" />
     <ClInclude Include="Source\Object\Actor\Cylinder.h" />
     <ClInclude Include="Source\Object\ObjectFactory.h" />
+    <ClInclude Include="Source\Texture\TextComponent.h" />
+    <ClInclude Include="Source\Texture\TextureLoader.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\imconfig.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\imgui.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\imgui_impl_dx11.h" />

@@ -62,9 +62,9 @@ PS_OUTPUT mainPS(PS_INPUT input) : SV_TARGET
 
     // 기본 깊이 값 계산 (0.0~1.0)
     // float baseDepth = input.depthPosition.z / input.depthPosition.w;
-    output.color = input.bUseUV ? sourceTex.Sample(samp, input.uv) : input.color;
+    output.color = (input.bUseUV==1) ? sourceTex.Sample(samp, input.uv) : input.color;
     // 색상 설정 (예: 흰색)
-    output.color = input.color;
+    //output.color = input.color;
     output.depth = saturate(depth);
     // output.color = float4(depth, depth, depth, 1.0f);
     

@@ -48,6 +48,7 @@ private:
         const FTransform& Transform;
 		const FVector4& Color;
         bool bUseVertexColor;
+        bool bUseUV;
     };
 
 public:
