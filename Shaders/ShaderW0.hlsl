@@ -20,6 +20,14 @@ cbuffer Depth : register(b2){
     int farPlane;
 }
 
+cbuffer UV : register(b3)
+{
+    float u;
+    float v;
+    float width;
+    float height;
+}
+
 struct VS_INPUT
 {
     float4 position : POSITION; // Input position from vertex buffer
@@ -69,7 +77,24 @@ PS_OUTPUT mainPS(PS_INPUT input) : SV_TARGET
     //output.color = float4(input.uv, 0, 1);
     
     //output.color = float4(input.uv.g, input.uv.g, input.uv.g, input.uv.g);
-    output.color = sourceTex.Sample(samp, input.uv);
+    
+    /* 기존 텍스처 적용*/
+    //output.color = sourceTex.Sample(samp, input.uv);
+    
+    // 텍스처 샘플링
+    float4 texColor = sourceTex.Sample(samp, input.uv * float2(width, height) + float2(u, v));
+
+    // 배경이 특정 색(예: 검은색)일 경우 픽셀 버리기
+    if (length(texColor.rgb - float3(0, 0, 0)) < 0.05)
+    {
+        discard;
+    }
+    else
+    {
+        output.color = texColor;
+    }
+
+    output.color = texColor;
     // 색상 설정 (예: 흰색)
     //output.color = input.color;
     output.depth = saturate(depth);

@@ -42,6 +42,13 @@ private:
 		int nearPlane;
 		int farPlane;
 	};
+
+    struct alignas(16) FUVConstants {
+        float U;
+        float V;
+        float Width;
+        float Height;
+    };
 	
     struct ConstantUpdateInfo
     {
@@ -204,6 +211,8 @@ protected:
 	FLOAT PickingClearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; //
 	ID3D11PixelShader* PickingPixelShader = nullptr;         // Pixel의 색상을 결정하는 Pixel 셰이더
 	ID3D11Buffer* ConstantsDepthBuffer = nullptr;
+    
+    ID3D11Buffer* ConstantsUVBuffer = nullptr;           // UV 상수 버퍼
 
 	ID3D11DepthStencilState* IgnoreDepthStencilState = nullptr;   // DepthStencil 상태(깊이 테스트, 스텐실 테스트 등 정의)
 
@@ -216,7 +225,7 @@ public:
 	void PreparePickingShader() const;
 	void UpdateConstantPicking(FVector4 UUIDColor) const;
     void UpdateConstantDepth(int Depth) const;
-
+    void UpdateConstantUV(char c) const;
     void PrepareMain();
 	void PrepareMainShader();
 

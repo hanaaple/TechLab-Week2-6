@@ -89,6 +89,10 @@ void UPrimitiveComponent::UpdateConstantDepth(const URenderer& Renderer, const i
 	Renderer.UpdateConstantDepth(Depth);
 }
 
+void UPrimitiveComponent::UpdateConstantUV(const URenderer& Renderer, const char c)const {
+	Renderer.UpdateConstantUV(c);
+}
+
 void UPrimitiveComponent::CheckIsDirty()
 {
 

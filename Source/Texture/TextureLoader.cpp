@@ -55,15 +55,19 @@ bool UTextureLoader::LoadTexture(string fileName)
 //girdSize : 한 행과 한 열의 문자 개수
 void UTextureLoader::LoadCharInfo(float bitmapWidth, float bitmapHeight, float rowSize, float colSize, int rowNum, int colNum)
 {
-	float cellWidthUV = colSize / bitmapHeight;
+	float cellWidthUV = colSize / bitmapWidth;
 	float cellHeightUV = rowSize / bitmapHeight;
 
 	for (int idx = 0; idx < NUM_LETTER; idx++) {
-		int row = idx / rowNum;
-		int col = idx % colNum;
+		int row = idx / colNum;		// 현재 문자가 속한 행 인덱스
+		int col = idx % colNum;		// 현재 문자가 속한 열 인덱스
 
+		/*/ col * colSize : 한 칸 가로 길이 (픽셀 단위)
+		* row * rowSize : 한 칸 세로 길이 (픽셀 단위)
+		* / bitmapWidth, bitmapHeight : 0 ~ 1로 정규화.
+		directX는 좌표계까 좌측 상단부터(0, 0)이라서 방향 반전.*/
 		float u = (col * colSize) / bitmapWidth;
-		float v = (row * rowSize) / bitmapHeight;
+		float v = 1.0f - ((row * rowSize) / bitmapHeight);
 
 		charInfoMap.Add(idx, { u, v, cellWidthUV, cellHeightUV });
 	}
@@ -76,10 +80,13 @@ ID3D11ShaderResourceView* UTextureLoader::GetTextureSRV()
 
 
 void UTextureLoader::DrawText(const std::string& text) {
-	for (char ch : text) {
-		if (charInfoMap.Contains(ch)) {
-			CharacterInfo charInfo = charInfoMap[ch];
-			// 쉐이더에 update constant 해주기
-		}
-	}
+	LoadCharInfo(512.0f, 512.0f, 32.0f, 32.0f, 16, 16);
+	//for (char ch : text) {
+	//	if (charInfoMap.Contains(ch)) {
+	//		CharacterInfo charInfo = charInfoMap[ch];
+	//		// 쉐이더에 update constant 해주기
+	//	}
+	//}
+
+	UEngine::Get().GetRenderer()->UpdateConstantUV('h');
 }

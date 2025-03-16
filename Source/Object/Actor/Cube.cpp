@@ -17,6 +17,8 @@ ACube::ACube()
 	std::cout << IsA("ACube") << std::endl;    // (6) 자기 자신 이름 확인
 	std::cout << IsA<AArrow>() << std::endl;    
 	std::cout << IsA("AArrow") << std::endl;   */
+
+	UTextureLoader::Get().DrawText("");
 }
 
 void ACube::BeginPlay()

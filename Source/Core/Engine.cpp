@@ -10,6 +10,7 @@
 #include "Object/Actor/Camera.h"
 #include "Static/FEditorManager.h"
 #include <Object/Actor/Cone.h>
+#include <Object/Actor/Cube.h>
 
 // ImGui WndProc 정의
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -233,8 +234,8 @@ void UEngine::InitWorld()
 
     //// Test
     World->SpawnActor<AArrow>();
-    World->SpawnActor<ACone>();
-    
+    //World->SpawnActor<ACone>();
+    World->SpawnActor<ACube>();
     World->SpawnActor<AAxis>();
     World->SpawnActor<APicker>();
 

@@ -132,6 +132,14 @@ void URenderer::CreateConstantBuffer()
     ConstantBufferDescPicking.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;            // CPU에서 쓰기 접근이 가능하게 설정
 
     Device->CreateBuffer(&ConstantBufferDescPicking, nullptr, &ConstantsDepthBuffer);
+
+    D3D11_BUFFER_DESC ConstantBufferDescUV = {};
+    ConstantBufferDescUV.Usage = D3D11_USAGE_DYNAMIC;                        // 매 프레임 업데이트 가능
+    ConstantBufferDescUV.BindFlags = D3D11_BIND_CONSTANT_BUFFER;             // 상수 버퍼로 사용
+    ConstantBufferDescUV.ByteWidth = sizeof(FUVConstants) + 0xf & 0xfffffff0;  // 16byte 정렬
+    ConstantBufferDescUV.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;            // CPU에서 쓰기 가능
+
+    Device->CreateBuffer(&ConstantBufferDescUV, nullptr, &ConstantsUVBuffer);
 }
 
 void URenderer::ReleaseConstantBuffer()
@@ -198,6 +206,9 @@ void URenderer::PrepareShader() const
     {
         DeviceContext->PSSetConstantBuffers(2, 1, &ConstantsDepthBuffer);
     }
+    if (ConstantsUVBuffer) {
+        DeviceContext->PSSetConstantBuffers(3, 1, &ConstantsUVBuffer);
+    }
 }
 
 void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
@@ -230,6 +241,7 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
         PrimitiveComp->GetComponentTransform(), 
         PrimitiveComp->GetCustomColor(), 
         PrimitiveComp->IsUseVertexColor()
+        
     };
 
     UpdateInfo.bUseUV = (PrimitiveComp->Texture != nullptr) ? 1 : 0;
@@ -719,6 +731,22 @@ void URenderer::UpdateConstantDepth(int Depth) const
     DeviceContext->Unmap(ConstantsDepthBuffer, 0);
 }
 
+void URenderer::UpdateConstantUV(char c) const {
+    if (!ConstantsUVBuffer) return;
+    D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR;
+    DeviceContext->Map(ConstantsUVBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
+    {
+        FUVConstants* Constants = static_cast<FUVConstants*>(ConstantBufferMSR.pData);
+        
+        CharacterInfo curCharInfo = UTextureLoader::Get().charInfoMap[c];
+        
+        Constants->U = curCharInfo.u;
+        Constants->V = curCharInfo.v;
+        Constants->Width = curCharInfo.width;
+        Constants->Height = curCharInfo.height;
+    }
+    DeviceContext->Unmap(ConstantsUVBuffer, 0);
+}
 void URenderer::PrepareMain()
 {
 	DeviceContext->OMSetDepthStencilState(DepthStencilState, 0);                // DepthStencil 상태 설정. StencilRef: 스텐실 테스트 결과의 레퍼런스
