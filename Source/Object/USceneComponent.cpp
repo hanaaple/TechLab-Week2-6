@@ -164,10 +164,10 @@ void USceneComponent::UpdateRelativeTransform()
 	}
 }
 
-void USceneComponent::SetVisibility(bool bNewVisibility) const
+void USceneComponent::SetVisibility(bool bNewVisibility)
 {
 	// UE5 - Visibility 변경시 Flag Update
-
+	bVisible = bNewVisibility;
 	const TArray<USceneComponent*>& AttachedChildren = AttachChildren;
 	if (AttachedChildren.Num() <= 0)
 		return;

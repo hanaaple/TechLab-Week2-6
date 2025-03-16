@@ -20,7 +20,6 @@ void AAABBPicker::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-#include <string>
 void AAABBPicker::LateTick(float DeltaTime)
 {
 	AActor::LateTick(DeltaTime);
@@ -52,7 +51,6 @@ void AAABBPicker::LateTick(float DeltaTime)
 			if (pickedActor == FEditorManager::Get().GetSelectedActor())
 			{
 				FEditorManager::Get().SelectActor(nullptr);
-				FEditorManager::Get().GetAABB()->SetActorVisibility(false);
 			}
 			else
 			{
@@ -74,12 +72,9 @@ AActor* AAABBPicker::CheckCollision(FVector rayOrigin, FVector rayDir)
 	UPrimitiveComponent* PickedComponent = nullptr;
 	UWorld* world = UEngine::Get().GetWorld();
 	TArray<UPrimitiveComponent*> components = world->GetRenderComponents();
-	if (PickedComponent == nullptr) {
-		UE_LOG("nullptr init");
-	}
 	float dist = 10000;
 	for (auto component : components) {
-		if (component != nullptr && component->GetOwner()->GetTypeName() != "AABBActor") {
+		if (component != nullptr && !component->GetOwner()->IsGizmoActor()) {
 			if (component != nullptr) {
 				FAABB boundingBox = component->aabb;
 

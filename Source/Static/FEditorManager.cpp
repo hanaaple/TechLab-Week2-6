@@ -16,7 +16,7 @@ void FEditorManager::SelectActor(AActor* NewActor)
 
     if (AABB == nullptr) {
         AABB = UEngine::Get().GetWorld()->SpawnActor<ABoundingBoxActor>();
-        AABB->SetActorVisibility(true);
+        AABB->SetActorVisibility(false);
     }
 
 	if (SelectedActor == NewActor)

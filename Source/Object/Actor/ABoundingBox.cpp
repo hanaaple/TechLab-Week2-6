@@ -5,7 +5,7 @@
 
 ABoundingBoxActor::ABoundingBoxActor()
 {
-	//bIsGizmo = true;
+	bIsGizmo = true;
 
 	UBoundingBoxComp* AABB = AddComponent<UBoundingBoxComp>();
 	AABB->SetCustomColor(FVector4(0.0f, 1.0f, 0.0f, 1.0f));
@@ -13,7 +13,7 @@ ABoundingBoxActor::ABoundingBoxActor()
 	SetActorRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	Max = FVector(0.5f, 0.5f, 0.5f);
 	Min = FVector(-0.5f, -0.5f, -0.5f);
-	SetActorVisibility(true);
+	SetActorVisibility(false);
 }
 
 void ABoundingBoxActor::Tick(float DeltaTime)
@@ -23,9 +23,6 @@ void ABoundingBoxActor::Tick(float DeltaTime)
 	{
 		UpdateTransform();
 	}
-	/*else if(SelectedActor == nullptr) {
-		SetActorVisibility(false);
-	}*/
 	AActor::Tick(DeltaTime);
 }
 
@@ -51,7 +48,7 @@ void ABoundingBoxActor::UpdateTransform()
 		transform.SetPosition((Min + Max) / 2);
 		transform.SetScale(FVector(Max.X - Min.X, Max.Y - Min.Y, Max.Z - Min.Z));
 		transform.SetRotation(FVector(0, 0, 0));
-		SetActorRelativeTransform(transform);
+		SetActorTransform(transform);
 	}
 }
 

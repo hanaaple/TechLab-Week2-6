@@ -22,34 +22,21 @@ struct FAABB {
 			max.X = FMath::Max(max.X, vertex.X);
 			max.Y = FMath::Max(max.Y, vertex.Y);
 			max.Z = FMath::Max(max.Z, vertex.Z);
-			UE_LOG("%f, %f, %f", vertex.X, vertex.Y, vertex.Z);
 		}
-		UE_LOG("min: %f, %f, %f", min.X, min.Y, min.Z);
-		UE_LOG("max: %f, %f, %f", max.X, max.Y, max.Z);
 		Min = min;
 		Max = max;
 	}
 
-	void UpdateAABB(FTransform transform, EPrimitiveMeshType type) {
-		TArray<FVertexSimple> vertices = UEngine::Get().GetRenderer()->GetBufferCache()->GetStaticVertexData(type);
+	void UpdateAABB(FTransform transform, TArray<FVertexSimple> vertices) {
 		FVector min = FVector(1000, 1000, 1000);
 		FVector max = -min;
-		FMatrix model =
-			FMatrix::GetScaleMatrix(transform.GetScale()) *
-			FMatrix::GetRotateMatrix(transform.GetEulerRotation()) *
-			FMatrix::GetTranslateMatrix(transform.GetPosition());
-
 		for (const FVertexSimple& vertex : vertices) {
-			FVector4 pos = FVector4(vertex.X, vertex.Y, vertex.Z, 1);
-			
-			
-			pos = pos * model;
-			min.X = FMath::Min(min.X, pos.X);
-			min.Y = FMath::Min(min.Y, pos.Y);
-			min.Z = FMath::Min(min.Z, pos.Z);
-			max.X = FMath::Max(max.X, pos.X);
-			max.Y = FMath::Max(max.Y, pos.Y);
-			max.Z = FMath::Max(max.Z, pos.Z);
+			min.X = FMath::Min(min.X, vertex.X);
+			min.Y = FMath::Min(min.Y, vertex.Y);
+			min.Z = FMath::Min(min.Z, vertex.Z);
+			max.X = FMath::Max(max.X, vertex.X);
+			max.Y = FMath::Max(max.Y, vertex.Y);
+			max.Z = FMath::Max(max.Z, vertex.Z);
 		}
 		Min = min;
 		Max = max;
