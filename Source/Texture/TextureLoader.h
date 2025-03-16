@@ -6,10 +6,11 @@
 #include <Core/Container/Map.h>
 
 #include "Core/AbstractClass/Singleton.h"
-
-//FIXME : 디버그 모드만 추가 Release 모드도 추가하기
-#pragma comment(lib, "DirectXTK/x64/Debug/DirectXTKd.lib")
-
+#ifdef _DEBUG
+#pragma comment(lib, "DirectXTK/x64/Debug/DirectXTKd.lib")  // 디버그용 라이브러리
+#else
+#pragma comment(lib, "DirectXTK/x64/Release/DirectXTK.lib") // 릴리즈용 라이브러리
+#endif
 using namespace std;
 
 struct CharacterInfo {
