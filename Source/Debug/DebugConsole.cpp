@@ -7,7 +7,7 @@
 std::vector<FString> Debug::items;
 
 
-void Debug::ShowConsole(bool bWasWindowSizeUpdated, ImVec2 PreRatio, ImVec2 CurRatio)
+void Debug::ShowConsole()
 {    
     static char inputBuf[256] = "";
     static std::vector<FString> history;
@@ -15,19 +15,9 @@ void Debug::ShowConsole(bool bWasWindowSizeUpdated, ImVec2 PreRatio, ImVec2 CurR
     bool reclaimFocus = false;
 
     ImGui::Begin("Console");
-    if (bWasWindowSizeUpdated)
-    {
-        auto* Window = ImGui::GetCurrentWindow();
-        ImGui::SetWindowPos(ResizeToScreen(Window->Pos, PreRatio, CurRatio));
-        ImGui::SetWindowSize(ResizeToScreen(Window->Size, PreRatio, CurRatio));
-    }
 
      if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), true, ImGuiWindowFlags_HorizontalScrollbar))
-     {
-         auto* Window = ImGui::GetCurrentWindow();
-         ImGui::SetWindowPos(ResizeToScreen(Window->Pos, PreRatio, CurRatio));
-         ImGui::SetWindowSize(ResizeToScreen(Window->Size, PreRatio, CurRatio));
-         
+     {         
          for (const auto& Item : items)
              ImGui::TextUnformatted(*Item);
     
