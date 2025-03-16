@@ -9,6 +9,7 @@
 #include "Core/Input/PlayerController.h"
 #include "Object/Actor/Camera.h"
 #include "Static/FEditorManager.h"
+#include <Object/Actor/Cone.h>
 
 // ImGui WndProc 정의
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -110,6 +111,9 @@ void UEngine::Run()
         const float DeltaTime =
             static_cast<float>(StartTime.QuadPart - EndTime.QuadPart) / static_cast<float>(Frequency.QuadPart);
 
+       
+        
+        
         APlayerInput::Get().PreProcessInput();
         
         // 메시지(이벤트) 처리
@@ -229,6 +233,7 @@ void UEngine::InitWorld()
 
     //// Test
     World->SpawnActor<AArrow>();
+    World->SpawnActor<ACone>();
     
     World->SpawnActor<AAxis>();
     World->SpawnActor<APicker>();

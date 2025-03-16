@@ -54,7 +54,6 @@ void URenderer::CreateShader()
 	ID3DBlob* ErrorMsg = nullptr;
     // 셰이더 컴파일 및 생성
     D3DCompileFromFile(L"Shaders/ShaderW0.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0, &VertexShaderCSO, &ErrorMsg);
-
     Device->CreateVertexShader(VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), nullptr, &SimpleVertexShader);
 
     D3DCompileFromFile(L"Shaders/ShaderW0.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0, &PixelShaderCSO, &ErrorMsg);
@@ -74,6 +73,7 @@ void URenderer::CreateShader()
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
     };
 
     Device->CreateInputLayout(Layout, ARRAYSIZE(Layout), VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), &SimpleInputLayout);
@@ -232,6 +232,8 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
         PrimitiveComp->IsUseVertexColor()
     };
 
+    UpdateInfo.bUseUV = (PrimitiveComp->Texture != nullptr) ? 1 : 0;
+
     UpdateConstant(UpdateInfo);
     
     RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
@@ -343,6 +345,7 @@ void URenderer::UpdateConstant(const ConstantUpdateInfo& UpdateInfo) const
         Constants->MVP = MVP;
 		Constants->Color = UpdateInfo.Color;
 		Constants->bUseVertexColor = UpdateInfo.bUseVertexColor ? 1 : 0;
+        Constants->bUseUV = UpdateInfo.bUseUV;
     }
     DeviceContext->Unmap(ConstantBuffer, 0);
 }
@@ -854,28 +857,25 @@ void URenderer::OnUpdateWindowSize(int Width, int Height)
     }
 }
 
-void URenderer::PrepareTexture(void* Texture)
+void URenderer::PrepareTexture(ID3D11ShaderResourceView* TextureSRV)
 {
     // 여기서 ResourceView를 들고 있고 매핑된 거로 가져오기,샘플러 유지
-    if (Texture == CurrentTexture)
+    if (TextureSRV == CurrentTexture)
     {
         return;
     }
 
-    CurrentTexture = Texture;
-    ID3D11ShaderResourceView* TextureSRV = nullptr;
-    //ID3D11ShaderResourceView* TextureSRV = TextureLoader::Get().GetTextureSRV(Texture);
-    //ID3D11ShaderResourceView* TextureSRV = TextureMap[Texture];
-
-    if (Texture != nullptr)
+    CurrentTexture = TextureSRV;
+    
+    if (TextureSRV != nullptr)
     {
         DeviceContext->PSSetShaderResources(0, 1, &TextureSRV);
         DeviceContext->PSSetSamplers(0, 1, &SamplerState);   
     }
     else
     {
-        DeviceContext->PSSetShaderResources(0, 1, nullptr);
-        DeviceContext->PSSetSamplers(0, 1, nullptr);
+        //DeviceContext->PSSetShaderResources(0, 1, nullptr);
+        //DeviceContext->PSSetSamplers(0, 1, nullptr);
     }
 }
 

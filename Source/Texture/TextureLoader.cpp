@@ -1,7 +1,7 @@
 ﻿#define NUM_LETTER 256
 #include "TextureLoader.h"
-#include <Core/Math/Vector.h>
 #include <DirectXTK/WICTextureLoader.h>
+#include "Core/Engine.h"
 
 UTextureLoader::UTextureLoader()
 {
@@ -19,6 +19,8 @@ UTextureLoader::~UTextureLoader()
 
 bool UTextureLoader::LoadTexture(string fileName)
 {
+	if (m_texture != nullptr)
+		return true;
 	// FIXME : 추후 텍스처 여러개 쓸 때 수정 필요.
 	//LoadCharInfo(512.0f, 512.0f, 32.0f, 32.0f, 16, 16);
 
@@ -65,6 +67,11 @@ void UTextureLoader::LoadCharInfo(float bitmapWidth, float bitmapHeight, float r
 
 		charInfoMap.Add(idx, { u, v, cellWidthUV, cellHeightUV });
 	}
+}
+
+ID3D11ShaderResourceView* UTextureLoader::GetTextureSRV()
+{
+	return m_texture;
 }
 
 

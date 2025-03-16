@@ -101,18 +101,11 @@ void USceneComponent::UpdateChildTransforms()
 		}
 	}
 }
-
+// Relative 기반 World Update
 void USceneComponent::UpdateComponentToWorld()
 {
 	if (AttachParent != nullptr)
 	{
-		// FMatrix ParentWorld = AttachParent->GetComponentTransform().GetMatrix();
-		// FMatrix MyLocal = RelativeTransform.GetMatrix();
-		// FMatrix NewMatrix = MyLocal * ParentWorld.Inverse();
-		// ComponentToWorld = NewMatrix.GetTransform();
-
-		//ComponentToWorld = AttachParent->GetComponentTransform().GetRelativeTransform(RelativeTransform);
-
 		const FTransform& ParentToWorld = AttachParent->GetComponentTransform();
 		ComponentToWorld = RelativeTransform * ParentToWorld;
 	}
@@ -126,7 +119,7 @@ void USceneComponent::UpdateComponentToWorld()
 		UpdateChildTransforms();
 	}
 }
-
+// World 기반 Relative Update
 void USceneComponent::UpdateRelativeTransform()
 {
 	if (AttachParent != nullptr)
@@ -142,7 +135,7 @@ void USceneComponent::UpdateRelativeTransform()
 
 
 		const FTransform& ParentToWorld = AttachParent->GetComponentTransform();
-		ComponentToWorld = RelativeTransform * ParentToWorld;
+		RelativeTransform = ComponentToWorld * ParentToWorld.Inverse();
 	}
 	else
 	{

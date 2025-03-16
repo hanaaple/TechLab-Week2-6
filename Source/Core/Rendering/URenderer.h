@@ -12,7 +12,7 @@
 #include "Core/Math/Plane.h"
 #include "Core/Math/Transform.h"
 #include "Core/Name/FName.h"
-
+#include "Texture/TextureLoader.h"
 
 class AActor;
 struct FVertexSimple;
@@ -29,7 +29,7 @@ private:
         FVector4 Color;
 		// true인 경우 Vertex Color를 사용하고, false인 경우 Color를 사용합니다.
         uint32 bUseVertexColor;
-        float u, v;
+        uint32 bUseUV;
     };
 	
 	struct alignas(16) FPickingConstants
@@ -48,7 +48,7 @@ private:
         const FTransform& Transform;
 		const FVector4& Color;
         bool bUseVertexColor;
-        bool bUseUV;
+        int bUseUV;
     };
 
 public:
@@ -111,7 +111,7 @@ public:
     void UpdateProjectionMatrix(ACamera* Camera);
 
 	void OnUpdateWindowSize(int Width, int Height);
-    void PrepareTexture(void* Texture);
+    void PrepareTexture(ID3D11ShaderResourceView* TextureSRV);
 
 protected:
     /** Direct3D Device 및 SwapChain을 생성합니다. */
@@ -187,7 +187,7 @@ protected:
 	std::unique_ptr<FBufferCache> BufferCache;
 
 	ID3D11SamplerState* SamplerState = nullptr;
-	void* CurrentTexture;
+    ID3D11ShaderResourceView* CurrentTexture;
 	
     FMatrix ViewMatrix;
 	FMatrix ProjectionMatrix;

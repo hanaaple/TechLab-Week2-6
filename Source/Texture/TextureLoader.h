@@ -2,18 +2,10 @@
 #define _TCHAR_DEFINED  // TCHAR 재정의 에러 때문
 #include <d3d11.h>
 
-#include "DirectXTK/DDSTextureLoader.h"
-//#include "DirectXTex/SpriteFont.h"				// DirectXTK에서 제공하는 폰트 렌더링 클래스. .spritefont 형식의 폰트 데이터를 로드하고 글자를 화면에 그릴 수 있도록 함.
-#include "DirectXTK/SpriteBatch.h"			// DirectXTK의 스프라이트 렌더링 도우미 클래스. 2D 텍스처(스프라이트)를 화면에 쉽게 렌더링.
-//#include "DirectXTex/WICTextureLoader.h"
-#include <Core/Container/Map.h>
-#include <Core/Container/String.h>
-#include <DirectXTK/SpriteBatch.h>
-#include "Core/AbstractClass/Singleton.h"
-#include "Core/Engine.h"
 #include <string>
-#include <locale>
-//#include <codecvt>
+#include <Core/Container/Map.h>
+
+#include "Core/AbstractClass/Singleton.h"
 
 //FIXME : 디버그 모드만 추가 Release 모드도 추가하기
 #pragma comment(lib, "DirectXTK/x64/Debug/DirectXTKd.lib")
@@ -35,15 +27,14 @@ public:
 
 	bool LoadTexture(string fileName);
 	void LoadCharInfo(float bitmapWidth, float bitmapHeight, float rowSize, float colSize, int rowNum, int colNum);
-
+	ID3D11ShaderResourceView* GetTextureSRV();
 	void DrawText(const std::string& text);
-
 	TMap<char, CharacterInfo> charInfoMap;
 
 	// FIXME : 텍스처 캐싱으로 바꾸기
 	ID3D11ShaderResourceView* m_texture;
 	//std::unique_ptr<DirectX::SpriteBatch> spriteBatch;
-	void CreateQuad(float x, float y, float size);
+	//void CreateQuad(float x, float y, float size);
 };
 
 //wstring StringToWString(const std::string& str)

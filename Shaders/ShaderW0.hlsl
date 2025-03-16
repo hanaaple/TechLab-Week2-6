@@ -7,7 +7,6 @@ cbuffer constants : register(b0)
     matrix MVP;
     float4 CustomColor;
     uint bUseVertexColor;
-    float2 uv;
     uint bUseUV;
 }
 
@@ -25,6 +24,7 @@ struct VS_INPUT
 {
     float4 position : POSITION; // Input position from vertex buffer
     float4 color : COLOR;       // Input color from vertex buffer
+    float2 uv : TEXCOORD;
 };
 
 struct PS_INPUT
@@ -32,7 +32,7 @@ struct PS_INPUT
     float4 position : SV_POSITION; // Transformed position to pass to the pixel shader
     float4 color : COLOR;          // Color to pass to the pixel shader
     float2 uv : TEXCOORD0;
-    uint bUseUV : TEXCOORD1;
+    uint bUseUV : BLENDINDICES;
     // float4 depthPosition : TEXCOORD0;
 };
 
@@ -50,7 +50,9 @@ PS_INPUT mainVS(VS_INPUT input)
     // output.depthPosition = output.position;
 
     output.color = bUseVertexColor == 1 ? input.color : CustomColor;
-    output.uv = uv;
+    //output.color = input.color;
+    //output.uv = float2(input.u, input.v);
+    output.uv = input.uv;
     output.bUseUV = bUseUV;
     return output;
 }
@@ -62,7 +64,12 @@ PS_OUTPUT mainPS(PS_INPUT input) : SV_TARGET
 
     // 기본 깊이 값 계산 (0.0~1.0)
     // float baseDepth = input.depthPosition.z / input.depthPosition.w;
-    output.color = (input.bUseUV==1) ? sourceTex.Sample(samp, input.uv) : input.color;
+    //output.color = (input.bUseUV==1) ? sourceTex.Sample(samp, input.uv) : input.color;
+    
+    //output.color = float4(input.uv, 0, 1);
+    
+    //output.color = float4(input.uv.g, input.uv.g, input.uv.g, input.uv.g);
+    output.color = sourceTex.Sample(samp, input.uv);
     // 색상 설정 (예: 흰색)
     //output.color = input.color;
     output.depth = saturate(depth);

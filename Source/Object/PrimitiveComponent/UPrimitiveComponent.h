@@ -54,11 +54,11 @@ protected:
 	bool bIsDirty;	// if Material or Topology .... Changes
 
 public:
-	void* Texture;
+	ID3D11ShaderResourceView* Texture;
 
 public:
 	bool IsUseVertexColor() const { return bUseVertexColor; }
-
+	bool IsUseUV() const { return bUseUV; }
 	void SetCustomColor(const FVector4& InColor)
 	{
 		CustomColor = InColor; 
@@ -73,6 +73,7 @@ public:
 	
 protected:
 	bool bUseVertexColor = true;
+	bool bUseUV = true;
 	FVector4 CustomColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 private:
@@ -151,7 +152,11 @@ class UConeComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 	DECLARE_OBJECT(UConeComp,Super)
 public:
-	UConeComp() = default;
+	UConeComp() : Super() {
+
+		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
+		Texture = UTextureLoader::Get().m_texture;
+	}
 	virtual ~UConeComp() = default;
 	EPrimitiveMeshType GetMeshType() override
 	{
