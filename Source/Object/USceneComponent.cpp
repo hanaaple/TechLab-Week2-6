@@ -57,6 +57,10 @@ void USceneComponent::SetupAttachment(USceneComponent* InParent, EAttachmentRule
 {
 	if (InParent)
 	{
+		if (AttachParent != nullptr)
+		{
+			AttachParent->RemoveChild(this);
+		}
 		AttachParent = InParent;
 		InParent->AttachChildren.Add(this);
 
@@ -82,6 +86,11 @@ void USceneComponent::SetupAttachment(USceneComponent* InParent, EAttachmentRule
 	{
 		UE_LOG("Parent is nullptr");
 	}
+}
+
+void USceneComponent::RemoveChild(USceneComponent* Child)
+{
+	AttachChildren.Remove(Child);
 }
 
 // void USceneComponent::ApplyParentWorldTransform()
@@ -147,7 +156,7 @@ void USceneComponent::UpdateRelativeTransform()
 
 
 		const FTransform& ParentToWorld = AttachParent->GetComponentTransform();
-		ComponentToWorld = RelativeTransform * ParentToWorld;
+		RelativeTransform = ComponentToWorld * ParentToWorld.Inverse();
 	}
 	else
 	{

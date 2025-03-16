@@ -2,12 +2,12 @@
 
 #include <iostream>
 
-#include "Object/ObjectFactory.h"
-#include "Object/World/World.h"
+#include "Debug/DebugConsole.h"
+#include "Input/PlayerController.h"
+#include "Input/PlayerInput.h"
+#include "Object/Actor/Cylinder.h"
 #include "Object/Gizmo/Axis.h"
-#include "Core/Input/PlayerInput.h"
-#include "Core/Input/PlayerController.h"
-#include "Object/Actor/Camera.h"
+#include "Object/World/World.h"
 #include "Static/FEditorManager.h"
 #include "Object/Actor/AABBPicker.h"
 
@@ -229,11 +229,32 @@ void UEngine::InitWorld()
     FEditorManager::Get().SetCamera(World->SpawnActor<ACamera>());
 
     //// Test
-    World->SpawnActor<AArrow>();
-    
+    //World->SpawnActor<AArrow>();
+
+    auto* Actor = World->SpawnActor<ACylinder>();
     World->SpawnActor<AAxis>();
-    World->SpawnActor<APicker>();
-    World->SpawnActor<AAABBPicker>();
+    //World->SpawnActor<APicker>();
+    UConeComp* ConeComp = Actor->AddComponent<UConeComp>();
+    ConeComp->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 1.0f), FVector(), FVector(1.2f, 1.2f, 0.5f)));
+
+    ConeComp->SetupAttachment(Actor->GetRootComponent(), EEndPlayReason::EAttachmentRule::KeepRelative);
+	
+    for (int i=0;i<10;i++)
+    {
+        UConeComp* ConeComp1 =  Actor->AddComponent<UConeComp>();
+        
+        ConeComp1->SetRelativeTransform(FTransform(FVector(0.0f, i, 1.0f), FVector(), FVector(1.2f, 1.2f, 0.5f)));
+        ConeComp1->SetupAttachment(Actor->GetRootComponent(), EEndPlayReason::EAttachmentRule::KeepRelative);
+    
+        for (int j=0;j<10;j++)
+        {
+            UConeComp* ConeComp2 =  Actor->AddComponent<UConeComp>();
+            ConeComp2->SetRelativeTransform(FTransform(FVector(0.0f, j * i, 1.0f), FVector(), FVector(1.2f, 1.2f, 0.5f)));
+            ConeComp2->SetupAttachment(ConeComp1, EEndPlayReason::EAttachmentRule::KeepRelative);
+        }
+    }
+    
+    
 
 	World->BeginPlay();
 }

@@ -39,13 +39,116 @@ BufferInfo& FBufferCache::GetIndexBufferInfo(EPrimitiveMeshType Type)
 	return IndexBufferCache[Type];
 }
 
-TArray<FVertexSimple>& FBufferCache::GetVertexData(EPrimitiveMeshType Type)
+BufferInfo& FBufferCache::GetVertexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology)
 {
-	if (!VertexDataCache.contains(Type)) {
-		auto vertexData = CreateVertexData(Type);
-		VertexDataCache.insert({ Type, vertexData });
+	if (BatchVertexBufferCache.Contains(Texture))
+	{
+		if (BatchVertexBufferCache[Texture].Contains(Topology))
+		{
+			return BatchVertexBufferCache[Texture][Topology];
+		}
 	}
-	return VertexDataCache[Type];
+	BufferInfo bufferInfo;
+	return bufferInfo;
+}
+
+BufferInfo& FBufferCache::GetIndexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology)
+{
+	if (BatchIndexBufferCache.Contains(Texture))
+	{
+		if (BatchIndexBufferCache[Texture].Contains(Topology))
+		{
+			return BatchIndexBufferCache[Texture][Topology];
+		}
+	}
+	BufferInfo bufferInfo;
+	return bufferInfo;
+}
+
+void FBufferCache::UpdateVertexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer)
+{
+	// TODO Batch - 고쳐야됨
+	if (!BatchVertexBufferCache.Contains(Texture))
+	{
+		BatchVertexBufferCache.Add(Texture, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>());
+	}
+	if (!BatchVertexBufferCache[Texture].Contains(Topology))
+	{
+		//BatchVertexBufferCache[Texture].Add(Topology, );
+	}
+	BatchVertexBufferCache[Texture][Topology].GetBuffer()->Release();	
+	//BatchVertexBufferCache[Texture][Topology] = BufferInfo(Buffer, BufferSize);
+}
+
+void FBufferCache::UpdateIndexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer)
+{
+	// TODO Batch - 고쳐야됨
+	if (BatchIndexBufferCache.Contains(Texture))
+	{
+		if (BatchIndexBufferCache[Texture].Contains(Topology))
+		{
+			BatchVertexBufferCache[Texture][Topology].GetBuffer()->Release();
+			//BatchIndexBufferCache[Texture][Topology] = BufferInfo(Buffer, BufferSize);
+		}
+	}
+}
+
+TArray<uint32> FBufferCache::GetStaticIndexData(EPrimitiveMeshType MeshType)
+{
+	TArray<uint32> Indecies;
+	switch (MeshType)
+	{
+	case EPrimitiveMeshType::EPT_Cube:
+		Indecies = CubeIndecies;
+		break;
+	default:
+		break;
+	}
+
+	return Indecies;
+}
+
+TArray<FVertexSimple> FBufferCache::GetStaticVertexData(EPrimitiveMeshType MeshType)
+{
+	TArray<FVertexSimple> VertexData;
+	FVertexSimple* Vertices = nullptr;
+	int Size = 0;
+	switch (MeshType)
+	{
+	case EPrimitiveMeshType::EPT_Line:
+		Vertices = LineVertices;
+		Size = std::size(LineVertices);
+		break;
+	case EPrimitiveMeshType::EPT_Triangle:
+		Vertices = TriangleVertices;
+		Size = std::size(TriangleVertices);
+		break;
+	case EPrimitiveMeshType::EPT_Cube:
+		Vertices = CubeVertices;
+		Size = std::size(CubeVertices);
+		break;
+	case EPrimitiveMeshType::EPT_Sphere:
+		Vertices = SphereVertices;
+		Size = std::size(SphereVertices);
+		break;
+	case EPrimitiveMeshType::EPT_Cylinder:
+		{
+			VertexData = CreateCylinderVertices();
+			break;
+		}
+	case EPrimitiveMeshType::EPT_Cone:
+		{
+			VertexData = CreateConeVertices();
+			break;
+		}
+	default:
+		// ERROR
+			break;
+	}
+	
+	VertexData.Append(Vertices, Size);
+	
+	return VertexData;
 }
 
 void FBufferCache::Release()
@@ -66,59 +169,58 @@ void FBufferCache::Release()
 
 BufferInfo FBufferCache::CreateVertexBufferInfo(EPrimitiveMeshType Type)
 {
+	TArray<FVertexSimple> VertexData;
 	ID3D11Buffer* Buffer = nullptr;
 	int Size = 0;
-	D3D_PRIMITIVE_TOPOLOGY Topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
+	D3D11_BIND_FLAG BindFlag = D3D11_BIND_VERTEX_BUFFER;
+	D3D11_USAGE D3d11Usage = D3D11_USAGE_IMMUTABLE;
+	FVertexSimple* Vertices = nullptr;
 	switch (Type)
 	{
 	case EPrimitiveMeshType::EPT_Line:
+		Vertices = LineVertices;
 		Size = std::size(LineVertices);
-		Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(LineVertices, sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-		Topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
 		break;
 	case EPrimitiveMeshType::EPT_Triangle:
+		Vertices = TriangleVertices;
 		Size = std::size(TriangleVertices);
-		Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(TriangleVertices, sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
 		break;
 	case EPrimitiveMeshType::EPT_Cube:
+		Vertices = CubeVertices;
 		Size = std::size(CubeVertices);
-		Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(CubeVertices, sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
 		break;
 	case EPrimitiveMeshType::EPT_Sphere:
+		Vertices = SphereVertices;
 		Size = std::size(SphereVertices);
-		Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(SphereVertices, sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
 		break;
 	case EPrimitiveMeshType::EPT_Cylinder:
-	{
-		TArray<FVertexSimple> Vertices = CreateCylinderVertices();
-		Size = Vertices.Num();
-		Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(Vertices.GetData(), sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-		break;
-	}
-	case EPrimitiveMeshType::EPT_Cone:
-	{
-		TArray<FVertexSimple> Vertices = CreateConeVertices();
-		Size = Vertices.Num();
-		Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(Vertices.GetData(), sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-		break;
-	}
-	case EPrimitiveMeshType::EPT_Box:
-		Size = std::size(CubeVertices);
-		Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(CubeVertices, sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-		break;
-		default:
-			// ERROR
+		{
+			VertexData = CreateCylinderVertices();
 			break;
+		}
+	case EPrimitiveMeshType::EPT_Cone:
+		{
+			VertexData = CreateConeVertices();
+			break;
+		}
+	default:
+		break;
+		// ERROR
 	}
-
-	return BufferInfo(Buffer, Size, Topology);
+	
+	VertexData.Append(Vertices, Size);
+	uint32 VertexSize = VertexData.Num();
+	if (VertexData.Num() > 0)
+		Buffer = UEngine::Get().GetRenderer()->CreateMeshBuffer(VertexData.GetData(), sizeof(FVertexSimple) * VertexSize, BindFlag, D3d11Usage);
+	
+	return BufferInfo(Buffer, VertexSize);	
 }
 
 BufferInfo FBufferCache::CreateIndexBufferInfo(EPrimitiveMeshType Type)
 {
 	ID3D11Buffer* Buffer = nullptr;
-	int Size = 0;
+	uint32 Size = 0;
 	D3D_PRIMITIVE_TOPOLOGY Topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	switch (Type)
@@ -134,7 +236,7 @@ BufferInfo FBufferCache::CreateIndexBufferInfo(EPrimitiveMeshType Type)
 	// 	break;
 	case EPrimitiveMeshType::EPT_Cube:
 		Size = CubeIndecies.Num();
-		Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(CubeIndecies, sizeof(uint32) * Size, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
+		Buffer = UEngine::Get().GetRenderer()->CreateMeshBuffer(CubeIndecies.GetData(), sizeof(uint32) * Size, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
 		break;
 	// case EPrimitiveType::EPT_Sphere:
 	// 	//Size = std::size(SphereVertices);
@@ -155,69 +257,12 @@ BufferInfo FBufferCache::CreateIndexBufferInfo(EPrimitiveMeshType Type)
 	// 		break;
 	// 	}
 		// TODO TEMP
-	case EPrimitiveMeshType::EPT_Box:
-		Size = CubeIndecies.Num();
-		Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(CubeIndecies, sizeof(uint32) * Size, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-		break;
 	default:
 		return BufferInfo();
 	}
 
-	return BufferInfo(Buffer, Size, Topology);	
+	return BufferInfo(Buffer, Size);	
 }
-
-TArray<FVertexSimple> FBufferCache::CreateVertexData(EPrimitiveMeshType Type)
-{
-	TArray<FVertexSimple> vertexData;
-	switch (Type)
-	{
-	case EPrimitiveMeshType::EPT_Line:
-		for (int i = 0; i < std::size(LineVertices); i++) {
-			vertexData.Add(LineVertices[i]);
-		}
-		break;
-	case EPrimitiveMeshType::EPT_Triangle:
-		for (int i = 0; i < std::size(TriangleVertices); i++) {
-			vertexData.Add(TriangleVertices[i]);
-		}
-		break;
-	case EPrimitiveMeshType::EPT_Cube:
-		for (int i = 0; i < std::size(CubeVertices); i++) {
-			vertexData.Add(CubeVertices[i]);
-		}
-		break;
-	case EPrimitiveMeshType::EPT_Sphere:
-		for (int i = 0; i < std::size(SphereVertices); i++) {
-			vertexData.Add(SphereVertices[i]);
-		}
-		break;
-	case EPrimitiveMeshType::EPT_Cylinder:
-	{
-		vertexData = CreateCylinderVertices();
-		break;
-	}
-	case EPrimitiveMeshType::EPT_Cone:
-	{
-		vertexData = CreateConeVertices();
-		break;
-	}
-	case EPrimitiveMeshType::EPT_Box:
-	{
-		for (int i = 0; i < std::size(CubeVertices); i++) {
-			vertexData.Add(CubeVertices[i]);
-		}
-		break;
-	}
-	default:
-		// ERROR
-		break;
-	}
-	if (vertexData.Num() == 0) {
-		MessageBoxA(nullptr, "zero vertex", "Click Position", MB_OK | MB_ICONWARNING);
-	}
-	return vertexData;
-}
-
 
 TArray<FVertexSimple> FBufferCache::CreateConeVertices()
 {

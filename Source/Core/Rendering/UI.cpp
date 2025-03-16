@@ -435,9 +435,10 @@ void UI::RenderPropertyWindow()
                                            : "Scale";
             ImGui::Text("GizmoType: %s", GizmoTypeStr);
         }
-
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
         //  계층 구조로 자식 트리 출력
         ImGui::Separator();
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
         ImGui::Text("Children");
 
         if (USceneComponent* RootComponent = selectedActor->GetRootComponent())
@@ -509,8 +510,7 @@ void UI::RenderSceneManager()
     ImGui::End();
 }
 
-void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bool bShowUUID,
-                             ImGuiTreeNodeFlags nodeFlags)
+void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bool bShowUUID, ImGuiTreeNodeFlags nodeFlags)
 {
     if (!Component) return;
 
@@ -558,6 +558,46 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
             ImGui::Text("%u, World Position %f, %f, %f", Component->GetUUID(), ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y, ComponentTransform.GetPosition().Z);
             ImGui::Text("%u, World Rotation %f, %f, %f", Component->GetUUID(), ComponentTransform.GetEulerRotation().X, ComponentTransform.GetEulerRotation().Y, ComponentTransform.GetEulerRotation().Z);
             ImGui::Text("%u, World Scale %f, %f, %f", Component->GetUUID(), ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z);
+
+            if (Component->IsA<UPrimitiveComponent>())
+            {
+                auto* PrimitiveComponent = dynamic_cast<UPrimitiveComponent*>(Component);
+                bool bisBatch = false;
+                if (PrimitiveComponent->GetRenderMode() == ERenderMode::Batch)
+                {
+                    bisBatch = true;
+                }
+                if (ImGui::Checkbox("IsBatch", &bisBatch))
+                {
+                    if (bisBatch)
+                        PrimitiveComponent->SetRenderMode(Batch);
+                    else
+                        PrimitiveComponent->SetRenderMode(Individual);
+                }
+                
+                static const char* TopologyItems[] = {"LineList", "Triangle", "POINTLIST"};
+                int curItem = -1;
+                if (PrimitiveComponent->GetTopology() == D3D11_PRIMITIVE_TOPOLOGY_LINELIST)
+                    curItem = 0;
+                else if (PrimitiveComponent->GetTopology() == D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+                    curItem = 1;
+                else if (PrimitiveComponent->GetTopology() == D3D11_PRIMITIVE_TOPOLOGY_POINTLIST)
+                    curItem = 2;
+                
+                if (ImGui::Combo("##Topology", &curItem, TopologyItems, IM_ARRAYSIZE(TopologyItems)))
+                {
+                    if (FName(TopologyItems[curItem]) == FName("LineList"))
+                    {
+                        PrimitiveComponent->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+                    } else if (FName(TopologyItems[curItem]) == FName("Triangle"))
+                    {
+                        PrimitiveComponent->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                    }else if (FName(TopologyItems[curItem]) == FName("POINTLIST"))
+                    {
+                        PrimitiveComponent->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+                    }
+                }   
+            }
         }
 
         for (auto* Child : Component->GetAttachChildren())

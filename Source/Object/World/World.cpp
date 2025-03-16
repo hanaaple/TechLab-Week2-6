@@ -30,6 +30,11 @@ void UWorld::BeginPlay()
 
 void UWorld::Tick(float DeltaTime)
 {
+	for (const auto& Actor : Actors)
+	{
+		Actor->ActivateComponent();
+	}
+	
 	for (const auto& Actor : ActorsToSpawn)
 	{
 		Actor->BeginPlay();
@@ -67,18 +72,40 @@ void UWorld::LateTick(float DeltaTime)
 
 void UWorld::UpdateRenderComponents()
 {
-	// 렌더링 되는 컴포넌트들
-	// for (auto proxy : )
-	// {
-	// 	if (proxy->IsDirty)
-	// 	{
-	// 		// visible change
-	// 		// 
-	// 		proxy 기반 변경
-	// 	}
-	// }
-	// 변경사항이 있다면
-	// 배치, 인스턴싱, 별개 렌더링 Array 업데이트
+	for (auto* RenderComponent : RenderComponents)
+	{
+		const auto& PrevFrameData = RenderComponent->GetPrevFrameData();
+		const auto& CurFrameData = RenderComponent->GetCurFrameData();
+		if(RenderComponent->GetIsDirty())
+		{
+			if (PrevFrameData.RenderMode == Batch)
+			{
+				if (HasBatchRendersKey(PrevFrameData.Texture, PrevFrameData.Topology, PrevFrameData.bUseIndexBuffer))
+				{
+					auto& PrevBatchRenderContext = BatchRenders[PrevFrameData.Texture][PrevFrameData.Topology][PrevFrameData.bUseIndexBuffer];
+					PrevBatchRenderContext.bIsDirty = true;
+				
+					if (PrevBatchRenderContext.RenderComponentMap.Contains(PrevFrameData.MeshType))
+					{
+						PrevBatchRenderContext.RenderComponentMap[PrevFrameData.MeshType].Remove(RenderComponent);
+					}
+				
+					CheckRemoveMap(PrevFrameData.Texture, PrevFrameData.Topology, PrevFrameData.bUseIndexBuffer, PrevFrameData.MeshType);
+				}
+			}
+
+			if (CurFrameData.RenderMode == Batch)
+			{
+				CheckInitMap(CurFrameData.Texture, CurFrameData.Topology, CurFrameData.bUseIndexBuffer, CurFrameData.MeshType);
+						
+				auto& CurBatchRenderContext = BatchRenders[CurFrameData.Texture][CurFrameData.Topology][CurFrameData.bUseIndexBuffer];
+				CurBatchRenderContext.bIsDirty = true;
+				CurBatchRenderContext.RenderComponentMap[CurFrameData.MeshType].Add(RenderComponent);
+			}
+			
+			RenderComponent->SetDirty(false);
+		}
+	}
 }
 
 
@@ -144,14 +171,14 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 	Renderer.PrepareMain();
 	Renderer.PrepareMainShader();	// 우선 Shader 1개로만
 	
-	//for (const auto& MaterialMapped : BatchRenders)
+	for (auto& [Texture, TextureMapped] : BatchRenders)
 	{
-		//for (const auto& TopologyMapped : MaterialMapped.Value)
-		for (auto& TopologyMapped : BatchRenders)
+		for (auto& TopologyMapped : TextureMapped)
 		{
 			for (auto& [_, BatchContext] : TopologyMapped.Value)
 			{
-				DrawBatch(Renderer, BatchContext);
+				Renderer.PrepareTexture(BatchContext.Texture);
+				Renderer.RenderBatch(BatchContext);
 			}
 		}
 	}
@@ -171,7 +198,7 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 	TArray<UPrimitiveComponent*> ZIgnoreRenderComponents;
 	for (auto* RenderTarget : RenderComponents)
 	{
-		Renderer.PrepareTexture(RenderTarget->Texture);
+		Renderer.PrepareTexture(RenderTarget->GetTexture());
 		// Texture 변경
 		if (RenderTarget->GetDepth() > 0)
 		{
@@ -185,7 +212,7 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 	Renderer.PrepareZIgnore();
 	for (auto& RenderTarget: ZIgnoreRenderComponents)
 	{
-		Renderer.PrepareTexture(RenderTarget->Texture);
+		Renderer.PrepareTexture(RenderTarget->GetTexture());
 		RenderTarget->Render();
 	}
 	// 1. 같은 메쉬여도 배치 여부가 다를수 있다.
@@ -200,11 +227,6 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 // {
 // 	Renderer.RenderPickingTexture();
 // }
-
-void UWorld::DrawBatch(URenderer& Renderer, FBatchRenderContext BatchRenderContext)
-{
-	Renderer.RenderBatch(BatchRenderContext);
-}
 
 void UWorld::ClearWorld()
 {
@@ -338,4 +360,75 @@ UWorldInfo UWorld::GetWorldInfo() const
 		i++;
 	}
 	return WorldInfo;
+}
+
+bool UWorld::HasBatchRendersKey(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer)
+{
+	if (BatchRenders.Contains(Texture))
+	{
+		if (BatchRenders[Texture].Contains(Topology))
+		{
+			if (BatchRenders[Texture][Topology].Contains(bUseIndexBuffer))
+			{
+				return true;
+			}
+		}
+	}
+	
+	return false;
+}
+
+void UWorld::CheckRemoveMap(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer, EPrimitiveMeshType MeshType)
+{
+	if (BatchRenders.Contains(Texture))
+	{
+		if (BatchRenders[Texture].Contains(Topology))
+		{
+			if (BatchRenders[Texture][Topology].Contains(bUseIndexBuffer))
+			{
+				if (BatchRenders[Texture][Topology][bUseIndexBuffer].RenderComponentMap.Contains(MeshType))
+				{
+					if (BatchRenders[Texture][Topology][bUseIndexBuffer].RenderComponentMap[MeshType].Num() == 0)
+					{
+						BatchRenders[Texture][Topology][bUseIndexBuffer].RenderComponentMap.Remove(MeshType);
+					}
+				}
+				
+				if (BatchRenders[Texture][Topology][bUseIndexBuffer].RenderComponentMap.Num() == 0)
+				{
+					// Remove Cached Buffer
+					BatchRenders[Texture][Topology].Remove(bUseIndexBuffer);
+				}
+			}
+
+			if (BatchRenders[Texture][Topology].Num() == 0)
+			{
+				BatchRenders[Texture].Remove(Topology);
+			}
+		}
+		if (BatchRenders[Texture].Num() == 0)
+		{
+			BatchRenders.Remove(Texture);
+		}
+	}
+}
+
+void UWorld::CheckInitMap(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer, EPrimitiveMeshType MeshType)
+{
+	if (!BatchRenders.Contains(Texture))
+	{
+		BatchRenders.Add(Texture, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<bUseIndexBufferFlag, FBatchRenderContext>>());
+		if (!BatchRenders[Texture].Contains(Topology))
+		{
+			BatchRenders[Texture].Add(Topology, TMap<bUseIndexBufferFlag, FBatchRenderContext>());
+			if (!BatchRenders[Texture][Topology].Contains(bUseIndexBuffer))
+			{
+				BatchRenders[Texture][Topology].Add(bUseIndexBuffer, FBatchRenderContext());
+
+				if (!BatchRenders[Texture][Topology][bUseIndexBuffer].RenderComponentMap.Contains(MeshType)){
+					BatchRenders[Texture][Topology][bUseIndexBuffer].RenderComponentMap.Add(MeshType, TArray<UPrimitiveComponent*>());
+				}
+			}
+		}
+	}
 }

@@ -75,7 +75,7 @@ public:
     void PrepareShader() const;
 
 	void RenderPrimitive(class UPrimitiveComponent* PrimitiveComp);
-	void RenderBatch(FBatchRenderContext& BatchRenderContext);
+	void RenderBatch(FBatchRenderContext& BatchContext);
 
     /**
      * Buffer에 있는 Vertex를 그립니다.
@@ -86,7 +86,7 @@ public:
 	
     /**
      * 정점 데이터로 Vertex Buffer를 생성합니다.
-     * @param Vertices 버퍼로 변환할 정점 데이터 배열의 포인터
+     * @param Data 버퍼로 변환할 정점 데이터 배열의 포인터
      * @param ByteWidth 버퍼의 총 크기 (바이트 단위)
      * @param BindFlag
      * @param D3d11Usage
@@ -94,11 +94,11 @@ public:
      *
      * @note 이 함수는 D3D11_USAGE_IMMUTABLE 사용법으로 버퍼를 생성합니다.
      */
-    ID3D11Buffer* CreateVertexBuffer(const FVertexSimple* Vertices, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage) const;
-	ID3D11Buffer* CreateIndexBuffer(const TArray<uint32>& Indices, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage) const;
+    ID3D11Buffer* CreateMeshBuffer(const void* Data, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage) const;
 
     /** Constant Data를 업데이트 합니다. */
-    void UpdateConstant(const ConstantUpdateInfo& UpdateInfo) const;
+    void UpdateConstantPrimitive(const ConstantUpdateInfo& UpdateInfo) const;
+    void UpdateConstantBatch(const FBatchRenderContext& BatchRenderContext) const;
 
     ID3D11Device* GetDevice() const;
     ID3D11DeviceContext* GetDeviceContext() const;
@@ -110,7 +110,8 @@ public:
     void UpdateProjectionMatrix(ACamera* Camera);
 
 	void OnUpdateWindowSize(int Width, int Height);
-    void PrepareTexture(void* Texture);
+    void PrepareTexture(ID3D11ShaderResourceView* Texture);
+    FBufferCache* GetBufferCache() const { return BufferCache.get(); } 
 
 protected:
     /** Direct3D Device 및 SwapChain을 생성합니다. */
@@ -153,6 +154,7 @@ protected:
 	void ReleaseTextureSRVs();
 	
     void InitMatrix();
+    void UpdateTopology(D3D_PRIMITIVE_TOPOLOGY Topology);
 
 protected:
     // Direct3D 11 장치(Device)와 장치 컨텍스트(Device Context) 및 스왑 체인(Swap Chain)을 관리하기 위한 포인터들
@@ -186,7 +188,7 @@ protected:
 	std::unique_ptr<FBufferCache> BufferCache;
 
 	ID3D11SamplerState* SamplerState = nullptr;
-	void* CurrentTexture;
+	ID3D11ShaderResourceView* CurrentTexture;
 	
     FMatrix ViewMatrix;
 	FMatrix ProjectionMatrix;

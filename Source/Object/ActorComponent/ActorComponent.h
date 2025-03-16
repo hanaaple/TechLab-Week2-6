@@ -6,9 +6,8 @@ class UActorComponent : public UObject
 {
 public:
     DECLARE_OBJECT(UActorComponent, UObject)
-	UActorComponent() : Super(){
-    }
-
+	UActorComponent() = default;
+	
 	virtual void BeginPlay();
 	virtual void Tick(float DeltaTime);
 	virtual void EndPlay(const EEndPlayReason::Type Reason);

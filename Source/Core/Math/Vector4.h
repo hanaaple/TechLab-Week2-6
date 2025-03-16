@@ -228,3 +228,18 @@ inline FVector4&& FVector4::operator*(const FMatrix& Matrix) const
 }
 
 inline FVector::FVector(const FVector4& vector4) : X(vector4.X), Y(vector4.Y), Z(vector4.Z) {}
+
+inline FVector FVector::operator*(const FMatrix& Matrix) const
+{
+    FVector Result;
+    Result.X = X * Matrix.M[0][0] + Y * Matrix.M[1][0] + Z * Matrix.M[2][0] + Matrix.M[3][0];
+    Result.Y = X * Matrix.M[0][1] + Y * Matrix.M[1][1] + Z * Matrix.M[2][1] + Matrix.M[3][1];
+    Result.Z = X * Matrix.M[0][2] + Y * Matrix.M[1][2] + Z * Matrix.M[2][2] + Matrix.M[3][2];
+
+    return Result;
+}
+
+inline FVector FVector::operator*=(const FMatrix& Matrix) const
+{
+    return (*this) * Matrix;
+}

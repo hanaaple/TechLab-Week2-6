@@ -10,7 +10,7 @@ void UPrimitiveComponent::Activate()
 
 void UPrimitiveComponent::Deactivate()
 {
-	USceneComponent::Deactivate();
+	Super::Deactivate();
 
 	UWorld* World = GetOwner()->GetWorld();
 	
@@ -24,6 +24,7 @@ void UPrimitiveComponent::BeginPlay()
 
 void UPrimitiveComponent::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime);
 	Super::Tick(DeltaTime); 
 	aabb.UpdateAABB(GetComponentTransform(), GetType());
 }
@@ -81,33 +82,29 @@ void UPrimitiveComponent::Render()
 // 	// }
 //}
 
-void UPrimitiveComponent::UpdateConstantPicking(const URenderer& Renderer, const FVector4 UUIDColor)const
+// void UPrimitiveComponent::UpdateConstantPicking(const URenderer& Renderer, const FVector4 UUIDColor)const
+// {
+// 	Renderer.UpdateConstantPicking(UUIDColor);
+// }
+//
+// void UPrimitiveComponent::UpdateConstantDepth(const URenderer& Renderer, const int Depth)const
+// {
+// 	Renderer.UpdateConstantDepth(Depth);
+// }
+
+
+// 배치 렌더링용 버텍스를 가져와서 
+TArray<FVertexSimple> UPrimitiveComponent::GetVertexData()
 {
-	Renderer.UpdateConstantPicking(UUIDColor);
-}
+	TArray<FVertexSimple> VertexData = UEngine::Get().GetRenderer()->GetBufferCache()->GetStaticVertexData(GetMeshType());
 
-void UPrimitiveComponent::UpdateConstantDepth(const URenderer& Renderer, const int Depth)const
-{
-	Renderer.UpdateConstantDepth(Depth);
-}
-
-void UPrimitiveComponent::CheckIsDirty()
-{
-
-	// 1. 변경사항이 있는가 -> batch나 Instancing이었던 경우 Update해줘야됨.
-
-	// 2. 변경사항이 없다. ->
-
-	// 2.1. 배치나 인스턴싱인 경우
-	// 2.2. 개별 렌더링 -> 바로 렌더링
-
+	for (FVertexSimple& Vertex : VertexData)
+	{
+		FVector Pos = FVector(Vertex.X, Vertex.Y, Vertex.Z) * GetComponentTransform().GetMatrix();
+		Vertex.X = Pos.X;
+		Vertex.Y = Pos.Y;
+		Vertex.Z = Pos.Z;
+	}
 	
-	if (bIsDirty)
-	{
-		
-	}
-	else
-	{
-		
-	}
+	return VertexData;
 }

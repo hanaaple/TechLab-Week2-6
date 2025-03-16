@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "Core/Rendering/Material.h"
 #include "Core/Rendering/URenderer.h"
 #include "Object/USceneComponent.h"
 #include "Primitive/PrimitiveVertices.h"
@@ -56,10 +55,26 @@ struct FAABB {
 };
 
 
+enum ERenderMode{
+	Batch,
+	Individual,
+	// Instancing
+};
+
+struct FRenderData
+{
+	ID3D11ShaderResourceView* Texture = nullptr;
+	D3D_PRIMITIVE_TOPOLOGY Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	bool bUseIndexBuffer = false;
+	EPrimitiveMeshType MeshType = EPrimitiveMeshType::EPT_None;
+	ERenderMode RenderMode = ERenderMode::Individual;
+};
+
 class UPrimitiveComponent : public USceneComponent
 {
 	using Super = USceneComponent;
-    DECLARE_OBJECT(UPrimitiveComponent,Super)
+	DECLARE_OBJECT(UPrimitiveComponent,Super)
+
 public:
 	UPrimitiveComponent() : Super(), Depth(0)
 	{
@@ -77,39 +92,68 @@ public:
 	virtual void Deactivate() override;
 
 	
-	void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
-	void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
-	
-	virtual EPrimitiveMeshType GetMeshType() { return EPrimitiveMeshType::EPT_None; }
+	// void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
+	// void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 
+	virtual TArray<FVertexSimple> GetVertexData();
 
 public:
 	void SetDepth(int InDepth) { Depth = InDepth; }
 	int GetDepth() const { return Depth; }
 
-	//FMaterial* Material;
+	void SetDirty(bool NewIsDirty)
+	{
+		bIsDirty = NewIsDirty;
+		if (NewIsDirty == false){
+			PrevFrameData = CurrentRenderData;
+		}
+	}
+	int GetIsDirty() const { return bIsDirty; }
 
-	// Texture* texture;
+	const FRenderData& GetPrevFrameData() const { return PrevFrameData; }
+	const FRenderData& GetCurFrameData() const { return CurrentRenderData; }
+
+	void SetTexture(ID3D11ShaderResourceView* NewTexture)
+	{
+		if (CurrentRenderData.Texture != NewTexture)
+			SetDirty(true);
+		CurrentRenderData.Texture = NewTexture;		
+	}
+	void SetMesh(EPrimitiveMeshType NewMeshType)
+	{
+		if (CurrentRenderData.MeshType != NewMeshType)
+			SetDirty(true);
+		CurrentRenderData.MeshType = NewMeshType;
+	}
+	void SetUseIndexBuffer(bUseIndexBufferFlag bUseIndexBuffer)
+	{
+		if (CurrentRenderData.bUseIndexBuffer != bUseIndexBuffer)
+			SetDirty(true);
+		CurrentRenderData.bUseIndexBuffer = bUseIndexBuffer;
+	}
+	void SetTopology(D3D11_PRIMITIVE_TOPOLOGY NewTopologyType)
+	{
+		if (CurrentRenderData.Topology != NewTopologyType)
+			SetDirty(true);
+		CurrentRenderData.Topology = NewTopologyType;
+	}
+	void SetRenderMode(ERenderMode NewMode)
+	{
+		if (CurrentRenderData.RenderMode != NewMode)
+			SetDirty(true);
+		
+		CurrentRenderData.RenderMode = NewMode;
+	}
+	EPrimitiveMeshType GetMeshType() const { return CurrentRenderData.MeshType; }
+
+	ERenderMode GetRenderMode() const { return CurrentRenderData.RenderMode; }
 
 	
-	//UMaterial* GetMaterial() const { return CurFrameData.Material; }
-	//void SetMaterial(UMaterial* NewMaterial);
-	//void SetTopology(D3D11_PRIMITIVE_TOPOLOGY NewTopologyType);
-	//D3D11_PRIMITIVE_TOPOLOGY GetTopology() const { return CurFrameData.TopologyType; }
-	//ERenderMode GetERenderMode() const { return RenderMode; }
-
-private:
-	void CheckIsDirty();
-
-protected:
-	//FRenderData PrevFrameData;
-	//FRenderData CurFrameData;
 	
-	bool bIsDirty;	// if Material or Topology .... Changes
-
-public:
-	void* Texture;
-
+	D3D11_PRIMITIVE_TOPOLOGY GetTopology() const { return CurrentRenderData.Topology; }
+	ID3D11ShaderResourceView* GetTexture() const { return CurrentRenderData.Texture; }
+	
+	
 public:
 	bool IsUseVertexColor() const { return bUseVertexColor; }
 
@@ -130,7 +174,10 @@ protected:
 	FVector4 CustomColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 private:
+	FRenderData PrevFrameData = FRenderData();
+	FRenderData CurrentRenderData = FRenderData();
 	uint32 Depth;
+	bool bIsDirty;
 };
 
 class UCubeComp : public UPrimitiveComponent
@@ -146,8 +193,9 @@ public:
 	virtual ~UCubeComp() = default;
 	EPrimitiveMeshType GetMeshType() override
 	{
-		return EPrimitiveMeshType::EPT_Cube;
+		SetMesh(EPrimitiveMeshType::EPT_Cube);
 	}
+	virtual ~UCubeComp() = default;
 };
 
 class USphereComp : public UPrimitiveComponent
@@ -163,8 +211,9 @@ public:
 	virtual ~USphereComp() = default;
 	EPrimitiveMeshType GetMeshType() override
 	{
-		return EPrimitiveMeshType::EPT_Sphere;
+		SetMesh(EPrimitiveMeshType::EPT_Sphere);
 	}
+	virtual ~USphereComp() = default;
 };
 
 class UTriangleComp : public UPrimitiveComponent
@@ -180,8 +229,9 @@ public:
 	virtual ~UTriangleComp() = default;
 	EPrimitiveMeshType GetMeshType() override
 	{
-		return EPrimitiveMeshType::EPT_Triangle;
+		SetMesh(EPrimitiveMeshType::EPT_Triangle);
 	}
+	virtual ~UTriangleComp() = default;
 };
 
 class ULineComp : public UPrimitiveComponent
@@ -198,8 +248,10 @@ public:
 	virtual ~ULineComp() = default;
 	EPrimitiveMeshType GetMeshType() override
 	{
-		return EPrimitiveMeshType::EPT_Line;
+		SetMesh(EPrimitiveMeshType::EPT_Line);
+		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	}
+	virtual ~ULineComp() = default;
 };
 
 class UCylinderComp : public UPrimitiveComponent
@@ -216,8 +268,9 @@ public:
 	virtual ~UCylinderComp() = default;
 	EPrimitiveMeshType GetMeshType() override
 	{
-		return EPrimitiveMeshType::EPT_Cylinder;
+		SetMesh(EPrimitiveMeshType::EPT_Cylinder);
 	}
+	virtual ~UCylinderComp() = default;
 };
 
 class UConeComp : public UPrimitiveComponent
@@ -233,8 +286,9 @@ public:
 	virtual ~UConeComp() = default;
 	EPrimitiveMeshType GetMeshType() override
 	{
-		return EPrimitiveMeshType::EPT_Cone;
+		SetMesh(EPrimitiveMeshType::EPT_Cone);
 	}
+	virtual ~UConeComp() = default;
 };
 
 
