@@ -2,9 +2,6 @@
 #include "Object/World/World.h"
 #include "Object/Gizmo/EditorGizmos.h"
 #include "Object/Actor/ABoundingBox.h"
-#include "Object/Gizmo/EditorGizmos.h"
-#include "Core/Math/Vector.h"
-#include "Core/Math/Transform.h"
 
 void FEditorManager::SelectActor(AActor* NewActor)
 {

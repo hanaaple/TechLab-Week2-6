@@ -1,14 +1,7 @@
 ﻿#include "AABBPicker.h"
 #include "Core/Input/PlayerInput.h"
-#include "Core/Math/Transform.h"
 #include "Static/FEditorManager.h"
-#include "Object/Actor/Camera.h"
-#include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 #include "Object/World/World.h"
-#include "Object/Actor/ABoundingBox.h"
-
-#include <windows.h>
-#include <cstdio>
 
 AAABBPicker::AAABBPicker()
 {
@@ -33,14 +26,14 @@ void AAABBPicker::LateTick(float DeltaTime)
 		UEngine::Get().GetRenderer()->UpdateProjectionMatrix(camera);
 		FMatrix inverseProjection = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
 
-		FVector4 rayView = inverseProjection * ndc;
+		FVector4 rayView = ndc * inverseProjection;
 		if (rayView.W != 0) {
 			rayView.X = rayView.X / rayView.W;
 			rayView.Y = rayView.Y / rayView.W;
 			rayView.Z = rayView.Z / rayView.W;
 			rayView.W = 1.0f;
 		}
-		FVector4 rayWorld = inverseView * rayView;
+		FVector4 rayWorld = rayView * inverseView;
 		FVector rayDir = FVector(rayWorld.X, rayWorld.Y, rayWorld.Z) - rayOrigin;
 		rayDir.Normalize();
 		AActor* pickedActor = CheckCollision(rayOrigin, rayDir);

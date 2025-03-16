@@ -20,18 +20,6 @@ void ACone::BeginPlay()
 void ACone::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    UPrimitiveComponent* root = dynamic_cast<UPrimitiveComponent*>(RootComponent);
-    TArray<FVertexSimple> vertices = root->GetVertexData();
-    FVector Min = FVector(1000, 1000, 1000);
-    FVector Max = -Min;
-    for (FVertexSimple& vertex : vertices) {
-        Min.X = FMath::Min(Min.X, vertex.X);
-        Min.Y = FMath::Min(Min.Y, vertex.Y);
-        Min.Z = FMath::Min(Min.Z, vertex.Z);
-        Max.X = FMath::Max(Max.X, vertex.X);
-        Max.Y = FMath::Max(Max.Y, vertex.Y);
-        Max.Z = FMath::Max(Max.Z, vertex.Z);
-    }
 }
 
 const char* ACone::GetTypeName()

@@ -3,8 +3,6 @@
 #include "Core/Rendering/URenderer.h"
 #include "Object/USceneComponent.h"
 #include "Primitive/PrimitiveVertices.h"
-#include "Core/Math/Plane.h"
-#include <Debug/DebugConsole.h>
 #include <Core/Engine.h>
 
 struct FAABB {
@@ -13,7 +11,7 @@ struct FAABB {
 
 	void GenerateAABB(EPrimitiveMeshType type) {
 		TArray<FVertexSimple> vertices = UEngine::Get().GetRenderer()->GetBufferCache()->GetStaticVertexData(type);
-		FVector min = FVector(1000, 1000, 1000);
+		FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
 		FVector max = -min;
 		for (const FVertexSimple& vertex : vertices) {
 			min.X = FMath::Min(min.X, vertex.X);
@@ -28,7 +26,7 @@ struct FAABB {
 	}
 
 	void UpdateAABB(FTransform transform, TArray<FVertexSimple> vertices) {
-		FVector min = FVector(1000, 1000, 1000);
+		FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
 		FVector max = -min;
 		for (const FVertexSimple& vertex : vertices) {
 			min.X = FMath::Min(min.X, vertex.X);
@@ -173,7 +171,6 @@ class UCubeComp : public UPrimitiveComponent
 public:
 	UCubeComp()
 	{
-		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cube);
 		SetMesh(EPrimitiveMeshType::EPT_Cube);
 	}
@@ -187,7 +184,6 @@ class USphereComp : public UPrimitiveComponent
 public:
 	USphereComp()
 	{
-		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Sphere);
 		SetMesh(EPrimitiveMeshType::EPT_Sphere);
 	}
@@ -201,7 +197,6 @@ class UTriangleComp : public UPrimitiveComponent
 public:
 	UTriangleComp()
 	{
-		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Triangle);
 		SetMesh(EPrimitiveMeshType::EPT_Triangle);
 	}
@@ -216,7 +211,6 @@ class ULineComp : public UPrimitiveComponent
 public:
 	ULineComp()
 	{
-		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Line);
 		SetMesh(EPrimitiveMeshType::EPT_Line);
 		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -232,7 +226,6 @@ class UCylinderComp : public UPrimitiveComponent
 public:
 	UCylinderComp()
 	{
-		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cylinder);
 		SetMesh(EPrimitiveMeshType::EPT_Cylinder);
 	}
@@ -246,7 +239,6 @@ class UConeComp : public UPrimitiveComponent
 public:
 	UConeComp()
 	{
-		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cone);
 		SetMesh(EPrimitiveMeshType::EPT_Cone);
 	}
@@ -261,7 +253,6 @@ class UBoundingBoxComp : public UPrimitiveComponent
 public:
 	UBoundingBoxComp()
 	{
-		SetVisibility(true);
 		SetMesh(EPrimitiveMeshType::EPT_BoundingBox);
 		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	}

@@ -10,7 +10,6 @@
 #include "Object/World/World.h"
 #include "Static/FEditorManager.h"
 #include "Object/Actor/AABBPicker.h"
-#include "Object/Actor/ABoundingBox.h"
 
 // ImGui WndProc 정의
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

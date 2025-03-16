@@ -1,7 +1,5 @@
 ﻿#include "ABoundingBox.h"
 #include "Static/FEditorManager.h"
-#include "Object/PrimitiveComponent/UPrimitiveComponent.h"
-#include "Core/Math/Vector.h"
 
 ABoundingBoxActor::ABoundingBoxActor()
 {

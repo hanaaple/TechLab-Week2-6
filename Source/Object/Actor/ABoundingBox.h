@@ -18,5 +18,4 @@ public:
 	virtual const char* GetTypeName() override;
 private:
 	bool bIsActive = false;
-	UBoundingBoxComp* boundingBoxComponent;
 };

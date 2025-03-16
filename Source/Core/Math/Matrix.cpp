@@ -83,25 +83,6 @@ FMatrix FMatrix::operator*=(const FMatrix& Other)
 	*this = *this * Other;
 	return *this;
 }
-FVector FMatrix::operator*(const FVector& Other) const
-{
-	FVector result(
-		M[0][0] * Other.X + M[0][1] * Other.Y + M[0][2] * Other.Z + M[0][3],
-		M[1][0] * Other.X + M[1][1] * Other.Y + M[1][2] * Other.Z + M[1][3],
-		M[2][0] * Other.X + M[2][1] * Other.Y + M[2][2] * Other.Z + M[2][3]
-	);
-	return result;
-}
-FVector4 FMatrix::operator*(const FVector4& Other) const
-{
-	FVector4 result(
-		M[0][0] * Other.X + M[0][1] * Other.Y + M[0][2] * Other.Z + M[0][3] * Other.W,
-		M[1][0] * Other.X + M[1][1] * Other.Y + M[1][2] * Other.Z + M[1][3] * Other.W,
-		M[2][0] * Other.X + M[2][1] * Other.Y + M[2][2] * Other.Z + M[2][3] * Other.W,
-		M[3][0] * Other.X + M[3][1] * Other.Y + M[3][2] * Other.Z + M[3][3] * Other.W
-	);
-	return result;
-}
 FMatrix FMatrix::operator*(float Other) const
 {
 	FMatrix Result;
