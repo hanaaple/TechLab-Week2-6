@@ -4,6 +4,7 @@
 
 class ABoundingBoxActor : public AActor 
 {
+	DECLARE_OBJECT(ABoundingBoxActor, AActor)
 public:
 	FVector Min;
 	FVector Max;

@@ -1,5 +1,6 @@
 ﻿#include "UPrimitiveComponent.h"
 #include "Object/World/World.h"
+#include "Debug/DebugConsole.h"
 
 void UPrimitiveComponent::Activate()
 {

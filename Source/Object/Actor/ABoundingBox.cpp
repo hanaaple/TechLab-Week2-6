@@ -5,26 +5,27 @@
 
 ABoundingBoxActor::ABoundingBoxActor()
 {
-	bIsGizmo = true;
+	//bIsGizmo = true;
 
 	UBoundingBoxComp* AABB = AddComponent<UBoundingBoxComp>();
-	AABB->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
+	AABB->SetCustomColor(FVector4(0.0f, 1.0f, 0.0f, 1.0f));
 	RootComponent = AABB;
+	SetActorRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	Max = FVector(0.5f, 0.5f, 0.5f);
 	Min = FVector(-0.5f, -0.5f, -0.5f);
-	SetActorVisibility(false);
+	SetActorVisibility(true);
 }
 
 void ABoundingBoxActor::Tick(float DeltaTime)
 {
 	AActor* SelectedActor = FEditorManager::Get().GetSelectedActor();
-	if (SelectedActor != nullptr && RootComponent && RootComponent->GetVisibleFlag())
+	if (SelectedActor != nullptr && RootComponent)
 	{
 		UpdateTransform();
 	}
-	else if(SelectedActor == nullptr) {
+	/*else if(SelectedActor == nullptr) {
 		SetActorVisibility(false);
-	}
+	}*/
 	AActor::Tick(DeltaTime);
 }
 
@@ -46,12 +47,12 @@ void ABoundingBoxActor::UpdateTransform()
 		Min = component->aabb.Min;
 		Max = component->aabb.Max;
 		position = rootComp->GetComponentTransform().GetPosition();
+		FTransform transform = RootComponent->GetComponentTransform();
+		transform.SetPosition((Min + Max) / 2);
+		transform.SetScale(FVector(Max.X - Min.X, Max.Y - Min.Y, Max.Z - Min.Z));
+		transform.SetRotation(FVector(0, 0, 0));
+		SetActorRelativeTransform(transform);
 	}
-	FTransform transform = RootComponent->GetComponentTransform();
-	transform.SetPosition((Min + Max) / 2);
-	transform.SetScale(FVector(Max.X - Min.X, Max.Y - Min.Y, Max.Z - Min.Z));
-	transform.SetRotation(FVector(0, 0, 0));
-	RootComponent->SetRelativeTransform(transform);
 }
 
 const char* ABoundingBoxActor::GetTypeName()

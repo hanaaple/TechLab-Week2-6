@@ -80,7 +80,7 @@ class UPrimitiveComponent : public USceneComponent
 public:
 	FAABB aabb;
 public:
-	UPrimitiveComponent() = default;
+	UPrimitiveComponent():Super(), Depth(0) {};
 	virtual ~UPrimitiveComponent() = default;
 
 public:
@@ -275,8 +275,7 @@ public:
 	UBoundingBoxComp()
 	{
 		SetVisibility(true);
-		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Box);
-		SetMesh(EPrimitiveMeshType::EPT_Box);
+		SetMesh(EPrimitiveMeshType::EPT_BoundingBox);
 		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	}
 	virtual ~UBoundingBoxComp() = default;

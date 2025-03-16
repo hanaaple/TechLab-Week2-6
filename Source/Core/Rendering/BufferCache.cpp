@@ -101,6 +101,9 @@ TArray<uint32> FBufferCache::GetStaticIndexData(EPrimitiveMeshType MeshType)
 	case EPrimitiveMeshType::EPT_Cube:
 		Indecies = CubeIndecies;
 		break;
+	case EPrimitiveMeshType::EPT_BoundingBox:
+		Indecies = BoundingBoxIndecies;
+		break;
 	default:
 		break;
 	}
@@ -141,6 +144,10 @@ TArray<FVertexSimple> FBufferCache::GetStaticVertexData(EPrimitiveMeshType MeshT
 			VertexData = CreateConeVertices();
 			break;
 		}
+	case EPrimitiveMeshType::EPT_BoundingBox:
+		Vertices = BoundingBoxVertices;
+		Size = std::size(BoundingBoxVertices);
+		break;
 	default:
 		// ERROR
 			break;
@@ -185,6 +192,10 @@ BufferInfo FBufferCache::CreateVertexBufferInfo(EPrimitiveMeshType Type)
 	case EPrimitiveMeshType::EPT_Triangle:
 		Vertices = TriangleVertices;
 		Size = std::size(TriangleVertices);
+		break;
+	case EPrimitiveMeshType::EPT_BoundingBox:
+		Vertices = BoundingBoxVertices;
+		Size = std::size(BoundingBoxVertices);
 		break;
 	case EPrimitiveMeshType::EPT_Cube:
 		Vertices = CubeVertices;
@@ -234,6 +245,11 @@ BufferInfo FBufferCache::CreateIndexBufferInfo(EPrimitiveMeshType Type)
 	// 	Size = std::size(TriangleVertices);
 	// 	Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(TriangleVertices, sizeof(FVertexSimple) * Size, TODO, TODO);
 	// 	break;
+	case EPrimitiveMeshType::EPT_BoundingBox:
+		Size = BoundingBoxIndecies.Num();
+		Buffer = UEngine::Get().GetRenderer()->CreateMeshBuffer(BoundingBoxIndecies.GetData(), sizeof(uint32) * Size, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
+		Topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+		break;
 	case EPrimitiveMeshType::EPT_Cube:
 		Size = CubeIndecies.Num();
 		Buffer = UEngine::Get().GetRenderer()->CreateMeshBuffer(CubeIndecies.GetData(), sizeof(uint32) * Size, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);

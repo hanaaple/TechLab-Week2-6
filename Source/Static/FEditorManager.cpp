@@ -16,7 +16,7 @@ void FEditorManager::SelectActor(AActor* NewActor)
 
     if (AABB == nullptr) {
         AABB = UEngine::Get().GetWorld()->SpawnActor<ABoundingBoxActor>();
-        AABB->SetActorVisibility(false);
+        AABB->SetActorVisibility(true);
     }
 
 	if (SelectedActor == NewActor)
@@ -25,7 +25,6 @@ void FEditorManager::SelectActor(AActor* NewActor)
     if (SelectedActor != nullptr && SelectedActor != NewActor)
     {
         SelectedActor->UnPick();
-        GizmoHandle->SetActorVisibility(false);
         AABB->SetActorVisibility(false);
         ControlGizmo->SetActorVisibility(false);
     }
@@ -36,7 +35,6 @@ void FEditorManager::SelectActor(AActor* NewActor)
     {
         SelectedActor->Pick();
         ControlGizmo->SetActorVisibility(true);
-        GizmoHandle->SetActorVisibility(true);
         AABB->SetActorVisibility(true);
         //FVector Pos = SelectedActor->GetActorTransform().GetPosition();
 		//FTransform GizmoTransform = GizmoHandle->GetActorTransform();
@@ -44,10 +42,6 @@ void FEditorManager::SelectActor(AActor* NewActor)
 		//GizmoHandle->SetActorTransform(GizmoTransform);
         //GizmoHandle
 	}
-
-    if (SelectedActor == nullptr) {
-        AABB->SetActorVisibility(false);
-    }
 }
 
 void FEditorManager::SetCamera(ACamera* NewCamera)

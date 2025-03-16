@@ -198,14 +198,16 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 	TArray<UPrimitiveComponent*> ZIgnoreRenderComponents;
 	for (auto* RenderTarget : RenderComponents)
 	{
-		Renderer.PrepareTexture(RenderTarget->GetTexture());
-		// Texture 변경
-		if (RenderTarget->GetDepth() > 0)
-		{
-			ZIgnoreRenderComponents.Add(RenderTarget);
-			continue;
+		if (RenderTarget != nullptr) {
+			Renderer.PrepareTexture(RenderTarget->GetTexture());
+			// Texture 변경
+			if (RenderTarget->GetDepth() > 0)
+			{
+				ZIgnoreRenderComponents.Add(RenderTarget);
+				continue;
+			}
+			RenderTarget->Render();
 		}
-		RenderTarget->Render();
 	}
 	
 
