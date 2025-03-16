@@ -329,11 +329,6 @@ void UWorld::LoadWorld(const char* SceneName)
 	}
 }
 
-TMap<EPrimitiveMeshType, TArray<UPrimitiveComponent*>> UWorld::GetRenderComponents()
-{
-	return RenderComponentTable;
-}
-
 UWorldInfo UWorld::GetWorldInfo() const
 {
 	UWorldInfo WorldInfo;

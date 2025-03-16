@@ -25,11 +25,7 @@ void UPrimitiveComponent::BeginPlay()
 void UPrimitiveComponent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	Super::Tick(DeltaTime); 
-	aabb.UpdateAABB(GetComponentTransform(), GetType());
-}
-
-	CheckIsDirty();
+	aabb.UpdateAABB(GetComponentTransform(), GetMeshType());
 }
 
 void UPrimitiveComponent::Render()

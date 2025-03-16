@@ -73,40 +73,38 @@ AActor* AAABBPicker::CheckCollision(FVector rayOrigin, FVector rayDir)
 {
 	UPrimitiveComponent* PickedComponent = nullptr;
 	UWorld* world = UEngine::Get().GetWorld();
-	TMap<EPrimitiveMeshType, TArray<UPrimitiveComponent*>> components = world->GetRenderComponents();
+	TArray<UPrimitiveComponent*> components = world->GetRenderComponents();
 	if (PickedComponent == nullptr) {
 		UE_LOG("nullptr init");
 	}
 	float dist = 10000;
-	for (auto& [MeshType, RenderComponents] : components) {
-		for (auto component : RenderComponents) {
-			if (component != nullptr && component->GetOwner()->GetTypeName() != "AABBActor") {
-				if (component != nullptr) {
-					FAABB boundingBox = component->aabb;
+	for (auto component : components) {
+		if (component != nullptr && component->GetOwner()->GetTypeName() != "AABBActor") {
+			if (component != nullptr) {
+				FAABB boundingBox = component->aabb;
 
-					FVector center = (boundingBox.Max + boundingBox.Min) / 2.0f;
-					float t1 = (boundingBox.Min.X - rayOrigin.X) / rayDir.X;
-					float t2 = (boundingBox.Max.X - rayOrigin.X) / rayDir.X;
+				FVector center = (boundingBox.Max + boundingBox.Min) / 2.0f;
+				float t1 = (boundingBox.Min.X - rayOrigin.X) / rayDir.X;
+				float t2 = (boundingBox.Max.X - rayOrigin.X) / rayDir.X;
 
-					float t3 = (boundingBox.Min.Y - rayOrigin.Y) / rayDir.Y;
-					float t4 = (boundingBox.Max.Y - rayOrigin.Y) / rayDir.Y;
+				float t3 = (boundingBox.Min.Y - rayOrigin.Y) / rayDir.Y;
+				float t4 = (boundingBox.Max.Y - rayOrigin.Y) / rayDir.Y;
 
-					float t5 = (boundingBox.Min.Z - rayOrigin.Z) / rayDir.Z;
-					float t6 = (boundingBox.Max.Z - rayOrigin.Z) / rayDir.Z;
+				float t5 = (boundingBox.Min.Z - rayOrigin.Z) / rayDir.Z;
+				float t6 = (boundingBox.Max.Z - rayOrigin.Z) / rayDir.Z;
 
-					float tMax = FMath::Min(FMath::Max(t1, t2), FMath::Max(t3, t4));
-					tMax = FMath::Min(tMax, FMath::Max(t5, t6));
+				float tMax = FMath::Min(FMath::Max(t1, t2), FMath::Max(t3, t4));
+				tMax = FMath::Min(tMax, FMath::Max(t5, t6));
 
-					float tMin = FMath::Max(FMath::Min(t1, t2), FMath::Min(t3, t4));
-					tMin = FMath::Max(tMin, FMath::Min(t5, t6));
+				float tMin = FMath::Max(FMath::Min(t1, t2), FMath::Min(t3, t4));
+				tMin = FMath::Max(tMin, FMath::Min(t5, t6));
 
-					if (tMax >= tMin && tMax > 0) {
-						float objDist = FVector::Distance(center, rayOrigin);
-						if (objDist < dist) {
-							if (component->GetOwner()->GetTypeName() != "Actor") {
-								PickedComponent = component;
-								UE_LOG(PickedComponent->GetOwner()->GetTypeName());
-							}
+				if (tMax >= tMin && tMax > 0) {
+					float objDist = FVector::Distance(center, rayOrigin);
+					if (objDist < dist) {
+						if (component->GetOwner()->GetTypeName() != "Actor") {
+							PickedComponent = component;
+							UE_LOG(PickedComponent->GetOwner()->GetTypeName());
 						}
 					}
 				}

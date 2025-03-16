@@ -4,13 +4,15 @@
 #include "Object/USceneComponent.h"
 #include "Primitive/PrimitiveVertices.h"
 #include "Core/Math/Plane.h"
+#include <Debug/DebugConsole.h>
+#include <Core/Engine.h>
 
 struct FAABB {
 	FVector Min;
 	FVector Max;
 
 	void GenerateAABB(EPrimitiveMeshType type) {
-		TArray<FVertexSimple> vertices = UEngine::Get().GetRenderer()->BufferCache->GetVertexData(type);
+		TArray<FVertexSimple> vertices = UEngine::Get().GetRenderer()->GetBufferCache()->GetStaticVertexData(type);
 		FVector min = FVector(1000, 1000, 1000);
 		FVector max = -min;
 		for (const FVertexSimple& vertex : vertices) {
@@ -29,7 +31,7 @@ struct FAABB {
 	}
 
 	void UpdateAABB(FTransform transform, EPrimitiveMeshType type) {
-		TArray<FVertexSimple> vertices = UEngine::Get().GetRenderer()->BufferCache->GetVertexData(type);
+		TArray<FVertexSimple> vertices = UEngine::Get().GetRenderer()->GetBufferCache()->GetStaticVertexData(type);
 		FVector min = FVector(1000, 1000, 1000);
 		FVector max = -min;
 		FMatrix model =
@@ -76,9 +78,6 @@ class UPrimitiveComponent : public USceneComponent
 	DECLARE_OBJECT(UPrimitiveComponent,Super)
 
 public:
-	UPrimitiveComponent() : Super(), Depth(0)
-	{
-	}
 	FAABB aabb;
 public:
 	UPrimitiveComponent() = default;
@@ -189,10 +188,6 @@ public:
 	{
 		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cube);
-	}
-	virtual ~UCubeComp() = default;
-	EPrimitiveMeshType GetMeshType() override
-	{
 		SetMesh(EPrimitiveMeshType::EPT_Cube);
 	}
 	virtual ~UCubeComp() = default;
@@ -207,10 +202,6 @@ public:
 	{
 		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Sphere);
-	}
-	virtual ~USphereComp() = default;
-	EPrimitiveMeshType GetMeshType() override
-	{
 		SetMesh(EPrimitiveMeshType::EPT_Sphere);
 	}
 	virtual ~USphereComp() = default;
@@ -225,10 +216,6 @@ public:
 	{
 		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Triangle);
-	}
-	virtual ~UTriangleComp() = default;
-	EPrimitiveMeshType GetMeshType() override
-	{
 		SetMesh(EPrimitiveMeshType::EPT_Triangle);
 	}
 	virtual ~UTriangleComp() = default;
@@ -244,10 +231,6 @@ public:
 	{
 		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Line);
-	}
-	virtual ~ULineComp() = default;
-	EPrimitiveMeshType GetMeshType() override
-	{
 		SetMesh(EPrimitiveMeshType::EPT_Line);
 		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	}
@@ -264,10 +247,6 @@ public:
 	{
 		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cylinder);
-	}
-	virtual ~UCylinderComp() = default;
-	EPrimitiveMeshType GetMeshType() override
-	{
 		SetMesh(EPrimitiveMeshType::EPT_Cylinder);
 	}
 	virtual ~UCylinderComp() = default;
@@ -282,10 +261,6 @@ public:
 	{
 		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cone);
-	}
-	virtual ~UConeComp() = default;
-	EPrimitiveMeshType GetMeshType() override
-	{
 		SetMesh(EPrimitiveMeshType::EPT_Cone);
 	}
 	virtual ~UConeComp() = default;
@@ -295,15 +270,14 @@ public:
 class UBoundingBoxComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UBoundingBoxComp, Super)
 public:
 	UBoundingBoxComp()
 	{
 		SetVisibility(true);
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Box);
+		SetMesh(EPrimitiveMeshType::EPT_Box);
+		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	}
 	virtual ~UBoundingBoxComp() = default;
-	EPrimitiveMeshType GetType() override
-	{
-		return EPrimitiveMeshType::EPT_Box;
-	}
 };

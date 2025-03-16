@@ -231,9 +231,9 @@ void UEngine::InitWorld()
     //// Test
     //World->SpawnActor<AArrow>();
 
-    auto* Actor = World->SpawnActor<ACylinder>();
     World->SpawnActor<AAxis>();
     //World->SpawnActor<APicker>();
+    /*auto* Actor = World->SpawnActor<ACylinder>();
     UConeComp* ConeComp = Actor->AddComponent<UConeComp>();
     ConeComp->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 1.0f), FVector(), FVector(1.2f, 1.2f, 0.5f)));
 
@@ -252,7 +252,7 @@ void UEngine::InitWorld()
             ConeComp2->SetRelativeTransform(FTransform(FVector(0.0f, j * i, 1.0f), FVector(), FVector(1.2f, 1.2f, 0.5f)));
             ConeComp2->SetupAttachment(ConeComp1, EEndPlayReason::EAttachmentRule::KeepRelative);
         }
-    }
+    }*/
     
     
 

@@ -48,11 +48,6 @@ void USceneComponent::Pick(bool bPicked)
 	}
 }
 
-void USceneComponent::SetVisibility(bool visibility)
-{
-	bVisible = visibility;
-}
-
 void USceneComponent::SetupAttachment(USceneComponent* InParent, EAttachmentRule AttachmentRule)
 {
 	if (InParent)
