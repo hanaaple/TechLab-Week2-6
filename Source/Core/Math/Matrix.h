@@ -22,9 +22,7 @@ struct alignas(16) FMatrix
 	static FMatrix LookAtLH(const FVector& EyePosition, const FVector& FocusPoint, const FVector& WorldUp);
 	static FMatrix PerspectiveFovLH(float FieldOfView, float AspectRatio, float NearPlane, float FarPlane);
 	FMatrix Orthographic(float Left, float Right, float Bottom, float Top, float NearZ, float FarZ);
-	static float Determinant2x2(float a, float b, float c, float d);
-	static float Determinant3x3(float Matrix[3][3]);
-
+	FMatrix OrthoForLH(float ViewWidth, float VeiwHeight, float NearPlane, float FarPlane);
 	
 	FMatrix operator+(const FMatrix& Other) const;
 	FMatrix operator+=(const FMatrix& Other);
@@ -41,7 +39,6 @@ struct alignas(16) FMatrix
 
 	FMatrix GetTransposed() const;
 	float Determinant() const;
-	float Cofactor(int row, int col) const;
 	FMatrix Inverse() const;
 
 	FVector GetTranslation() const;

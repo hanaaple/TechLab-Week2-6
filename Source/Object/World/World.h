@@ -4,8 +4,8 @@
 #include "Core/Container/Array.h"
 #include "Core/Container/Set.h"
 #include "Core/Container/String.h"
+#include "Core/Rendering/BatchRenderContext.h"
 #include "Object/UObject.h"
-#include "Debug/DebugConsole.h"
 #include "Object/ObjectFactory.h"
 
 #include "Object/Actor/Arrow.h"
@@ -25,6 +25,7 @@ public:
 	void BeginPlay();
 	void Tick(float DeltaTime);
 	void LateTick(float DeltaTime);
+	void UpdateRenderComponents();
 
 	template <typename T>
 		requires std::derived_from<T, AActor>
@@ -33,30 +34,18 @@ public:
 	bool DestroyActor(AActor* InActor);
 	
 	void Render();
-	void RenderPickingTexture(URenderer& Renderer);
-	void DisplayPickingTexture(URenderer& Renderer);
-	void DrawBatch(TArray<UPrimitiveComponent*>& BatchTargets);
-	void RenderMainTexture(URenderer& Renderer);
+	//void RenderPickingTexture(URenderer& Renderer);
+	//void DisplayPickingTexture(URenderer& Renderer);
+	void DrawBatch(URenderer& Renderer, FBatchRenderContext BatchRenderContext);
+	void RenderMainTargets(URenderer& Renderer);
 
 	void ClearWorld();
 	void LoadWorld(const char* SceneName);
 	void SaveWorld();
-
-	void AddZIgnoreComponent(UPrimitiveComponent* InComponent);
-	void RemoveZIgnoreComponent(UPrimitiveComponent* InComponent) {ZIgnoreRenderComponents.Remove(InComponent); }
-	bool ContainsZIgnoreComponent(UPrimitiveComponent* InComponent) {return ZIgnoreRenderComponents.Find(InComponent) != -1; }
 	
-	// render
-	void AddRenderComponent(class UPrimitiveComponent* Component)
-	{
-		if (!RenderComponentTable.Contains(Component->GetType()))
-		{
-			RenderComponentTable.Add(Component->GetType(), TArray<UPrimitiveComponent*>());
-		}
-		RenderComponentTable[Component->GetType()].AddUnique(Component);
-	}
-	void RemoveRenderComponent(class UPrimitiveComponent* Component) { RenderComponentTable.Remove(Component->GetType()); }
-	TMap<EPrimitiveMeshType, TArray<UPrimitiveComponent*>> GetRenderComponents();
+	void AddRenderComponent(class UPrimitiveComponent* Component);
+	void RemoveRenderComponent(class UPrimitiveComponent* Component) { RenderComponents.Remove(Component); }
+	const TArray<AActor*>& GetActors() const { return Actors; }
 private:
 	UWorldInfo GetWorldInfo() const;
 
@@ -66,10 +55,15 @@ public:
 	
 protected:
 	TArray<AActor*> Actors;
-	TArray<UPrimitiveComponent*> ZIgnoreRenderComponents;
-	TArray<AActor*> ActorsToSpawn;
+	TArray<AActor*> ActorsToSpawn;	// PlayBegin() Before Tick()
 	TArray<AActor*> PendingDestroyActors; // TODO: 추후에 TQueue로 변경
-	TMap<EPrimitiveMeshType, TArray<UPrimitiveComponent*>> RenderComponentTable;
+	
+	TArray<UPrimitiveComponent*> RenderComponents;	
+	TArray<UPrimitiveComponent*> IndividualRenders;
+	
+	//TArray<UPrimitiveComponent*> InstancingRenders;
+	//TMap<UMaterial*, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<uint8, FBatchRenderContext>>> BatchRenders;
+	TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<uint8, FBatchRenderContext>> BatchRenders;
 };
 
 template <typename T>

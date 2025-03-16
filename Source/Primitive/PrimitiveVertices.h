@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "Core/Container/Array.h"
-#include "Core/HAL/PlatformType.h"
 struct FVertexSimple
 {
     float X, Y, Z;    // Position

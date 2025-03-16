@@ -1,19 +1,16 @@
 ﻿#include "Engine.h"
 
 #include <iostream>
+
 #include "Object/ObjectFactory.h"
 #include "Object/World/World.h"
-#include "Debug/DebugConsole.h"
 #include "Object/Gizmo/Axis.h"
 #include "Core/Input/PlayerInput.h"
 #include "Core/Input/PlayerController.h"
 #include "Object/Actor/Camera.h"
-#include "Object/Actor/Sphere.h"
 #include "Static/FEditorManager.h"
 #include "Object/Actor/AABBPicker.h"
 
-class AArrow;
-class APicker;
 // ImGui WndProc 정의
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -86,8 +83,8 @@ void UEngine::Initialize(
     InitializedScreenHeight = ScreenHeight;
     
     ui.Initialize(WindowHandle, *Renderer, ScreenWidth, ScreenHeight);
-    
-	UE_LOG("Engine Initialized!");
+    InitializeShowFlags();
+    UE_LOG("Engine Initialized!");
 }
 
 void UEngine::Run()
@@ -141,7 +138,8 @@ void UEngine::Run()
 		if (World)
 		{
 			World->Tick(DeltaTime);
-			World->Render();
+		    World->UpdateRenderComponents();
+		    World->Render();
 		    World->LateTick(DeltaTime);
 		}
 
@@ -231,8 +229,7 @@ void UEngine::InitWorld()
     FEditorManager::Get().SetCamera(World->SpawnActor<ACamera>());
 
     //// Test
-    //World->SpawnActor<AArrow>();
-    //World->SpawnActor<ASphere>();
+    World->SpawnActor<AArrow>();
     
     World->SpawnActor<AAxis>();
     World->SpawnActor<APicker>();
@@ -275,4 +272,56 @@ UObject* UEngine::GetObjectByUUID(uint32 InUUID) const
         return Obj->get();
     }
     return nullptr;
+}
+
+TMap<EEngineShowFlags, bool> UEngine::ShowFlagStates;
+
+void UEngine::InitializeShowFlags()
+{
+    ShowFlagStates.Add(EEngineShowFlags::SF_Primitives, true);
+    ShowFlagStates.Add(EEngineShowFlags::SF_Gizmo, true);
+    ShowFlagStates.Add(EEngineShowFlags::SF_BillboardText, true);
+}
+
+//  View Mode 변경
+void UEngine::SetViewMode(EViewModeIndex NewMode)
+{
+    ViewMode = NewMode;
+    // View Mode에 따른 셰이더 변경
+    if (ViewMode == EViewModeIndex::VMI_Wireframe)
+    {
+        Renderer->EnableWireframeMode();
+    }
+    else if (ViewMode == EViewModeIndex::VMI_Unlit)
+    {
+        Renderer->EnableUnlitMode();
+    }
+    else
+    {
+        Renderer->EnableLitMode();
+    }
+}
+
+//  Show Flag 설정
+void UEngine::SetShowFlag(EEngineShowFlags Flag, bool bEnable)
+{
+    ShowFlagStates[Flag] = bEnable;
+    //bShowPrimitives = bEnable;
+    //Renderer->SetShowPrimitives(bShowPrimitives); //  렌더러에 전달
+}
+
+//  Show Flag 상태 확인
+bool UEngine::IsShowFlagEnabled(EEngineShowFlags Flag) const
+{
+    if (Flag == EEngineShowFlags::SF_Primitives)
+    {
+        return ShowFlagStates[Flag];
+        //return bShowPrimitives;
+    }
+    return false;
+}
+
+const TMap<EEngineShowFlags, bool>& UEngine::GetShowFlagStates() const
+{
+    return ShowFlagStates;
 }

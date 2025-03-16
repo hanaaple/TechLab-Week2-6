@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "Core/Container/String.h"
-#include "Core/Name/FNameEntry.h"
 #include "Core/Name/FNameTable.h"
 
 class FName
@@ -27,7 +26,10 @@ public:
     //bool EqualsIgnoreCase(const FName& Other) const;
     //@return FString 형태의 문자열
     FString ToString() const;
-
+    const FString& ToStringRef() const;
+    int32 GetNumber() const;
+    bool IsValid() const;
+    void SetIndex(const FName& Other);
 private:
     //네임 테이블에서 이 FName이 저장된 위치의 인덱스(소문자로 변경된 해시)
     int32 ComparisonIndex;

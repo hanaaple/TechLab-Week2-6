@@ -4,17 +4,17 @@
 #include <d3d11.h>
 #include <memory>
 
-#include "UI.h" 
+#include "BatchRenderContext.h"
 #include "Core/Math/Vector.h"
 
 #include "Core/Rendering/BufferCache.h"
 #include "Core/Math/Matrix.h"
-#include "Core/Engine.h"
-#include "Primitive/PrimitiveVertices.h"
 #include "Core/Math/Plane.h"
 #include "Core/Math/Transform.h"
+#include "Core/Name/FName.h"
 
 
+class AActor;
 struct FVertexSimple;
 struct FVector4;
 
@@ -53,7 +53,7 @@ private:
 public:
     /** Renderer를 초기화 합니다. */
     void Create(HWND hWindow);
-
+	
     /** Renderer에 사용된 모든 리소스를 해제합니다. */
     void Release();
 
@@ -75,6 +75,7 @@ public:
     void PrepareShader() const;
 
 	void RenderPrimitive(class UPrimitiveComponent* PrimitiveComp);
+	void RenderBatch(FBatchRenderContext& BatchRenderContext);
 
     /**
      * Buffer에 있는 Vertex를 그립니다.
@@ -82,8 +83,6 @@ public:
      * @param numVertices 버텍스 버퍼에 저장된 버텍스의 총 개수
      */
     void RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, const BufferInfo& IndexBufferInfo) const;
-
-	void RenderBatch(TArray<UPrimitiveComponent*> BatchTargets, EPrimitiveMeshType MeshType);
 	
     /**
      * 정점 데이터로 Vertex Buffer를 생성합니다.
@@ -111,6 +110,7 @@ public:
     void UpdateProjectionMatrix(ACamera* Camera);
 
 	void OnUpdateWindowSize(int Width, int Height);
+    void PrepareTexture(void* Texture);
 
 protected:
     /** Direct3D Device 및 SwapChain을 생성합니다. */
@@ -144,6 +144,14 @@ protected:
 
     void CreateBufferCache();
 
+	void CreateSamplerState();
+
+	
+	
+	void ReleaseSamplerState();
+	
+	void ReleaseTextureSRVs();
+	
     void InitMatrix();
 
 protected:
@@ -175,9 +183,11 @@ protected:
     ID3D11DepthStencilState* GizmoDepthStencilState = nullptr; // 기즈모용 스텐실 스테이트. Z버퍼 테스트 하지않고 항상 앞에렌더
 	
 	// Buffer Cache
-public:
 	std::unique_ptr<FBufferCache> BufferCache;
 
+	ID3D11SamplerState* SamplerState = nullptr;
+	void* CurrentTexture;
+	
     FMatrix ViewMatrix;
 	FMatrix ProjectionMatrix;
 
@@ -213,5 +223,20 @@ public:
 
 	void RenderPickingTexture();
 	FMatrix GetProjectionMatrix() const { return ProjectionMatrix; }
+
+public:
+	//View Mode 변경 함수
+	void EnableWireframeMode();
+	void EnableLitMode();
+	void EnableUnlitMode();
+	const void ApplyCurrentRasterizerState() const;
+
+	//렌더링 여부 반환
+	static bool ShouldRenderActor(const AActor* OwnerActor);
+
+private:
+	ID3D11RasterizerState* WireframeRasterizerState = nullptr;
+	ID3D11RasterizerState* SolidRasterizerState = nullptr;
 #pragma endregion picking
+
 };

@@ -171,8 +171,8 @@ void URenderer::Prepare() const
 
     // Rasterization할 Viewport를 설정 
     DeviceContext->RSSetViewports(1, &ViewportInfo);
-    DeviceContext->RSSetState(RasterizerState);
-
+    //DeviceContext->RSSetState(RasterizerState);
+    ApplyCurrentRasterizerState();
     /**
      * OutputMerger 설정
      * 렌더링 파이프라인의 최종 단계로써, 어디에 그릴지(렌더 타겟)와 어떻게 그릴지(블렌딩)를 지정
@@ -206,22 +206,25 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
         return;
     }
 
-    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(PrimitiveComp->GetType());
+    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(PrimitiveComp->GetMeshType());
     
     if (VertexBufferInfo.GetBuffer() == nullptr)
     {
         return;
     }
 
-    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(PrimitiveComp->GetType());
+    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(PrimitiveComp->GetMeshType());
 
     //if (CurrentTopology != Info.GetTopology())
     {
         // TODO 토폴로지를 Engine, World(SceneManager) 단에서 넣어주는 경우 BufferInfo에서 Topology를 가지면 안됨.
-        DeviceContext->IASetPrimitiveTopology(VertexBufferInfo.GetTopology());
-        CurrentTopology = VertexBufferInfo.GetTopology();
+        //DeviceContext->IASetPrimitiveTopology(PrimitiveComp->GetTopology());
+        //CurrentTopology = PrimitiveComp->GetTopology();
     }
 
+
+    // TODO CurrentTexture null 여부에 따라 Constant Buffer에 넘겨주기
+    
     ConstantUpdateInfo UpdateInfo{ 
         PrimitiveComp->GetComponentTransform(), 
         PrimitiveComp->GetCustomColor(), 
@@ -233,7 +236,37 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
     RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
 }
 
+void URenderer::RenderBatch(FBatchRenderContext& BatchRenderContext)
+{
+    if (BufferCache == nullptr)
+    {
+        return;
+    }
 
+    //TODO if Depth > 0 Check
+    
+    //BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(MeshType);
+    // if (VertexBufferInfo.GetBuffer() == nullptr)
+    {
+        return;
+    }    
+
+    //if (CurrentTopology != Info.GetTopology())
+    {
+        // TODO 토폴로지를 Engine, World(SceneManager) 단에서 넣어주는 경우 BufferInfo에서 Topology를 가지면 안됨.
+        //DeviceContext->IASetPrimitiveTopology(PrimitiveComp->GetTopology());
+        //CurrentTopology = PrimitiveComp->GetTopology();
+    }
+
+    //TODO11
+    // Vertex Color 유지, 커스텀 컬러 X
+    // UpdateConstant(UpdateInfo);
+    // 배칭 셰이더 파일을 따로 두냐, 어떻게 하냐에 따라 다를듯
+    
+    //BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(MeshType);
+    
+    //RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
+}
 
 void URenderer::RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, const BufferInfo& IndexBufferInfo) const
 {
@@ -251,36 +284,6 @@ void URenderer::RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, cons
         DeviceContext->IASetIndexBuffer(IndexBufferInfo.GetBuffer(), DXGI_FORMAT_R32_UINT, IndexBufferOffset);
         DeviceContext->DrawIndexed(IndexBufferInfo.GetSize(), IndexBufferOffset, 0);
     }
-}
-
-void URenderer::RenderBatch(TArray<UPrimitiveComponent*> BatchTargets, EPrimitiveMeshType MeshType)
-{
-    if (BufferCache == nullptr)
-    {
-        return;
-    }
-
-    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(MeshType);
-    if (VertexBufferInfo.GetBuffer() == nullptr)
-    {
-        return;
-    }    
-
-    //if (CurrentTopology != Info.GetTopology())
-    {
-        // TODO 토폴로지를 Engine, World(SceneManager) 단에서 넣어주는 경우 BufferInfo에서 Topology를 가지면 안됨.
-        DeviceContext->IASetPrimitiveTopology(VertexBufferInfo.GetTopology());
-        CurrentTopology = VertexBufferInfo.GetTopology();
-    }
-
-    //TODO11
-    // Vertex Color 유지, 커스텀 컬러 X
-    // UpdateConstant(UpdateInfo);
-    // 배칭 셰이더 파일을 따로 두냐, 어떻게 하냐에 따라 다를듯
-    
-    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(MeshType);
-    
-    RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
 }
 
 ID3D11Buffer* URenderer::CreateVertexBuffer(const FVertexSimple* Vertices, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage = D3D11_USAGE_DEFAULT) const
@@ -572,6 +575,40 @@ void URenderer::CreateBufferCache()
     BufferCache = std::make_unique<FBufferCache>();
 }
 
+void URenderer::CreateSamplerState()
+{
+    D3D11_SAMPLER_DESC samplerDesc = {};
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    Device->CreateSamplerState(&samplerDesc, &SamplerState);
+}
+
+void URenderer::ReleaseSamplerState()
+{
+    if (SamplerState)
+    {
+        SamplerState->Release();
+        SamplerState = nullptr;
+    }
+}
+
+void URenderer::ReleaseTextureSRVs()
+{
+    // if (TextureSRV)
+    // {
+    //     TextureSRV->Release();
+    //     TextureSRV = nullptr;
+    // }
+    //
+    // // 텍스처 객체 해제
+    // if (texture)
+    // {
+    //     texture->Release();
+    //     texture = nullptr;
+    // }
+}
+
 void URenderer::InitMatrix()
 {
 	ViewMatrix = FMatrix::Identity();
@@ -688,6 +725,11 @@ void URenderer::PrepareMain()
 void URenderer::PrepareMainShader()
 {
     DeviceContext->PSSetShader(SimplePixelShader, nullptr, 0);
+
+
+    // shader 파일에 샘플러 바인딩
+    //DeviceContext->PSSetSamplers()
+    //DeviceContext->PSSetShaderResources(0, 0, nullptr);
 }
 
 FVector4 URenderer::GetPixel(FVector MPos)
@@ -811,6 +853,31 @@ void URenderer::OnUpdateWindowSize(int Width, int Height)
     }
 }
 
+void URenderer::PrepareTexture(void* Texture)
+{
+    // 여기서 ResourceView를 들고 있고 매핑된 거로 가져오기,샘플러 유지
+    if (Texture == CurrentTexture)
+    {
+        return;
+    }
+
+    CurrentTexture = Texture;
+    ID3D11ShaderResourceView* TextureSRV = nullptr;
+    //ID3D11ShaderResourceView* TextureSRV = TextureLoader::Get().GetTextureSRV(Texture);
+    //ID3D11ShaderResourceView* TextureSRV = TextureMap[Texture];
+
+    if (Texture != nullptr)
+    {
+        DeviceContext->PSSetShaderResources(0, 1, &TextureSRV);
+        DeviceContext->PSSetSamplers(0, 1, &SamplerState);   
+    }
+    else
+    {
+        DeviceContext->PSSetShaderResources(0, 1, nullptr);
+        DeviceContext->PSSetSamplers(0, 1, nullptr);
+    }
+}
+
 void URenderer::RenderPickingTexture()
 {
     // 백버퍼로 복사
@@ -818,4 +885,75 @@ void URenderer::RenderPickingTexture()
     SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer));
     DeviceContext->CopyResource(backBuffer, PickingFrameBuffer);
     backBuffer->Release();
+}
+void URenderer::EnableWireframeMode()
+{
+    if (!WireframeRasterizerState)
+    {
+        D3D11_RASTERIZER_DESC WireframeDesc = {};
+        WireframeDesc.FillMode = D3D11_FILL_WIREFRAME;  // 와이어프레임 모드
+        WireframeDesc.CullMode = D3D11_CULL_BACK;
+        WireframeDesc.FrontCounterClockwise = FALSE;
+        Device->CreateRasterizerState(&WireframeDesc, &WireframeRasterizerState);
+    }
+    //DeviceContext->RSSetState(WireframeRasterizerState);
+}
+
+void URenderer::EnableLitMode()
+{
+    if (!SolidRasterizerState)
+    {
+        D3D11_RASTERIZER_DESC SolidDesc = {};
+        SolidDesc.FillMode = D3D11_FILL_SOLID;  //  일반 모드
+        SolidDesc.CullMode = D3D11_CULL_BACK;
+        SolidDesc.FrontCounterClockwise = FALSE;
+        Device->CreateRasterizerState(&SolidDesc, &SolidRasterizerState);
+    }
+    //DeviceContext->RSSetState(SolidRasterizerState);
+}
+
+void URenderer::EnableUnlitMode()
+{
+    EnableLitMode();  //  Unlit 모드는 Rasterizer 상태는 유지, Shader만 변경
+}
+//현재 View Mode에 맞는 Rasterizer State 적용
+const void URenderer::ApplyCurrentRasterizerState() const
+{
+    EViewModeIndex CurrentViewMode = UEngine::Get().GetViewMode();
+
+    if (CurrentViewMode == EViewModeIndex::VMI_Wireframe)
+    {
+        if (WireframeRasterizerState)
+        {
+            DeviceContext->RSSetState(WireframeRasterizerState);
+        }
+    }
+    else
+    {
+        if (SolidRasterizerState)
+        {
+            DeviceContext->RSSetState(SolidRasterizerState);
+        }
+    }
+}
+
+bool URenderer::ShouldRenderActor(const AActor* OwnerActor)
+{
+    if (!OwnerActor) return false;
+    const auto& ShowFlags = UEngine::Get().GetShowFlagStates();
+
+    //Primitives 비활성화 + Gizmo가 아닌 경우 렌더링 X
+    if (!ShowFlags[EEngineShowFlags::SF_Primitives] && !OwnerActor->IsGizmoActor()) 
+        return false;
+
+    //Gizmo 비활성화 + Gizmo인 경우 렌더링 X
+    if (!ShowFlags[EEngineShowFlags::SF_Gizmo] && OwnerActor->IsGizmoActor()) 
+        return false;
+    /*
+    //BillboardText 비활성화 + BillboardText인 경우 렌더링 X
+    if (!ShowFlags[EEngineShowFlags::SF_BillboardText] && OwnerActor->IsBillboardTextActor()) 
+        return false;
+    */
+
+    return true;
 }

@@ -1,11 +1,9 @@
 ﻿#pragma once
-#include "Core/EngineTypes.h"
 #include "Object/UObject.h"
-#include "Object/ActorComponent/ActorComponent.h"
 #include "Core/Math/Transform.h"
 #include "Core/Container/Set.h"
 #include "Object/ObjectFactory.h"
-#include "Object/USceneComponent.h"
+#include "Object/ActorComponent/ActorComponent.h"
 
 class UWorld;
 
@@ -14,18 +12,8 @@ class AActor : public UObject
     DECLARE_OBJECT(AActor, UObject)
 	friend class FEditorManager;
 public:
-	AActor();
+	AActor() = default;
 	virtual ~AActor() override = default;
-
-	void SetDepth(int InDepth)
-	{
-		Depth = InDepth;
-	}
-
-	int GetDepth() const
-	{
-		return Depth;
-	}
 public:
 	virtual void BeginPlay();
 	virtual void Tick(float DeltaTime);
@@ -37,17 +25,13 @@ public:
 
 	UWorld* GetWorld() const { return World; }
 	void SetWorld(UWorld* InWorld) { World = InWorld; }
-
+	
+	// Clear, 세이브 X, 
 	bool IsGizmoActor() const { return bIsGizmo; }
 
 private:
 	virtual void Pick();
 	virtual void UnPick();
-
-	uint32 Depth;
-	bool bIsPicked = false;
-public:
-	bool IsPicked() const { return bIsPicked; }
 
 public:
 	template<typename T>

@@ -2,6 +2,7 @@
 
 #include <ranges>
 
+#include "URenderer.h"
 #include "Core/Engine.h"
 #include "Primitive/PrimitiveVertices.h"
 

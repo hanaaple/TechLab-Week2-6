@@ -1,17 +1,14 @@
 ﻿#pragma once
-#include "UObject.h"
-#include "Core/Math/Vector.h"
-#include "Core/Container/Set.h"
 #include "Core/Math/Transform.h"
-#include "Core/Math/Matrix.h"
 #include "Object/ActorComponent/ActorComponent.h"
 
 
 class USceneComponent : public UActorComponent
 {
-	friend class AActor;
 	using Super = UActorComponent;
 	using EAttachmentRule = EEndPlayReason::EAttachmentRule;
+	friend class AActor;
+    DECLARE_OBJECT(USceneComponent,Super)
 public:
 	USceneComponent() = default;
 
@@ -25,8 +22,6 @@ public:
 	void SetVisibility(bool bNewVisibility) const;
 	bool GetVisibleFlag() const	{ return bVisible; }
 	void Pick(bool bPicked);
-	bool IsPicked() const { return bIsPicked; }
-	void SetVisibility(bool visibility);
 	
 	// Transform
 public:
@@ -101,7 +96,6 @@ private:
 	
 private:
 	bool bVisible = true;
-	bool bCanEverTick = true;
 	
 	// debug
 protected:

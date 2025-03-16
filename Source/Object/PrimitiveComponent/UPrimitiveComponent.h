@@ -1,10 +1,10 @@
 ﻿#pragma once
 
-#include "Core/Engine.h"
+#include "Core/Rendering/Material.h"
+#include "Core/Rendering/URenderer.h"
 #include "Object/USceneComponent.h"
 #include "Primitive/PrimitiveVertices.h"
 #include "Core/Math/Plane.h"
-#include "Debug/DebugConsole.h"
 
 struct FAABB {
 	FVector Min;
@@ -59,7 +59,11 @@ struct FAABB {
 class UPrimitiveComponent : public USceneComponent
 {
 	using Super = USceneComponent;
+    DECLARE_OBJECT(UPrimitiveComponent,Super)
 public:
+	UPrimitiveComponent() : Super(), Depth(0)
+	{
+	}
 	FAABB aabb;
 public:
 	UPrimitiveComponent() = default;
@@ -68,12 +72,45 @@ public:
 public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void Render();
+	virtual void Activate() override;
+	virtual void Deactivate() override;
+
+	
 	void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
 	void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
-	virtual void Render();
 	
-	virtual EPrimitiveMeshType GetType() { return EPrimitiveMeshType::EPT_None; }
+	virtual EPrimitiveMeshType GetMeshType() { return EPrimitiveMeshType::EPT_None; }
 
+
+public:
+	void SetDepth(int InDepth) { Depth = InDepth; }
+	int GetDepth() const { return Depth; }
+
+	//FMaterial* Material;
+
+	// Texture* texture;
+
+	
+	//UMaterial* GetMaterial() const { return CurFrameData.Material; }
+	//void SetMaterial(UMaterial* NewMaterial);
+	//void SetTopology(D3D11_PRIMITIVE_TOPOLOGY NewTopologyType);
+	//D3D11_PRIMITIVE_TOPOLOGY GetTopology() const { return CurFrameData.TopologyType; }
+	//ERenderMode GetERenderMode() const { return RenderMode; }
+
+private:
+	void CheckIsDirty();
+
+protected:
+	//FRenderData PrevFrameData;
+	//FRenderData CurFrameData;
+	
+	bool bIsDirty;	// if Material or Topology .... Changes
+
+public:
+	void* Texture;
+
+public:
 	bool IsUseVertexColor() const { return bUseVertexColor; }
 
 	void SetCustomColor(const FVector4& InColor)
@@ -87,26 +124,19 @@ public:
 		bUseVertexColor = bUse;
 	}
 	const FVector4& GetCustomColor() const { return CustomColor; }
-
-public:
-	virtual void RegisterComponentWithWorld(class UWorld* World);
-
-public:
-
-	void SetIsOrthoGraphic(bool IsOrtho) { bIsOrthoGraphic = IsOrtho; }
-	bool GetIsOrthoGraphic() { return bIsOrthoGraphic;}
-	bool GetIsBatch() {return bIsBatch; }
-
+	
 protected:
 	bool bUseVertexColor = true;
-	bool bIsOrthoGraphic = false;
-	bool bIsBatch = false;
 	FVector4 CustomColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+private:
+	uint32 Depth;
 };
 
 class UCubeComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UCubeComp,Super)
 public:
 	UCubeComp()
 	{
@@ -114,7 +144,7 @@ public:
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cube);
 	}
 	virtual ~UCubeComp() = default;
-	EPrimitiveMeshType GetType() override
+	EPrimitiveMeshType GetMeshType() override
 	{
 		return EPrimitiveMeshType::EPT_Cube;
 	}
@@ -123,6 +153,7 @@ public:
 class USphereComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(USphereComp,Super)
 public:
 	USphereComp()
 	{
@@ -130,7 +161,7 @@ public:
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Sphere);
 	}
 	virtual ~USphereComp() = default;
-	EPrimitiveMeshType GetType() override
+	EPrimitiveMeshType GetMeshType() override
 	{
 		return EPrimitiveMeshType::EPT_Sphere;
 	}
@@ -139,6 +170,7 @@ public:
 class UTriangleComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UTriangleComp,Super)
 public:
 	UTriangleComp()
 	{
@@ -146,7 +178,7 @@ public:
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Triangle);
 	}
 	virtual ~UTriangleComp() = default;
-	EPrimitiveMeshType GetType() override
+	EPrimitiveMeshType GetMeshType() override
 	{
 		return EPrimitiveMeshType::EPT_Triangle;
 	}
@@ -155,6 +187,7 @@ public:
 class ULineComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(ULineComp,Super)
 
 public:
 	ULineComp()
@@ -163,7 +196,7 @@ public:
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Line);
 	}
 	virtual ~ULineComp() = default;
-	EPrimitiveMeshType GetType() override
+	EPrimitiveMeshType GetMeshType() override
 	{
 		return EPrimitiveMeshType::EPT_Line;
 	}
@@ -172,6 +205,7 @@ public:
 class UCylinderComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UCylinderComp,Super)
 
 public:
 	UCylinderComp()
@@ -180,7 +214,7 @@ public:
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cylinder);
 	}
 	virtual ~UCylinderComp() = default;
-	EPrimitiveMeshType GetType() override
+	EPrimitiveMeshType GetMeshType() override
 	{
 		return EPrimitiveMeshType::EPT_Cylinder;
 	}
@@ -189,6 +223,7 @@ public:
 class UConeComp : public UPrimitiveComponent
 {
 	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UConeComp,Super)
 public:
 	UConeComp()
 	{
@@ -196,7 +231,7 @@ public:
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cone);
 	}
 	virtual ~UConeComp() = default;
-	EPrimitiveMeshType GetType() override
+	EPrimitiveMeshType GetMeshType() override
 	{
 		return EPrimitiveMeshType::EPT_Cone;
 	}

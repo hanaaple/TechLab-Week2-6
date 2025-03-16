@@ -65,6 +65,23 @@ void UWorld::LateTick(float DeltaTime)
 	PendingDestroyActors.Empty();
 }
 
+void UWorld::UpdateRenderComponents()
+{
+	// 렌더링 되는 컴포넌트들
+	// for (auto proxy : )
+	// {
+	// 	if (proxy->IsDirty)
+	// 	{
+	// 		// visible change
+	// 		// 
+	// 		proxy 기반 변경
+	// 	}
+	// }
+	// 변경사항이 있다면
+	// 배치, 인스턴싱, 별개 렌더링 Array 업데이트
+}
+
+
 void UWorld::Render()
 {
 	URenderer* Renderer = UEngine::Get().GetRenderer();
@@ -78,119 +95,115 @@ void UWorld::Render()
 	Renderer->UpdateViewMatrix(cam->GetActorTransform());
 	Renderer->UpdateProjectionMatrix(cam);
 	
-	if (APlayerInput::Get().GetMouseDown(false))
-	{
-		RenderPickingTexture(*Renderer);
-	}
-	
-	RenderMainTexture(*Renderer);
-
-	
-	// DisplayPickingTexture(*Renderer);
-
+	RenderMainTargets(*Renderer);
 }
 
-void UWorld::RenderPickingTexture(URenderer& Renderer)
-{
-	Renderer.PreparePicking();
-	Renderer.PreparePickingShader();
+// void UWorld::RenderPickingTexture(URenderer& Renderer)
+// {
+// 	// Renderer.PreparePicking();
+// 	// Renderer.PreparePickingShader();
+// 	//
+// 	// // for (auto& [MeshType, RenderComponents] : RenderComponentTable)
+// 	// {
+// 	// 	TArray<UPrimitiveComponent*> BatchTargetComponents;
+// 	// 	for (auto RenderComponent : RenderComponents)
+// 	// 	{
+// 	// 		//TODO11
+// 	// 		// Picking들도 정상적으로 렌더링 시켜야됨. 
+// 	// 		if (RenderComponent->GetIsBatch())
+// 	// 		{
+// 	// 			BatchTargetComponents.Add(RenderComponent);
+// 	// 		}
+// 	// 		else
+// 	// 		{
+// 	// 			if (RenderComponent->GetOwner()->GetDepth() > 0)
+// 	// 			{
+// 	// 				continue;
+// 	// 			}
+// 	// 			uint32 UUID = RenderComponent->GetUUID();
+// 	// 			RenderComponent->UpdateConstantPicking(Renderer, APicker::EncodeUUID(UUID));
+// 	// 			RenderComponent->Render();
+// 	// 		}
+// 	// 	}
+// 	// 	//DrawPickingBatch(BatchTargetComponents);
+// 	// }
+// 	//
+// 	// Renderer.PrepareZIgnore();
+// 	// for (auto& RenderComponent: ZIgnoreRenderComponents)
+// 	// {
+// 	// 	uint32 UUID = RenderComponent->GetUUID();
+// 	// 	RenderComponent->UpdateConstantPicking(Renderer, APicker::EncodeUUID(UUID));
+// 	// 	uint32 depth = RenderComponent->GetDepth();
+// 	// 	RenderComponent->Render();
+// 	// }
+// }
 
-	for (auto& [MeshType, RenderComponents] : RenderComponentTable)
+void UWorld::RenderMainTargets(URenderer& Renderer)
+{
+	// Depth Stencil, RenderTarget, BlendState 변경
+	Renderer.PrepareMain();
+	Renderer.PrepareMainShader();	// 우선 Shader 1개로만
+	
+	//for (const auto& MaterialMapped : BatchRenders)
 	{
-		TArray<UPrimitiveComponent*> BatchTargetComponents;
-		for (auto RenderComponent : RenderComponents)
+		//for (const auto& TopologyMapped : MaterialMapped.Value)
+		for (auto& TopologyMapped : BatchRenders)
 		{
-			//TODO11
-			// Picking들도 정상적으로 렌더링 시켜야됨. 
-			if (RenderComponent->GetIsBatch())
+			for (auto& [_, BatchContext] : TopologyMapped.Value)
 			{
-				BatchTargetComponents.Add(RenderComponent);
-			}
-			else
-			{
-				if (RenderComponent->GetOwner()->GetDepth() > 0)
-				{
-					continue;
-				}
-				uint32 UUID = RenderComponent->GetUUID();
-				RenderComponent->UpdateConstantPicking(Renderer, APicker::EncodeUUID(UUID));
-				RenderComponent->Render();
+				DrawBatch(Renderer, BatchContext);
 			}
 		}
-		//DrawPickingBatch(BatchTargetComponents);
 	}
+
+	//for (const auto& MaterialMapped : InstancingRenders)
+	{
+		// TODO 인스턴싱은 예정!
+		// for (const auto& TopologyMapped : MaterialMapped.Value)
+		// {
+		// 	for (auto [_, Context] : TopologyMapped.Value)
+		// 	{
+		// 		DrawInstancing(Context);
+		// 	}
+		// }
+	}
+
+	TArray<UPrimitiveComponent*> ZIgnoreRenderComponents;
+	for (auto* RenderTarget : RenderComponents)
+	{
+		Renderer.PrepareTexture(RenderTarget->Texture);
+		// Texture 변경
+		if (RenderTarget->GetDepth() > 0)
+		{
+			ZIgnoreRenderComponents.Add(RenderTarget);
+			continue;
+		}
+		RenderTarget->Render();
+	}
+	
 
 	Renderer.PrepareZIgnore();
-	for (auto& RenderComponent: ZIgnoreRenderComponents)
+	for (auto& RenderTarget: ZIgnoreRenderComponents)
 	{
-		uint32 UUID = RenderComponent->GetUUID();
-		RenderComponent->UpdateConstantPicking(Renderer, APicker::EncodeUUID(UUID));
-		uint32 depth = RenderComponent->GetOwner()->GetDepth();
-		RenderComponent->Render();
+		Renderer.PrepareTexture(RenderTarget->Texture);
+		RenderTarget->Render();
 	}
-}
-
-void UWorld::RenderMainTexture(URenderer& Renderer)
-{
-	// 셰이더 변경 불가
-	Renderer.PrepareMain();
-	Renderer.PrepareMainShader();
-
 	// 1. 같은 메쉬여도 배치 여부가 다를수 있다.
 	// 2. 다른 메쉬여도 같은 토폴로지, 같은 머터리얼과 셰이더, 트
 
 	// 같은 토폴로지, 셰이더, 다른 메시 -> 배치 렌더링
 	// 같은 토폴로지, 셰이더, 같은 메시 -> 인스턴싱
 	
-	for (auto& [MeshType, RenderComponents] : RenderComponentTable)
-	{
-		TArray<UPrimitiveComponent*> BatchTargetComponents;
-		for (auto RenderComponent : RenderComponents)
-		{
-			//TODO11
-			// 나쁜점 -> Render를 추상화해서 사용하는데 이걸 막음
-			if (RenderComponent->GetIsBatch() && RenderComponent->GetVisibleFlag())
-			{
-				BatchTargetComponents.Add(RenderComponent);
-			}
-			else
-			{
-				if (RenderComponent->GetOwner()->GetDepth() > 0)
-				{
-					continue;
-				}
-				uint32 depth = RenderComponent->GetOwner()->GetDepth();
-				// RenderComponent->UpdateConstantDepth(Renderer, depth);
-				RenderComponent->Render();
-			}
-		}
-
-		//DrawBatch(BatchTargetComponents);
-	}
-	
-	Renderer.PrepareZIgnore();
-	for (auto& RenderComponent: ZIgnoreRenderComponents)
-	{
-		uint32 depth = RenderComponent->GetOwner()->GetDepth();
-		RenderComponent->Render();
-	}
 }
 
-void UWorld::DisplayPickingTexture(URenderer& Renderer)
-{
-	Renderer.RenderPickingTexture();
-}
+// void UWorld::DisplayPickingTexture(URenderer& Renderer)
+// {
+// 	Renderer.RenderPickingTexture();
+// }
 
-void UWorld::DrawBatch(TArray<UPrimitiveComponent*>& BatchTargets)
+void UWorld::DrawBatch(URenderer& Renderer, FBatchRenderContext BatchRenderContext)
 {
-	//TODO11
-	// 이게 PrimitiveComponent->Render() 부분인데, 추상화되는 부분을 구체화시켜놓음. 막을 방법?
-	URenderer* Renderer = UEngine::Get().GetRenderer();
-	if (Renderer == nullptr)
-	{
-		return;
-	}
-	//Renderer->RenderBatch(BatchTargets);
+	Renderer.RenderBatch(BatchRenderContext);
 }
 
 void UWorld::ClearWorld()
@@ -203,6 +216,7 @@ void UWorld::ClearWorld()
 			DestroyActor(Actor);
 		}
 	}
+
 	UE_LOG("Clear World");
 }
 
@@ -228,16 +242,16 @@ bool UWorld::DestroyActor(AActor* InActor)
 	return true;
 }
 
+void UWorld::AddRenderComponent(UPrimitiveComponent* Component)
+{
+	RenderComponents.Add(Component);
+}
+
+
 void UWorld::SaveWorld()
 {
 	const UWorldInfo& WorldInfo = GetWorldInfo();
 	JsonSaveHelper::SaveScene(WorldInfo);
-}
-
-void UWorld::AddZIgnoreComponent(UPrimitiveComponent* InComponent)
-{
-	ZIgnoreRenderComponents.Add(InComponent);
-	InComponent->SetIsOrthoGraphic(true);
 }
 
 void UWorld::LoadWorld(const char* SceneName)

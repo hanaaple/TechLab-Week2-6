@@ -156,44 +156,14 @@ FMatrix FMatrix::GetTransposed() const
 
 float FMatrix::Determinant() const
 {
-	float det = 0.0f;
-
-	for (int i = 0; i < 4; ++i)
-	{
-		float temp[3][3];
-		for (int j = 1; j < 4; ++j)
-		{
-			int colIndex = 0;
-			for (int k = 0; k < 4; ++k)
-			{
-				if (k == i) continue;
-				temp[j-1][colIndex++] = M[j][k];
-			}
-		}
-		det += (i % 2 == 0 ? 1.0f : -1.0f) * M[0][i] * Determinant3x3(temp);
-	}
-	return det;
+	const float* m = &M[0][0];
+	return
+		m[0] * (m[5] * (m[10] * m[15] - m[11] * m[14]) - m[6] * (m[9] * m[15] - m[11] * m[13]) + m[7] * (m[9] * m[14] - m[10] * m[13])) -
+		m[1] * (m[4] * (m[10] * m[15] - m[11] * m[14]) - m[6] * (m[8] * m[15] - m[11] * m[12]) + m[7] * (m[8] * m[14] - m[10] * m[12])) +
+		m[2] * (m[4] * (m[9] * m[15] - m[11] * m[13]) - m[5] * (m[8] * m[15] - m[11] * m[12]) + m[7] * (m[8] * m[13] - m[9] * m[12])) -
+		m[3] * (m[4] * (m[9] * m[14] - m[10] * m[13]) - m[5] * (m[8] * m[14] - m[10] * m[12]) + m[6] * (m[8] * m[13] - m[9] * m[12]));
 }
 
-float FMatrix::Cofactor(int row, int col) const
-{
-	// 3x3 행렬에서 해당 행과 열을 제거하여 나머지 3x3 행렬을 생성
-	float temp[3][3];
-	int r = 0;
-	for (int i = 0; i < 4; ++i)
-	{
-		if (i == row) continue;
-		int c = 0;
-		for (int j = 0; j < 4; ++j)
-		{
-			if (j == col) continue;
-			temp[r][c++] = M[i][j];
-		}
-		++r;
-	}
-
-	return Determinant3x3(temp);
-}
 
 FMatrix FMatrix::Inverse() const
 {
@@ -227,39 +197,6 @@ FMatrix FMatrix::Inverse() const
 	Result.M[3][2] = -InvDet * (m[0] * (m[5] * m[14] - m[6] * m[13]) - m[1] * (m[4] * m[14] - m[6] * m[12]) + m[2] * (m[4] * m[13] - m[5] * m[12]));
 	Result.M[3][3] = InvDet * (m[0] * (m[5] * m[10] - m[6] * m[9]) - m[1] * (m[4] * m[10] - m[6] * m[8]) + m[2] * (m[4] * m[9] - m[5] * m[8]));
 
-	return Result;
-
-	float det = Determinant();
-        
-	// 행렬식이 0이면 역행렬이 존재하지 않음
-	if (det == 0.0f)
-	{
-		return Result;  // 역행렬이 존재하지 않음
-	}
-        
-	float invDet = 1.0f / det;
-	
-	// 여인자 행렬(cofactor matrix) 계산 후 수반행렬(adjugate matrix)을 구함
-	Result.M[0][0] =  Cofactor(0, 0) * invDet;
-	Result.M[0][1] = -Cofactor(0, 1) * invDet;
-	Result.M[0][2] =  Cofactor(0, 2) * invDet;
-	Result.M[0][3] = -Cofactor(0, 3) * invDet;
-        
-	Result.M[1][0] = -Cofactor(1, 0) * invDet;
-	Result.M[1][1] =  Cofactor(1, 1) * invDet;
-	Result.M[1][2] = -Cofactor(1, 2) * invDet;
-	Result.M[1][3] =  Cofactor(1, 3) * invDet;
-	
-	Result.M[2][0] =  Cofactor(2, 0) * invDet;
-	Result.M[2][1] = -Cofactor(2, 1) * invDet;
-	Result.M[2][2] =  Cofactor(2, 2) * invDet;
-	Result.M[2][3] = -Cofactor(2, 3) * invDet;
-	
-	Result.M[3][0] = -Cofactor(3, 0) * invDet;
-	Result.M[3][1] =  Cofactor(3, 1) * invDet;
-	Result.M[3][2] = -Cofactor(3, 2) * invDet;
-	Result.M[3][3] =  Cofactor(3, 3) * invDet;
-	
 	return Result;
 }
 
@@ -309,52 +246,48 @@ FMatrix FMatrix::GetScaleMatrix(const FVector& InScale)
 FMatrix FMatrix::GetRotateMatrix(const FVector& InEulerAngle)
 {
 	// 각도를 라디안으로 변환
-	float Yaw = FMath::DegreesToRadians(InEulerAngle.Y);
-	float Pitch = FMath::DegreesToRadians(InEulerAngle.X);
-	float Roll = FMath::DegreesToRadians(InEulerAngle.Z);
-
-	FMatrix YawMatrix(
-		FVector4(FMath::Cos(Yaw), 0.0f, FMath::Sin(Yaw), 0.0f),    // 1행
-		FVector4(0.0f, 1.0f, 0.0f, 0.0f),                            // 2행
-		FVector4(-FMath::Sin(Yaw), 0.0f, FMath::Cos(Yaw), 0.0f),    // 3행
-		FVector4(0.0f, 0.0f, 0.0f, 1.0f)                             // 4행
-	);
-
-	FMatrix PitchMatrix(
-		FVector4(1.0f, 0.0f, 0.0f, 0.0f),                           // 1행
-		FVector4(0.0f, FMath::Cos(Pitch), -FMath::Sin(Pitch), 0.0f), // 2행
-		FVector4(0.0f, FMath::Sin(Pitch), FMath::Cos(Pitch), 0.0f),  // 3행
-		FVector4(0.0f, 0.0f, 0.0f, 1.0f)                            // 4행
-	);
+	float Roll = FMath::DegreesToRadians(InEulerAngle.X);
+	float Pitch = FMath::DegreesToRadians(InEulerAngle.Y);
+	float Yaw = FMath::DegreesToRadians(InEulerAngle.Z);
 
 	FMatrix RollMatrix(
-		FVector4(FMath::Cos(Roll), FMath::Sin(Roll), 0.0f, 0.0f),     // 1행
-		FVector4(-FMath::Sin(Roll), FMath::Cos(Roll), 0.0f, 0.0f),    // 2행
+		FVector4(1.0f, 0.0f, 0.0f, 0.0f),                           // 1행
+		FVector4(0.0f, FMath::Cos(Roll), -FMath::Sin(Roll), 0.0f), // 2행
+		FVector4(0.0f, FMath::Sin(Roll), FMath::Cos(Roll), 0.0f),  // 3행
+		FVector4(0.0f, 0.0f, 0.0f, 1.0f)                            // 4행
+	);
+	
+	FMatrix PitchMatrix(
+		FVector4(FMath::Cos(Pitch), 0.0f, FMath::Sin(Pitch), 0.0f),    // 1행
+		FVector4(0.0f, 1.0f, 0.0f, 0.0f),                            // 2행
+		FVector4(-FMath::Sin(Pitch), 0.0f, FMath::Cos(Pitch), 0.0f),    // 3행
+		FVector4(0.0f, 0.0f, 0.0f, 1.0f)                             // 4행
+	);
+	
+	FMatrix YawMatrix(
+		FVector4(FMath::Cos(Yaw), -FMath::Sin(Yaw), 0.0f, 0.0f),     // 1행
+		FVector4(FMath::Sin(Yaw), FMath::Cos(Yaw), 0.0f, 0.0f),    // 2행
 		FVector4(0.0f, 0.0f, 1.0f, 0.0f),                             // 3행
 		FVector4(0.0f, 0.0f, 0.0f, 1.0f)                              // 4행
 	);
 
-	return RollMatrix * PitchMatrix * YawMatrix;
+	return YawMatrix * RollMatrix * PitchMatrix;
 	// return GetRotateMatrix(FQuat(InRotation));
 }
 
 FMatrix FMatrix::GetRotateMatrix(const FQuat& Q)
 {
 	// 쿼터니언 요소 추출
+	const float x = Q.X, y = Q.Y, z = Q.Z, w = Q.W;
+
+	// 중간 계산값
+	const float xx = x * x, yy = y * y, zz = z * z;
+	const float xy = x * y, xz = x * z, yz = y * z;
+	const float wx = w * x, wy = w * y, wz = w * z;
+
+	// 회전 행렬 구성
 	FMatrix Result;
 
-	// 사원수에서 회전 행렬로 변환 (Row-major 방식)
-	float xx = Q.X * Q.X;
-	float yy = Q.Y * Q.Y;
-	float zz = Q.Z * Q.Z;
-	float xy = Q.X * Q.Y;
-	float xz = Q.X * Q.Z;
-	float yz = Q.Y * Q.Z;
-	float wx = Q.W * Q.X;
-	float wy = Q.W * Q.Y;
-	float wz = Q.W * Q.Z;
-
-	// Row-major 방식으로 원소 배치
 	Result.M[0][0] = 1.0f - 2.0f * (yy + zz);
 	Result.M[0][1] = 2.0f * (xy - wz);
 	Result.M[0][2] = 2.0f * (xz + wy);
@@ -373,7 +306,7 @@ FMatrix FMatrix::GetRotateMatrix(const FQuat& Q)
 	Result.M[3][0] = 0.0f;
 	Result.M[3][1] = 0.0f;
 	Result.M[3][2] = 0.0f;
-	Result.M[3][3] = 1.0f;
+	Result.M[3][3] = 1.0f; // 4x4 행렬이므로 마지막 값은 1
 
 	return Result;
 }
@@ -425,17 +358,21 @@ FMatrix FMatrix::Orthographic(float Left, float Right, float Bottom, float Top, 
 		{-(Right + Left) * InvWidth, -(Top + Bottom) * InvHeight, -NearZ * InvDepth, 1.0f}
 	);
 }
-
-float FMatrix::Determinant2x2(float a, float b, float c, float d)
+FMatrix FMatrix::OrthoForLH(float ViewWidth, float VeiwHeight, float NearPlane, float FarPlane)
 {
-	return a * d - b * c;
-}
+	FMatrix Result;
+	Result.M[0][0] = 2 / ViewWidth;
+	Result.M[1][1] = 2 / VeiwHeight;
+	Result.M[2][2] = 1 / (FarPlane - NearPlane);
+	Result.M[3][2] = NearPlane / (NearPlane - FarPlane);
+	Result.M[3][3] = 1.0f;
 
-float FMatrix::Determinant3x3(float Matrix[3][3])
-{
-	return Matrix[0][0] * Determinant2x2(Matrix[1][1], Matrix[1][2], Matrix[2][1], Matrix[2][2]) -
-		   Matrix[0][1] * Determinant2x2(Matrix[1][0], Matrix[1][2], Matrix[2][0], Matrix[2][2]) +
-		   Matrix[0][2] * Determinant2x2(Matrix[1][0], Matrix[1][1], Matrix[2][0], Matrix[2][1]);
+	// 일반적으로 left, right, top, bottom을 받는 경우와 비교하여
+	// ViewWidth = right - left;
+	// ViewHeight = top - bottom
+	// 으로 접근하여 작성하였습니다.
+
+	return Result;
 }
 
 FVector FMatrix::GetTranslation() const
@@ -449,13 +386,6 @@ FVector FMatrix::GetScale() const
 	float Y = FVector(M[1][0], M[1][1], M[1][2]).Length();
 	float Z = FVector(M[2][0], M[2][1], M[2][2]).Length();
 	return { X, Y, Z };
-
-	// float X = FVector(M[0][0], M[1][0], M[2][0]).Length();
-	// float Y = FVector(M[0][1], M[1][1], M[2][1]).Length();
-	// float Z = FVector(M[0][2], M[1][2], M[2][2]).Length();
-	// return { X, Y, Z };
-	
-	//return FVector(M[0][0], M[1][1], M[2][2]);
 }
 
 FVector FMatrix::GetEulerRotation() const
