@@ -9,7 +9,7 @@ ABillboardText::ABillboardText()
 	RootComponent = TextComponent;
 	TextComponent->SetRelativeTransform(FTransform());
 
-	TextComponent->SetText("Hellow World!");
+	TextComponent->SetText("Hello World!");
 	
 	//FIXME : testcode
 	//text = "W";
