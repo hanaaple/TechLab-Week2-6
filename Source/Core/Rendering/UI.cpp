@@ -354,26 +354,39 @@ void UI::RenderPropertyWindow()
     if (selectedActor != nullptr)
     {
         FTransform selectedTransform = selectedActor->GetActorTransform();
-        AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
+ 
+        UPrimitiveComponent* component = dynamic_cast<UPrimitiveComponent*>(selectedActor->GetRootComponent());
         float xAxis[] = {
-            gizmo->GetXAxis().X,
-            gizmo->GetXAxis().Y,
-            gizmo->GetXAxis().Z
+            component->obb.axis[0].X,
+            component->obb.axis[0].Y,
+            component->obb.axis[0].Z
         };
         float yAxis[] = {
-            gizmo->GetYAxis().X,
-            gizmo->GetYAxis().Y,
-            gizmo->GetYAxis().Z
+            component->obb.axis[1].X,
+            component->obb.axis[1].Y,
+            component->obb.axis[1].Z
         };
         float zAxis[] = {
-            gizmo->GetZAxis().X,
-            gizmo->GetZAxis().Y,
-            gizmo->GetZAxis().Z
+            component->obb.axis[2].X,
+            component->obb.axis[2].Y,
+            component->obb.axis[2].Z
+        };
+        float center[] = {
+            component->obb.Center.X,
+            component->obb.Center.Y,
+            component->obb.Center.Z
+        };
+        float halfSize[] = {
+            component->obb.halfSize[0],
+            component->obb.halfSize[1],
+            component->obb.halfSize[2]
         };
 
         ImGui::InputFloat3("x axis", xAxis, "%.3f");
         ImGui::InputFloat3("y axis", yAxis, "%.3f");
         ImGui::InputFloat3("z axis", zAxis, "%.3f");
+        ImGui::InputFloat3("center", center, "%.3f");
+        ImGui::InputFloat3("half", halfSize, "%.3f");
         // 선택된 오브젝트의 이름을 표시하고 변경 가능하도록 함
         uint32 bufferSize = 100;
         char SceneNameInput[100];

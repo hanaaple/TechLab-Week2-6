@@ -31,6 +31,7 @@ void AAABBPicker::LateTick(float DeltaTime)
 			}
 			return;
 		}
+		UE_LOG("picked %s", pickedActor->GetTypeName());
 		if (pickedActor->IsGizmoActor() == false) {
 			if (pickedActor == FEditorManager::Get().GetSelectedActor())
 			{
@@ -108,30 +109,44 @@ AActor* AAABBPicker::CheckCollision(FVector rayOrigin, FVector rayDir)
 	for (auto component : components) {
 		if (component != nullptr && !component->GetOwner()->IsGizmoActor()) {
 			if (component->GetVisibleFlag()) {
-				FAABB boundingBox = component->aabb;
+				FOBB boundingBox = component->obb;
 
-				FVector center = (boundingBox.Max + boundingBox.Min) / 2.0f;
-				float t1 = (boundingBox.Min.X - rayOrigin.X) / rayDir.X;
-				float t2 = (boundingBox.Max.X - rayOrigin.X) / rayDir.X;
+				FVector center = boundingBox.Center;
+				FVector localOrigin = center - rayOrigin;
 
-				float t3 = (boundingBox.Min.Y - rayOrigin.Y) / rayDir.Y;
-				float t4 = (boundingBox.Max.Y - rayOrigin.Y) / rayDir.Y;
+				float tMin = -FLT_MAX;
+				float tMax = FLT_MAX;
 
-				float t5 = (boundingBox.Min.Z - rayOrigin.Z) / rayDir.Z;
-				float t6 = (boundingBox.Max.Z - rayOrigin.Z) / rayDir.Z;
+				for (int i = 0; i < 3; i++) {
+					FVector axis = boundingBox.axis[i];
+					float axisAlignedOrigin = axis.Dot(localOrigin);
+					float axisAlignedDir = axis.Dot(rayDir);
 
-				float tMax = FMath::Min(FMath::Max(t1, t2), FMath::Max(t3, t4));
-				tMax = FMath::Min(tMax, FMath::Max(t5, t6));
+					if (FMath::Abs(axisAlignedDir) > 1e-6f) {
+						float t1 = (axisAlignedOrigin + boundingBox.halfSize[i]) / axisAlignedDir;
+						float t2 = (axisAlignedOrigin - boundingBox.halfSize[i]) / axisAlignedDir;
 
-				float tMin = FMath::Max(FMath::Min(t1, t2), FMath::Min(t3, t4));
-				tMin = FMath::Max(tMin, FMath::Min(t5, t6));
-
-				if (tMax >= tMin && tMax > 0) {
-					float objDist = FVector::Distance(center, rayOrigin);
-					if (objDist < dist) {
-						if (component->GetOwner()->GetTypeName() != "Actor") {
-							PickedComponent = component;
+						if (t1 > t2) {
+							float temp = t1;
+							t1 = t2;
+							t2 = temp;
 						}
+
+						tMin = FMath::Max(tMin, t1);
+						tMax = FMath::Min(tMax, t2);
+
+						if (tMin > tMax || tMax < 0)
+							break;
+					}
+					else if (-axisAlignedOrigin - boundingBox.halfSize[i] > 0 || -axisAlignedOrigin + boundingBox.halfSize[i] < 0)
+					{
+						break;
+					}
+				}
+				if (tMin <= tMax && tMin >= 0 && component->GetOwner()->GetTypeName() != "Actor") {
+					float objDist = (component->GetComponentTransform().GetPosition() - rayOrigin).Length();
+					if (objDist < dist) {
+						PickedComponent = component;
 					}
 				}
 			}
