@@ -350,7 +350,26 @@ void UI::RenderPropertyWindow()
     if (selectedActor != nullptr)
     {
         FTransform selectedTransform = selectedActor->GetActorTransform();
+        AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
+        float xAxis[] = {
+            gizmo->GetXAxis().X,
+            gizmo->GetXAxis().Y,
+            gizmo->GetXAxis().Z
+        };
+        float yAxis[] = {
+            gizmo->GetYAxis().X,
+            gizmo->GetYAxis().Y,
+            gizmo->GetYAxis().Z
+        };
+        float zAxis[] = {
+            gizmo->GetZAxis().X,
+            gizmo->GetZAxis().Y,
+            gizmo->GetZAxis().Z
+        };
 
+        ImGui::InputFloat3("x axis", xAxis, "%.3f");
+        ImGui::InputFloat3("y axis", yAxis, "%.3f");
+        ImGui::InputFloat3("z axis", zAxis, "%.3f");
         // 선택된 오브젝트의 이름을 표시하고 변경 가능하도록 함
         uint32 bufferSize = 100;
         char SceneNameInput[100];

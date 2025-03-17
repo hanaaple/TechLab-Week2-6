@@ -55,9 +55,9 @@ void AAABBPicker::LateTick(float DeltaTime)
 					AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
 					gizmo->SetPrevMousePos(clickedPosition);
 					FTransform AT = FEditorManager::Get().GetSelectedActor()->GetActorTransform();
-					gizmo->SetActorXAxis(FVector4(AT.GetForward().X, AT.GetForward().Y, AT.GetForward().Z, 1.0f));
-					gizmo->SetActorYAxis(FVector4(AT.GetRight().X, AT.GetRight().Y, AT.GetRight().Z, 1.0f));
-					gizmo->SetActorZAxis(FVector4(AT.GetUp().X, AT.GetUp().Y, AT.GetUp().Z, 1.0f));
+					gizmo->SetActorXAxis(FVector4(AT.GetVisualForward().X, AT.GetVisualForward().Y, AT.GetVisualForward().Z, 1.0f));
+					gizmo->SetActorYAxis(FVector4(AT.GetVisualRight().X, AT.GetVisualRight().Y, AT.GetVisualRight().Z, 1.0f));
+					gizmo->SetActorZAxis(FVector4(AT.GetVisualUp().X, AT.GetVisualUp().Y, AT.GetVisualUp().Z, 1.0f));
 				}
 				ESelectedAxis selectedAxis = FEditorManager::Get().GetGizmoHandle()->IsAxis(pickedAxis);
 			}

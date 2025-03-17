@@ -146,6 +146,41 @@ public:
 
 	}
 
+	FVector GetVisualForward() const
+	{
+		// 쿼터니언을 회전 행렬로 변환
+		FMatrix RotationMatrix = FMatrix::GetVisualRotationMatrix(FQuat(Rotation));
+
+		// 회전 행렬의 첫 번째 열이 Forward 벡터를 나타냄
+		FVector Forward = FVector(
+			RotationMatrix.M[0][0],
+			RotationMatrix.M[1][0],
+			RotationMatrix.M[2][0]
+		);
+
+		return Forward.GetSafeNormal();
+	}
+
+	FVector GetVisualRight() const
+	{
+		//return FVector::CrossProduct(FVector(0, 0, 1), GetForward()).GetSafeNormal();
+		// 쿼터니언을 회전 행렬로 변환
+		FMatrix RotationMatrix = FMatrix::GetVisualRotationMatrix(FQuat(Rotation));
+
+		// 회전 행렬의 두 번째 열이 Right 벡터를 나타냄
+		FVector Forward = FVector(
+			RotationMatrix.M[0][1],
+			RotationMatrix.M[1][1],
+			RotationMatrix.M[2][1]
+		);
+		return Forward.GetSafeNormal();
+	}
+
+	FVector GetVisualUp() const {
+		return FVector::CrossProduct(GetVisualForward(), GetVisualRight()).GetSafeNormal();
+
+	}
+
 	void Translate(const FVector& InTranslation)
 	{
 		Position += InTranslation;

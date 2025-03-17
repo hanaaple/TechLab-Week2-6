@@ -39,6 +39,9 @@ public:
 	void SetActorYAxis(FVector4 axis);
 	void SetActorZAxis(FVector4 axis);
 
+	FVector4 GetXAxis() { return actorXAxis; }
+	FVector4 GetYAxis() { return actorYAxis; }
+	FVector4 GetZAxis() { return actorZAxis; }
 private:
 	ESelectedAxis SelectedAxis = ESelectedAxis::None;
 	EGizmoType GizmoType = EGizmoType::Translate;
@@ -50,7 +53,6 @@ private:
 	FVector4 actorYAxis;
 	FVector4 actorZAxis;
 	FVector4 prevMousePos;
-	FVector4 curMousePos;
 	void DoTransform(FTransform& AT, float Result, AActor* Actor);
 };
 
