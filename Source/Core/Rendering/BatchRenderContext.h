@@ -2,7 +2,7 @@
 #define _TCHAR_DEFINED  // TCHAR 재정의 에러 때문
 #include <d3d11.h>
 
-#include "Primitive/PrimitiveVertices.h"
+#include "Primitive/MeshResourceCache.h"
 #include "Core/Container/Array.h"
 #include "Core/Container/Map.h"
 
