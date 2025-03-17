@@ -14,6 +14,7 @@
 #include "Object/Actor/Sphere.h"
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 #include "Static/FEditorManager.h"
+#include <Object/Actor/BillBoardText.h>
 
 
 void UWorld::BeginPlay()
@@ -325,6 +326,10 @@ void UWorld::LoadWorld(const char* SceneName)
 		else if (ObjectInfo->ObjectType == "Cone")
 		{
 			Actor = SpawnActor<ACone>();
+		}
+		else if (ObjectInfo->ObjectType == "BillboardText")
+		{
+			Actor = SpawnActor<ABillboardText>();
 		}
 		
 		Actor->SetActorTransform(Transform);

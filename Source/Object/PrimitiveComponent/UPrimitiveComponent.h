@@ -61,6 +61,10 @@ public:
 	virtual void Deactivate() override;
 
 	
+	void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
+	void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
+	void UpdateConstantUV(const URenderer& Renderer, const char c)const;
+
 	// void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
 	// void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 
@@ -125,7 +129,7 @@ public:
 	
 public:
 	bool IsUseVertexColor() const { return bUseVertexColor; }
-
+	bool IsUseTexture() const { return bUseUV; }
 	void SetCustomColor(const FVector4& InColor)
 	{
 		CustomColor = InColor; 
@@ -140,6 +144,7 @@ public:
 	
 protected:
 	bool bUseVertexColor = true;
+	bool bUseUV = false;
 	FVector4 CustomColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 private:
@@ -157,6 +162,8 @@ public:
 	UCubeComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Cube);
+		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
+		SetTexture(UTextureLoader::Get().m_texture);
 	}
 	virtual ~UCubeComp() = default;
 };

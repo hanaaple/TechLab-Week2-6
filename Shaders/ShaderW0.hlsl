@@ -1,9 +1,13 @@
 // ShaderW0.hlsl
+
+Texture2D sourceTex : register(t0);
+SamplerState samp : register(s0);
 cbuffer constants : register(b0)
 {
     matrix MVP;
     float4 CustomColor;
     uint bUseVertexColor;
+    uint bUseUV;
 }
 
 cbuffer UUIDColor : register(b1){
@@ -16,16 +20,27 @@ cbuffer Depth : register(b2){
     int farPlane;
 }
 
+cbuffer UV : register(b3)
+{
+    float u;
+    float v;
+    float width;
+    float height;
+}
+
 struct VS_INPUT
 {
     float4 position : POSITION; // Input position from vertex buffer
     float4 color : COLOR;       // Input color from vertex buffer
+    float2 uv : TEXCOORD;
 };
 
 struct PS_INPUT
 {
     float4 position : SV_POSITION; // Transformed position to pass to the pixel shader
     float4 color : COLOR;          // Color to pass to the pixel shader
+    float2 uv : TEXCOORD0;
+    uint bUseUV : BLENDINDICES;
     // float4 depthPosition : TEXCOORD0;
 };
 
@@ -43,6 +58,10 @@ PS_INPUT mainVS(VS_INPUT input)
     // output.depthPosition = output.position;
 
     output.color = bUseVertexColor == 1 ? input.color : CustomColor;
+    //output.color = input.color;
+    //output.uv = float2(input.u, input.v);
+    output.uv = input.uv;
+    output.bUseUV = bUseUV;
     return output;
 }
 
@@ -53,9 +72,26 @@ PS_OUTPUT mainPS(PS_INPUT input) : SV_TARGET
 
     // 기본 깊이 값 계산 (0.0~1.0)
     // float baseDepth = input.depthPosition.z / input.depthPosition.w;
-
-    // 색상 설정 (예: 흰색)
-    output.color = input.color;
+    //output.color = (input.bUseUV==1) ? sourceTex.Sample(samp, input.uv) : input.color;
+    
+    // 텍스처 샘플링
+    
+    if (input.bUseUV == 1)
+    {
+        float correctedV = 1.0 - (v + height);
+        float4 texColor = sourceTex.Sample(samp, input.uv * float2(width, height) + float2(u, correctedV));
+        output.color = texColor;
+        //배경이 특정 색(예: 검은색)일 경우 픽셀 버리기
+        if (length(texColor.rgb - float3(0, 0, 0)) < 0.05)
+        {
+            discard;
+        }
+    }
+    else
+    {
+        output.color = input.color;
+    }
+    
     output.depth = saturate(depth);
     // output.color = float4(depth, depth, depth, 1.0f);
     

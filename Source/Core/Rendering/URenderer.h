@@ -11,7 +11,7 @@
 #include "Core/Math/Matrix.h"
 #include "Core/Math/Plane.h"
 #include "Core/Math/Transform.h"
-
+#include "Texture/TextureLoader.h"
 
 class AActor;
 struct FVertexSimple;
@@ -22,13 +22,13 @@ class ACamera;
 class URenderer
 {
 private:
-    struct alignas(16) FConstants
+    struct FConstants
     {
         FMatrix MVP;
         FVector4 Color;
 		// true인 경우 Vertex Color를 사용하고, false인 경우 Color를 사용합니다.
         uint32 bUseVertexColor;
-        FVector Padding;
+        uint32 bUseUV;
     };
 	
 	struct alignas(16) FPickingConstants
@@ -41,12 +41,20 @@ private:
 		int nearPlane;
 		int farPlane;
 	};
+
+    struct alignas(16) FUVConstants {
+        float U;
+        float V;
+        float Width;
+        float Height;
+    };
 	
     struct ConstantUpdateInfo
     {
         const FTransform& Transform;
 		const FVector4& Color;
         bool bUseVertexColor;
+        bool bUseUV;
     };
 
 public:
@@ -110,7 +118,7 @@ public:
 
 	void OnUpdateWindowSize(int Width, int Height);
     void PrepareTexture(ID3D11ShaderResourceView* Texture);
-    FBufferCache* GetBufferCache() const { return BufferCache.get(); } 
+    FBufferCache* GetBufferCache() const { return BufferCache.get(); }
 
 protected:
     /** Direct3D Device 및 SwapChain을 생성합니다. */
@@ -204,6 +212,8 @@ protected:
 	FLOAT PickingClearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; //
 	ID3D11PixelShader* PickingPixelShader = nullptr;         // Pixel의 색상을 결정하는 Pixel 셰이더
 	ID3D11Buffer* ConstantsDepthBuffer = nullptr;
+    
+    ID3D11Buffer* ConstantsUVBuffer = nullptr;           // UV 상수 버퍼
 
 	ID3D11DepthStencilState* IgnoreDepthStencilState = nullptr;   // DepthStencil 상태(깊이 테스트, 스텐실 테스트 등 정의)
 
@@ -216,7 +226,7 @@ public:
 	void PreparePickingShader() const;
 	void UpdateConstantPicking(FVector4 UUIDColor) const;
     void UpdateConstantDepth(int Depth) const;
-
+    void UpdateConstantUV(char c) const;
     void PrepareMain();
 	void PrepareMainShader();
 
