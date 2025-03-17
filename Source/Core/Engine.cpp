@@ -237,6 +237,7 @@ void UEngine::InitWorld()
 
     World->SpawnActor<AAxis>();
     World->SpawnActor<AAABBPicker>();
+    World->SpawnActor<ABillboardText>();
     //World->SpawnActor<APicker>();
     /*auto* Actor = World->SpawnActor<ACylinder>();
     UConeComp* ConeComp = Actor->AddComponent<UConeComp>();

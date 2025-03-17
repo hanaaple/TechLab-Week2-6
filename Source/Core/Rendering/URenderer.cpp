@@ -7,6 +7,7 @@
 #include "DataTypes/Structs.h"
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 #include "Static/FEditorManager.h"
+#include <Object/PrimitiveComponent/CharComp.h>
 
 void URenderer::Create(HWND hWindow)
 {
@@ -240,8 +241,12 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
         PrimitiveComp->IsUseTexture()
     };
 
+    
     //FIMXE : 텍스처 저장 구조에 따라 추후 변경.
     //UpdateInfo.bUseUV = (PrimitiveComp->Texture != nullptr) ? 1 : 0;
+    if (PrimitiveComp->IsA<UCharComp>()) {
+        UpdateConstantUV(dynamic_cast<UCharComp*>(PrimitiveComp)->c);
+    }
 
     UpdateConstantPrimitive(UpdateInfo);
     

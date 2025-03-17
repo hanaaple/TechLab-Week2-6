@@ -273,9 +273,10 @@
     <ClCompile Include="Source\Core\Math\Matrix.cpp" />
     <ClCompile Include="Source\Core\Math\Vector.cpp" />
     <ClCompile Include="Source\JsonSaveHelper.cpp" />
+    <ClCompile Include="Source\Object\PrimitiveComponent\CharComp.cpp" />
+    <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp" />
     <ClCompile Include="Source\Primitive\MeshVertexData.cpp" />
     <ClCompile Include="Source\Primitive\VertexDataCreator.cpp" />
-    <ClCompile Include="Source\Texture\TextComponent.cpp" />
     <ClCompile Include="Source\Texture\TextureLoader.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_demo.cpp" />
@@ -335,9 +336,10 @@
     <ClInclude Include="Source\Core\Math\Transform.h" />
     <ClInclude Include="Source\Object\Actor\Cylinder.h" />
     <ClInclude Include="Source\Object\ObjectFactory.h" />
+    <ClInclude Include="Source\Object\PrimitiveComponent\CharComp.h" />
+    <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
     <ClInclude Include="Source\Primitive\MeshVertexData.h" />
     <ClInclude Include="Source\Primitive\VertexDataCreator.h" />
-    <ClInclude Include="Source\Texture\TextComponent.h" />
     <ClInclude Include="Source\Texture\TextureLoader.h" />
     <ClInclude Include="Source\ThirdParty\DirectXTK\Audio.h" />
     <ClInclude Include="Source\ThirdParty\DirectXTK\BufferHelpers.h" />

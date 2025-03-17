@@ -73,5 +73,5 @@ ID3D11ShaderResourceView* UTextureLoader::GetTextureSRV()
 void UTextureLoader::DrawText(const std::string& text) {
 	LoadCharInfo(512.0f, 512.0f, 32.0f, 32.0f, 16, 16);
 
-	UEngine::Get().GetRenderer()->UpdateConstantUV('V');
+	//UEngine::Get().GetRenderer()->UpdateConstantUV('V');
 }
