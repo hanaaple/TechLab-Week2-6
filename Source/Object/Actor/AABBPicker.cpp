@@ -2,6 +2,7 @@
 #include "Core/Input/PlayerInput.h"
 #include "Static/FEditorManager.h"
 #include "Object/World/World.h"
+#include "Object/Gizmo/EditorGizmos.h"
 
 AAABBPicker::AAABBPicker()
 {
@@ -21,43 +22,73 @@ void AAABBPicker::LateTick(float DeltaTime)
 		FVector mousePos = APlayerInput::Get().GetMouseDownNDCPos(false);
 		ACamera* camera = FEditorManager::Get().GetCamera();
 		FVector rayOrigin = camera->GetActorTransform().GetPosition();
-		FVector4 ndc(mousePos.X, mousePos.Y, 1.0f, 1.0f);
-		FMatrix inverseView = camera->GetActorTransform().GetViewMatrix().Inverse();
-		UEngine::Get().GetRenderer()->UpdateProjectionMatrix(camera);
-		FMatrix inverseProjection = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
-
-		FVector4 rayView = ndc * inverseProjection;
-		if (rayView.W != 0) {
-			rayView.X = rayView.X / rayView.W;
-			rayView.Y = rayView.Y / rayView.W;
-			rayView.Z = rayView.Z / rayView.W;
-			rayView.W = 1.0f;
-		}
-		FVector4 rayWorld = rayView * inverseView;
-		FVector rayDir = FVector(rayWorld.X, rayWorld.Y, rayWorld.Z) - rayOrigin;
-		rayDir.Normalize();
+		FVector rayDir = RayCast(mousePos, camera);
 		AActor* pickedActor = CheckCollision(rayOrigin, rayDir);
 		if (pickedActor == nullptr) {
+			FEditorManager::Get().SelectActor(nullptr);
 			return;
 		}
 		if (pickedActor->IsGizmoActor() == false) {
 			if (pickedActor == FEditorManager::Get().GetSelectedActor())
 			{
-				FEditorManager::Get().SelectActor(nullptr);
+				//물체의 기즈모가 바운딩 박스 밖에 있을 경우 픽이 해제돼서
+				//바운딩 박스 다시 클릭해야 픽 해제되는 방식 유지
+				//FEditorManager::Get().SelectActor(nullptr);
+				return;
 			}
 			else
 			{
 				FEditorManager::Get().SelectActor(pickedActor);
+				UE_LOG(pickedActor->GetTypeName());
 				UE_LOG("Pick - UUID: %d", pickedActor->GetUUID());
 			}
 		}
 	}
-
+	if (APlayerInput::Get().IsPressedMouse(false)) {
+		if (FEditorManager::Get().GetGizmoHandle()->GetSelectedAxis() == ESelectedAxis::None) {
+			FVector mousePos = APlayerInput::Get().GetMouseDownNDCPos(false);
+			ACamera* camera = FEditorManager::Get().GetCamera();
+			FVector rayOrigin = camera->GetActorTransform().GetPosition();
+			FVector rayDir = RayCast(mousePos, camera);
+			UCylinderComp* pickedAxis = CheckGizmo(rayOrigin, rayDir);
+			if (pickedAxis != nullptr) {
+				ESelectedAxis selectedAxis = FEditorManager::Get().GetGizmoHandle()->IsAxis(pickedAxis);
+			}
+		}
+	}
+	else
+	{
+		if (AEditorGizmos* Handle = FEditorManager::Get().GetGizmoHandle())
+		{
+			Handle->SetSelectedAxis(ESelectedAxis::None);
+		}
+	}
 }
 
 const char* AAABBPicker::GetTypeName()
 {
 	return nullptr;
+}
+
+FVector AAABBPicker::RayCast(FVector mouse, ACamera* camera)
+{
+	FVector rayOrigin = camera->GetActorTransform().GetPosition();
+	FVector4 ndc(mouse.X, mouse.Y, 1.0f, 1.0f);
+	FMatrix inverseView = camera->GetActorTransform().GetViewMatrix().Inverse();
+	UEngine::Get().GetRenderer()->UpdateProjectionMatrix(camera);
+	FMatrix inverseProjection = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
+
+	FVector4 rayView = ndc * inverseProjection;
+	if (rayView.W != 0) {
+		rayView.X = rayView.X / rayView.W;
+		rayView.Y = rayView.Y / rayView.W;
+		rayView.Z = rayView.Z / rayView.W;
+		rayView.W = 1.0f;
+	}
+	FVector4 rayWorld = rayView * inverseView;
+	FVector rayDir = FVector(rayWorld.X, rayWorld.Y, rayWorld.Z) - rayOrigin;
+	rayDir.Normalize();
+	return rayDir;
 }
 
 AActor* AAABBPicker::CheckCollision(FVector rayOrigin, FVector rayDir)
@@ -68,7 +99,7 @@ AActor* AAABBPicker::CheckCollision(FVector rayOrigin, FVector rayDir)
 	float dist = 10000;
 	for (auto component : components) {
 		if (component != nullptr && !component->GetOwner()->IsGizmoActor()) {
-			if (component != nullptr) {
+			if (component->GetVisibleFlag()) {
 				FAABB boundingBox = component->aabb;
 
 				FVector center = (boundingBox.Max + boundingBox.Min) / 2.0f;
@@ -92,7 +123,6 @@ AActor* AAABBPicker::CheckCollision(FVector rayOrigin, FVector rayDir)
 					if (objDist < dist) {
 						if (component->GetOwner()->GetTypeName() != "Actor") {
 							PickedComponent = component;
-							UE_LOG(PickedComponent->GetOwner()->GetTypeName());
 						}
 					}
 				}
@@ -101,6 +131,53 @@ AActor* AAABBPicker::CheckCollision(FVector rayOrigin, FVector rayDir)
 	}
 	if (PickedComponent != nullptr) {
 		return PickedComponent->GetOwner();
+	}
+	else {
+		return nullptr;
+	}
+}
+
+UCylinderComp* AAABBPicker::CheckGizmo(FVector rayOrigin, FVector rayDir)
+{
+	UCylinderComp* PickedComponent = nullptr;
+	AEditorGizmos* gizmos = FEditorManager::Get().GetGizmoHandle();
+	TArray<UCylinderComp*> components = gizmos->GetAxis();
+	float dist = 10000;
+	for (auto component : components) {
+		if (component != nullptr) {
+			if (component->GetVisibleFlag()) {
+				FAABB boundingBox = component->aabb;
+
+				FVector center = (boundingBox.Max + boundingBox.Min) / 2.0f;
+				float t1 = (boundingBox.Min.X - rayOrigin.X) / rayDir.X;
+				float t2 = (boundingBox.Max.X - rayOrigin.X) / rayDir.X;
+
+				float t3 = (boundingBox.Min.Y - rayOrigin.Y) / rayDir.Y;
+				float t4 = (boundingBox.Max.Y - rayOrigin.Y) / rayDir.Y;
+
+				float t5 = (boundingBox.Min.Z - rayOrigin.Z) / rayDir.Z;
+				float t6 = (boundingBox.Max.Z - rayOrigin.Z) / rayDir.Z;
+
+				float tMax = FMath::Min(FMath::Max(t1, t2), FMath::Max(t3, t4));
+				tMax = FMath::Min(tMax, FMath::Max(t5, t6));
+
+				float tMin = FMath::Max(FMath::Min(t1, t2), FMath::Min(t3, t4));
+				tMin = FMath::Max(tMin, FMath::Min(t5, t6));
+
+				if (tMax >= tMin && tMax > 0) {
+					float objDist = FVector::Distance(center, rayOrigin);
+					if (component->GetDepth() > 0) {
+						objDist = 0;
+					}
+					if (objDist < dist) {
+						PickedComponent = component;
+					}
+				}
+			}
+		}
+	}
+	if (PickedComponent != nullptr) {
+		return PickedComponent;
 	}
 	else {
 		return nullptr;

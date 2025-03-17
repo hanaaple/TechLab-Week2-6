@@ -229,6 +229,7 @@ public:
 		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cylinder);
 		SetMesh(EPrimitiveMeshType::EPT_Cylinder);
 	}
+	
 	virtual ~UCylinderComp() = default;
 };
 

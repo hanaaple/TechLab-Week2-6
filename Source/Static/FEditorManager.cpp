@@ -16,8 +16,8 @@ void FEditorManager::SelectActor(AActor* NewActor)
         AABB->SetActorVisibility(false);
     }
 
-	if (SelectedActor == NewActor)
-		return;
+	//if (SelectedActor == NewActor)
+	//	return;
 	
     if (SelectedActor != nullptr && SelectedActor != NewActor)
     {

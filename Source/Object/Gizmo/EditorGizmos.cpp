@@ -13,17 +13,19 @@ AEditorGizmos::AEditorGizmos()
 	UCylinderComp* ZArrow = AddComponent<UCylinderComp>();
 	ZArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	ZArrow->SetCustomColor(FVector4(0.0f, 0.0f, 1.0f, 1.0f));
+	axisComponents.Add(ZArrow);
 	
 	UCylinderComp* XArrow = AddComponent<UCylinderComp>();
 	XArrow->SetupAttachment(ZArrow);
-	XArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 90.0f, 0.0f), FVector(1, 1, 1)));
+	XArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, -90.0f, 0.0f), FVector(1, 1, 1)));
 	XArrow->SetCustomColor(FVector4(1.0f, 0.0f, 0.0f, 1.0f));
-
+	axisComponents.Add(XArrow);
 
 	UCylinderComp* YArrow = AddComponent<UCylinderComp>();
 	YArrow->SetupAttachment(ZArrow);
 	YArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(90.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	YArrow->SetCustomColor(FVector4(0.0f, 1.0f, 0.0f, 1.0f));
+	axisComponents.Add(YArrow);
 
 	RootComponent = ZArrow;
 
@@ -142,6 +144,23 @@ void AEditorGizmos::SetActorVisibility(bool bNewActive)
 		RootComponent->SetVisibility(bNewActive);
 }
 
+ESelectedAxis AEditorGizmos::IsAxis(UCylinderComp* axis)
+{
+	if (axis == axisComponents[0]) {
+		SelectedAxis = ESelectedAxis::Z;
+	}
+	else if (axis == axisComponents[1]) {
+		SelectedAxis = ESelectedAxis::X;
+	}
+	else if (axis == axisComponents[2]) {
+		SelectedAxis = ESelectedAxis::Y;
+	}
+	else {
+		SelectedAxis = ESelectedAxis::None;
+	}
+	return SelectedAxis;
+}
+
 const char* AEditorGizmos::GetTypeName()
 {
 	return "GizmoHandle";
@@ -159,10 +178,10 @@ void AEditorGizmos::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
 			AT.SetPosition({ Result.X, AP.Y, AP.Z });
 			break;
 		case EGizmoType::Rotate:
-			AT.RotatePitch(Result.X);
+			AT.RotateRoll(Result.X);
 			break;
 		case EGizmoType::Scale:
-			AT.AddScale({ Result.X * .1f, 0, AP.Z * .1f });
+			AT.AddScale({ Result.X * .1f, 0, 0 });
 			break;
 		}
 	}
@@ -174,7 +193,7 @@ void AEditorGizmos::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
 			AT.SetPosition({ AP.X, Result.Y, AP.Z });
 			break;
 		case EGizmoType::Rotate:
-			AT.RotateRoll(Result.Y);
+			AT.RotatePitch(Result.Y);
 			break;
 		case EGizmoType::Scale:
 			AT.AddScale({ 0, Result.Y * .1f, 0 });
@@ -189,7 +208,7 @@ void AEditorGizmos::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
 			AT.SetPosition({ AP.X, AP.Y, Result.Z });
 			break;
 		case EGizmoType::Rotate:
-			AT.RotatePitch(-Result.Z);
+			AT.RotateYaw(-Result.Z);
 			break;
 		case EGizmoType::Scale:
 			AT.AddScale({0, 0, Result.Z * .1f });

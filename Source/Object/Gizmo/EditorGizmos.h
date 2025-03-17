@@ -29,13 +29,15 @@ public:
 	void SetScaleByDistance();
 	void SetActorVisibility(bool bNewActive);
 	void SetSelectedAxis(ESelectedAxis NewAxis) { SelectedAxis = NewAxis; }
+	TArray<UCylinderComp*> GetAxis() { return axisComponents; }
+	ESelectedAxis IsAxis(UCylinderComp* axis);
 	ESelectedAxis GetSelectedAxis() const { return SelectedAxis; }
 	EGizmoType GetGizmoType() const { return GizmoType; }
 	
 private:
 	ESelectedAxis SelectedAxis = ESelectedAxis::None;
 	EGizmoType GizmoType = EGizmoType::Translate;
-
+	TArray<UCylinderComp*> axisComponents;
 	virtual const char* GetTypeName() override;
 
 private:
