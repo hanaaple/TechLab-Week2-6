@@ -26,7 +26,9 @@ public:
 	UTextureLoader(const UTextureLoader&);
 	~UTextureLoader();
 
+	// png 기반 텍스처 로드
 	bool LoadTexture(string fileName);
+	// 아틀라스 별 uv 좌표 값 저장
 	void LoadCharInfo(float bitmapWidth, float bitmapHeight, float rowSize, float colSize, int rowNum, int colNum);
 	ID3D11ShaderResourceView* GetTextureSRV();
 	void DrawText(const std::string& text);
@@ -34,8 +36,6 @@ public:
 
 	// FIXME : 텍스처 캐싱으로 바꾸기
 	ID3D11ShaderResourceView* m_texture;
-	//std::unique_ptr<DirectX::SpriteBatch> spriteBatch;
-	//void CreateQuad(float x, float y, float size);
 };
 
 //wstring StringToWString(const std::string& str)

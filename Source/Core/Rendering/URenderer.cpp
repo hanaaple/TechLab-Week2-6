@@ -237,14 +237,15 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
 
     // TODO CurrentTexture null 여부에 따라 Constant Buffer에 넘겨주기
     
-    ConstantUpdateInfo UpdateInfo{ 
-        PrimitiveComp->GetComponentTransform(), 
-        PrimitiveComp->GetCustomColor(), 
-        PrimitiveComp->IsUseVertexColor()
-        
+    ConstantUpdateInfo UpdateInfo{
+        PrimitiveComp->GetComponentTransform(),
+        PrimitiveComp->GetCustomColor(),
+        PrimitiveComp->IsUseVertexColor(),
+        PrimitiveComp->IsUseTexture()
     };
 
-    UpdateInfo.bUseUV = (PrimitiveComp->Texture != nullptr) ? 1 : 0;
+    //FIMXE : 텍스처 저장 구조에 따라 추후 변경.
+    //UpdateInfo.bUseUV = (PrimitiveComp->Texture != nullptr) ? 1 : 0;
 
     UpdateConstant(UpdateInfo);
     

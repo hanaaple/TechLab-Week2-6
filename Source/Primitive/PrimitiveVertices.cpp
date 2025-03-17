@@ -64,10 +64,10 @@ TArray<uint32> CubeIndecies = {
 
 FVertexSimple QuadVertices[] =
 {
-	{  0.0f,  0.5f,  -0.5f,  1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 1.0f }, // Bottom-left (red)    → (Z, Y, -X)
-	{  0.0f, -0.5f,  -0.5f,  0.0f, 1.0f, 0.0f, 1.0f,   1.0f, 1.0f }, // Bottom-right (green) → (Z, Y, -X)
-	{  0.0f,  0.5f, 0.5f,  1.0f, 1.0f, 0.0f, 1.0f,   0.0f, 0.0f }, // Top-left (yellow)    → (Z, Y, -X)
-	{  0.0f, -0.5f, 0.5f,  0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f }  // Top-right (blue)     → (Z, Y, -X)
+	{  0.0f,  0.5f,  -0.5f,  1.0f, 0.0f, 0.0f, 1.0f,   1.0f, 1.0f }, // Bottom-left (red)    → (Z, Y, -X)
+	{  0.0f, -0.5f,  -0.5f,  0.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f }, // Bottom-right (green) → (Z, Y, -X)
+	{  0.0f,  0.5f, 0.5f,  1.0f, 1.0f, 0.0f, 1.0f,   1.0f, 0.0f }, // Top-left (yellow)    → (Z, Y, -X)
+	{  0.0f, -0.5f, 0.5f,  0.0f, 0.0f, 1.0f, 1.0f,   0.0f, 0.0f }  // Top-right (blue)     → (Z, Y, -X)
 };
 
 TArray<uint32> QuadIndecies = {

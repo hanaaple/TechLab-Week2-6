@@ -55,7 +55,7 @@ private:
         const FTransform& Transform;
 		const FVector4& Color;
         bool bUseVertexColor;
-        int bUseUV;
+        bool bUseUV;
     };
 
 public:

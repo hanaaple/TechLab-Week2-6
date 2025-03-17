@@ -7,7 +7,7 @@ public:
 	UTextComp() : Super() {
 		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
 		Texture = UTextureLoader::Get().m_texture;
-		//bUseUV = true;
+		Super::bUseUV = true;
 	}
 	virtual ~UTextComp() = default;
 	EPrimitiveMeshType GetMeshType() override {

@@ -74,31 +74,24 @@ PS_OUTPUT mainPS(PS_INPUT input) : SV_TARGET
     // float baseDepth = input.depthPosition.z / input.depthPosition.w;
     //output.color = (input.bUseUV==1) ? sourceTex.Sample(samp, input.uv) : input.color;
     
-    //output.color = float4(input.uv, 0, 1);
-    
-    //output.color = float4(input.uv.g, input.uv.g, input.uv.g, input.uv.g);
-    
-    /* 기존 텍스처 적용*/
-    //output.color = sourceTex.Sample(samp, input.uv);
-    
     // 텍스처 샘플링
-    float correctedV = 1.0 - (v + height);
-    float4 texColor = sourceTex.Sample(samp, input.uv * float2(width, height) + float2(u, correctedV));
-    //float4 texColor = sourceTex.Sample(samp, input.uv * float2(width, height) + float2(u, v));
-
-    // 배경이 특정 색(예: 검은색)일 경우 픽셀 버리기
-    if (length(texColor.rgb - float3(0, 0, 0)) < 0.05)
+    
+    if (input.bUseUV == 1)
     {
-        discard;
+        float correctedV = 1.0 - (v + height);
+        float4 texColor = sourceTex.Sample(samp, input.uv * float2(width, height) + float2(u, correctedV));
+        output.color = texColor;
+        //배경이 특정 색(예: 검은색)일 경우 픽셀 버리기
+        if (length(texColor.rgb - float3(0, 0, 0)) < 0.05)
+        {
+            discard;
+        }
     }
     else
     {
-        output.color = texColor;
+        output.color = input.color;
     }
-
-    output.color = texColor;
-    // 색상 설정 (예: 흰색)
-    //output.color = input.color;
+    
     output.depth = saturate(depth);
     // output.color = float4(depth, depth, depth, 1.0f);
     

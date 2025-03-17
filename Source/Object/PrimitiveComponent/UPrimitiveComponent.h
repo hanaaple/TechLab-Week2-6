@@ -59,7 +59,7 @@ public:
 
 public:
 	bool IsUseVertexColor() const { return bUseVertexColor; }
-	bool IsUseUV() const { return bUseUV; }
+	bool IsUseTexture() const { return bUseUV; }
 	void SetCustomColor(const FVector4& InColor)
 	{
 		CustomColor = InColor; 
@@ -74,7 +74,7 @@ public:
 	
 protected:
 	bool bUseVertexColor = true;
-	bool bUseUV = true;
+	bool bUseUV = false;
 	FVector4 CustomColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 private:
