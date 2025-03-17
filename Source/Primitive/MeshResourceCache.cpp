@@ -3,7 +3,7 @@
 #include "MeshVertexData.h"
 #include "VertexDataCreator.h"
 
-TArray<FVertexSimple>* MeshResourceCache::GetVertexData(EPrimitiveMeshType MeshType)
+const TArray<FVertexSimple>* MeshResourceCache::GetVertexData(EPrimitiveMeshType MeshType)
 {
     if (!VertexDataMap.Contains(MeshType))
     {
@@ -24,6 +24,7 @@ TArray<FVertexSimple>* MeshResourceCache::GetVertexData(EPrimitiveMeshType MeshT
             VertexDataMap.Add(MeshType, LineVertices);
             break;
         case EPrimitiveMeshType::EPT_BoundingBox:
+            VertexDataMap.Add(MeshType, BoundingBoxVertices);
             break;
         case EPrimitiveMeshType::EPT_GridLine:
             //VertexDataMap.Add(MeshType, LineGridVertices);
@@ -51,7 +52,7 @@ TArray<FVertexSimple>* MeshResourceCache::GetVertexData(EPrimitiveMeshType MeshT
     return nullptr;
 }
 
-TArray<uint32>* MeshResourceCache::GetIndexData(EPrimitiveMeshType MeshType)
+const TArray<uint32>* MeshResourceCache::GetIndexData(EPrimitiveMeshType MeshType)
 {
     if (!IndexDataMap.Contains(MeshType))
     {
@@ -69,6 +70,7 @@ TArray<uint32>* MeshResourceCache::GetIndexData(EPrimitiveMeshType MeshType)
         case EPrimitiveMeshType::EPT_Line:
             break;
         case EPrimitiveMeshType::EPT_BoundingBox:
+            IndexDataMap.Add(MeshType, BoundingBoxIndecies);
             break;
         case EPrimitiveMeshType::EPT_GridLine:
             break;

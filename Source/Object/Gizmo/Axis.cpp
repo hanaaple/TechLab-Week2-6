@@ -29,6 +29,9 @@ AAxis::AAxis()
 	LineZ->SetRelativeTransform(ZTransform);
 	LineZ->SetCustomColor(FVector4(0.0f, 0.0f, 1.0f, 1.0f));
 
+	LineY->SetupAttachment(RootComponent);
+	LineZ->SetupAttachment(RootComponent);
+	
 	LineX->SetDepth(1000);
 	LineY->SetDepth(1000);
 	LineZ->SetDepth(1000);

@@ -11,11 +11,11 @@ public:
 	/**
 	 * @return if null, return 0 Size Array
 	 */
-	TArray<FVertexSimple>* GetVertexData(EPrimitiveMeshType MeshType);
+	const TArray<FVertexSimple>* GetVertexData(EPrimitiveMeshType MeshType);
 	/**
 	 * @return if null, return 0 Size Array
 	 */
-	TArray<uint32>* GetIndexData(EPrimitiveMeshType MeshType);
+	const TArray<uint32>* GetIndexData(EPrimitiveMeshType MeshType);
 
 private:
 	// 수정 불가능한 Base Vertex, Index Data

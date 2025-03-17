@@ -115,8 +115,7 @@ void FBufferCache::Release()
 
 BufferInfo FBufferCache::CreateVertexBufferInfo(EPrimitiveMeshType MeshType)
 {
-
-	TArray<FVertexSimple>* VertexData = MeshResourceCache::Get().GetVertexData(MeshType);
+	const TArray<FVertexSimple>* VertexData = MeshResourceCache::Get().GetVertexData(MeshType);
 	uint32 Size = 0;
 	ID3D11Buffer* Buffer = nullptr;
 	if (VertexData != nullptr)
@@ -130,7 +129,7 @@ BufferInfo FBufferCache::CreateVertexBufferInfo(EPrimitiveMeshType MeshType)
 
 BufferInfo FBufferCache::CreateIndexBufferInfo(EPrimitiveMeshType MeshType)
 {
-	TArray<uint32>* IndexData = MeshResourceCache::Get().GetIndexData(MeshType);
+	const TArray<uint32>* IndexData = MeshResourceCache::Get().GetIndexData(MeshType);
 
 	ID3D11Buffer* Buffer = nullptr;
 	uint32 Size = 0;

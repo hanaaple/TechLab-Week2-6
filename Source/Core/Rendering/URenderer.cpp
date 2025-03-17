@@ -250,21 +250,24 @@ void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
             uint32 VertexOffset = 0;
             TArray<uint32> IndexData;
             for (const auto& [MeshType, RenderComponents] : BatchContext.RenderComponentMap)
-            {                
-                uint32 VertexCount = BufferCache->GetVertexBufferInfo(MeshType).GetSize();
-
+            {
                 for (auto* RenderComponent : RenderComponents)
                 {
-                    auto Vertecies = RenderComponent->GetVertexData();
-                    VertexData.Append(*Vertecies);
-                    TArray<uint32> Indecies = *MeshResourceCache::Get().GetIndexData(MeshType);
-
-                    for (auto Index : Indecies)
+                    TArray<FVertexSimple> Vertecies;
+                    if (RenderComponent->TryGetVertexData(&Vertecies))
                     {
-                        IndexData.Add(Index + VertexOffset);
-                    }
+                        uint32 VertexCount = VertexData.Num();
+                        VertexData.Append(Vertecies);
 
-                    VertexOffset += VertexCount;
+                        TArray<uint32> Indecies = *MeshResourceCache::Get().GetIndexData(MeshType);
+
+                        for (auto Index : Indecies)
+                        {
+                            IndexData.Add(Index + VertexOffset);
+                        }
+
+                        VertexOffset += VertexCount;
+                    }
                 }   
             }
             uint32 IndexDataSize = sizeof(uint32) * IndexData.Num();
@@ -279,9 +282,12 @@ void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
                 // 같은 메시인 컴포넌트
                 for (auto* RenderComponent : RenderComponents)
                 {
-                    // 이렇게 해서 Vertex Data를 알아서 가져오게?
-                    auto Vertecies = RenderComponent->GetVertexData();
-                    VertexData.Append(*Vertecies);
+                    TArray<FVertexSimple> Vertecies;
+                    if (RenderComponent->TryGetVertexData(&Vertecies))
+                    {
+                        uint32 VertexCount = VertexData.Num();
+                        VertexData.Append(Vertecies);
+                    }
                 }
             }
         }

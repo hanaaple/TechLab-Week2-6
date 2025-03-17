@@ -6,26 +6,11 @@
 #include <Core/Engine.h>
 
 struct FAABB {
-	FVector Min;
-	FVector Max;
+	FVector Min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+	FVector Max = -Min;
 
-	void GenerateAABB(EPrimitiveMeshType type) {
-		TArray<FVertexSimple> vertices = UEngine::Get().GetRenderer()->GetBufferCache()->GetStaticVertexData(type);
-		FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
-		FVector max = -min;
-		for (const FVertexSimple& vertex : vertices) {
-			min.X = FMath::Min(min.X, vertex.X);
-			min.Y = FMath::Min(min.Y, vertex.Y);
-			min.Z = FMath::Min(min.Z, vertex.Z);
-			max.X = FMath::Max(max.X, vertex.X);
-			max.Y = FMath::Max(max.Y, vertex.Y);
-			max.Z = FMath::Max(max.Z, vertex.Z);
-		}
-		Min = min;
-		Max = max;
-	}
+	void UpdateAABB(TArray<FVertexSimple>& vertices) {
 
-	void UpdateAABB(FTransform transform, TArray<FVertexSimple> vertices) {
 		FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
 		FVector max = -min;
 		for (const FVertexSimple& vertex : vertices) {
@@ -65,7 +50,7 @@ class UPrimitiveComponent : public USceneComponent
 public:
 	FAABB aabb;
 public:
-	UPrimitiveComponent():Super(), Depth(0) {};
+	UPrimitiveComponent():Super(), Depth(0){}
 	virtual ~UPrimitiveComponent() = default;
 
 public:
@@ -79,7 +64,7 @@ public:
 	// void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
 	// void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 
-	virtual TArray<FVertexSimple>* GetVertexData();
+	virtual bool TryGetVertexData(TArray<FVertexSimple>* VertexData);
 
 public:
 	void SetDepth(int InDepth) { Depth = InDepth; }
@@ -169,9 +154,8 @@ class UCubeComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 	DECLARE_OBJECT(UCubeComp,Super)
 public:
-	UCubeComp()
+	UCubeComp() : Super()
 	{
-		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cube);
 		SetMesh(EPrimitiveMeshType::EPT_Cube);
 	}
 	virtual ~UCubeComp() = default;
@@ -182,9 +166,8 @@ class USphereComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 	DECLARE_OBJECT(USphereComp,Super)
 public:
-	USphereComp()
+	USphereComp() : Super()
 	{
-		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Sphere);
 		SetMesh(EPrimitiveMeshType::EPT_Sphere);
 	}
 	virtual ~USphereComp() = default;
@@ -195,9 +178,8 @@ class UTriangleComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 	DECLARE_OBJECT(UTriangleComp,Super)
 public:
-	UTriangleComp()
+	UTriangleComp() : Super()
 	{
-		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Triangle);
 		SetMesh(EPrimitiveMeshType::EPT_Triangle);
 	}
 	virtual ~UTriangleComp() = default;
@@ -209,9 +191,8 @@ class ULineComp : public UPrimitiveComponent
 	DECLARE_OBJECT(ULineComp,Super)
 
 public:
-	ULineComp()
+	ULineComp() : Super()
 	{
-		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Line);
 		SetMesh(EPrimitiveMeshType::EPT_Line);
 		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	}
@@ -224,9 +205,8 @@ class UCylinderComp : public UPrimitiveComponent
 	DECLARE_OBJECT(UCylinderComp,Super)
 
 public:
-	UCylinderComp()
+	UCylinderComp() : Super()
 	{
-		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cylinder);
 		SetMesh(EPrimitiveMeshType::EPT_Cylinder);
 	}
 	virtual ~UCylinderComp() = default;
@@ -237,9 +217,8 @@ class UConeComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 	DECLARE_OBJECT(UConeComp,Super)
 public:
-	UConeComp()
+	UConeComp() : Super()
 	{
-		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cone);
 		SetMesh(EPrimitiveMeshType::EPT_Cone);
 	}
 	virtual ~UConeComp() = default;
@@ -250,7 +229,7 @@ class UTorusComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 	DECLARE_OBJECT(UTorusComp,Super)
 public:
-	UTorusComp()
+	UTorusComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Torus);
 	}
