@@ -244,7 +244,8 @@
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="Source\Core\Rendering\Material.cpp" />
-    <ClCompile Include="Source\Object\Actor\ATorus.cpp" />
+    <ClCompile Include="Source\Object\Actor\AABBPicker.cpp" />
+    <ClCompile Include="Source\Object\Actor\ABoundingBox.cpp" />
     <ClCompile Include="Source\Object\Actor\Camera.cpp" />
     <ClCompile Include="Source\Object\Actor\Cone.cpp" />
     <ClCompile Include="Source\Object\Actor\Cylinder.cpp" />
@@ -257,6 +258,7 @@
     <ClCompile Include="Source\Object\ActorComponent\ActorComponent.cpp" />
     <ClCompile Include="Source\Debug\DebugConsole.cpp" />
     <ClCompile Include="Source\Object\Actor\Actor.cpp" />
+    <ClCompile Include="Source\Core\Rendering\BufferCache.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Source\Core\Engine.cpp" />
     <ClCompile Include="Source\Core\Container\String.cpp" />
@@ -265,8 +267,6 @@
     <ClCompile Include="Source\Core\Math\Matrix.cpp" />
     <ClCompile Include="Source\Core\Math\Vector.cpp" />
     <ClCompile Include="Source\JsonSaveHelper.cpp" />
-    <ClCompile Include="Source\Primitive\MeshVertexData.cpp" />
-    <ClCompile Include="Source\Primitive\VertexDataCreator.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_demo.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_draw.cpp" />
@@ -294,6 +294,8 @@
     <ClInclude Include="Source\Core\Rendering\BatchRenderContext.h" />
     <ClInclude Include="Source\Core\Rendering\BufferCache.h" />
     <ClInclude Include="Source\Core\Rendering\Material.h" />
+    <ClInclude Include="Source\Object\Actor\AABBPicker.h" />
+    <ClInclude Include="Source\Object\Actor\ABoundingBox.h" />
     <ClInclude Include="Source\DataTypes\MeshDataTypes.h" />
     <ClInclude Include="Source\DataTypes\Structs.h" />
     <ClInclude Include="Source\Object\Actor\ATorus.h" />

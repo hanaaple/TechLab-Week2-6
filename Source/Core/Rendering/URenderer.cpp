@@ -884,6 +884,11 @@ void URenderer::OnUpdateWindowSize(int Width, int Height)
 {
     if (SwapChain)
     {
+        ReleaseFrameBuffer();
+        ReleasePickingFrameBuffer();
+        ReleaseDepthStencilBuffer();
+
+        
         SwapChain->ResizeBuffers(0, Width, Height, DXGI_FORMAT_UNKNOWN, 0);
 
         DXGI_SWAP_CHAIN_DESC SwapChainDesc;
@@ -896,14 +901,11 @@ void URenderer::OnUpdateWindowSize(int Width, int Height)
         };
 
         // 프레임 버퍼를 다시 생성
-        ReleaseFrameBuffer();
         CreateFrameBuffer();
 
-        ReleasePickingFrameBuffer();
 		CreatePickingTexture(UEngine::Get().GetWindowHandle());
 
         // 뎁스 스텐실 버퍼를 다시 생성
-        ReleaseDepthStencilBuffer();
         CreateDepthStencilBuffer();
     }
 }

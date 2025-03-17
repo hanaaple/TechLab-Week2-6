@@ -9,6 +9,7 @@
 #include "Object/Gizmo/Axis.h"
 #include "Object/World/World.h"
 #include "Static/FEditorManager.h"
+#include "Object/Actor/AABBPicker.h"
 
 // ImGui WndProc 정의
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -230,9 +231,10 @@ void UEngine::InitWorld()
     //// Test
     //World->SpawnActor<AArrow>();
 
-    auto* Actor = World->SpawnActor<ACylinder>();
     World->SpawnActor<AAxis>();
+    World->SpawnActor<AAABBPicker>();
     //World->SpawnActor<APicker>();
+    /*auto* Actor = World->SpawnActor<ACylinder>();
     UConeComp* ConeComp = Actor->AddComponent<UConeComp>();
     ConeComp->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 1.0f), FVector(), FVector(1.2f, 1.2f, 0.5f)));
 
@@ -251,7 +253,7 @@ void UEngine::InitWorld()
             ConeComp2->SetRelativeTransform(FTransform(FVector(0.0f, j * i, 1.0f), FVector(), FVector(1.2f, 1.2f, 0.5f)));
             ConeComp2->SetupAttachment(ConeComp1, EEndPlayReason::EAttachmentRule::KeepRelative);
         }
-    }
+    }*/
     
     
 

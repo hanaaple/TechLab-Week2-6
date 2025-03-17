@@ -37,11 +37,6 @@ BufferInfo& FBufferCache::GetIndexBufferInfo(EPrimitiveMeshType Type)
 		// TODO TEMP default인 경우
 		//여기서 인덱스 버퍼 생성한다
 		auto bufferInfo = CreateIndexBufferInfo(Type);
-		if (bufferInfo.GetSize() <= 0)
-		{
-			BufferInfo bufferInfo;
-			return bufferInfo;
-		}
 		IndexBufferCache.insert({ Type, bufferInfo });
 	}
 
@@ -100,7 +95,7 @@ void FBufferCache::UpdateIndexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PR
 			//BatchIndexBufferCache[Texture][Topology] = BufferInfo(Buffer, BufferSize);
 		}
 	}
-};
+}
 
 void FBufferCache::Release()
 {

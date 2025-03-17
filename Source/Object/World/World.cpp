@@ -5,6 +5,8 @@
 #include "Core/Container/Map.h"
 #include "Core/Input/PlayerInput.h"
 #include "Object/Actor/Camera.h"
+#include <Object/Gizmo/EditorGizmos.h>
+#include <Object/Actor/ABoundingBox.h>
 
 #include "Object/Actor/Cone.h"
 #include "Object/Actor/Cube.h"
@@ -196,14 +198,16 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 	TArray<UPrimitiveComponent*> ZIgnoreRenderComponents;
 	for (auto* RenderTarget : RenderComponents)
 	{
-		Renderer.PrepareTexture(RenderTarget->GetTexture());
-		// Texture 변경
-		if (RenderTarget->GetDepth() > 0)
-		{
-			ZIgnoreRenderComponents.Add(RenderTarget);
-			continue;
+		if (RenderTarget != nullptr) {
+			Renderer.PrepareTexture(RenderTarget->GetTexture());
+			// Texture 변경
+			if (RenderTarget->GetDepth() > 0)
+			{
+				ZIgnoreRenderComponents.Add(RenderTarget);
+				continue;
+			}
+			RenderTarget->Render();
 		}
-		RenderTarget->Render();
 	}
 	
 

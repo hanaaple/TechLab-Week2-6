@@ -1,6 +1,7 @@
 ﻿#include "FEditorManager.h"
 #include "Object/World/World.h"
 #include "Object/Gizmo/EditorGizmos.h"
+#include "Object/Actor/ABoundingBox.h"
 
 void FEditorManager::SelectActor(AActor* NewActor)
 {
@@ -10,12 +11,18 @@ void FEditorManager::SelectActor(AActor* NewActor)
     	ControlGizmo->SetActorVisibility(false);
     }
 
-	if (SelectedActor == NewActor)
-		return;
+    if (AABB == nullptr) {
+        AABB = UEngine::Get().GetWorld()->SpawnActor<ABoundingBoxActor>();
+        AABB->SetActorVisibility(false);
+    }
+
+	//if (SelectedActor == NewActor)
+	//	return;
 	
     if (SelectedActor != nullptr && SelectedActor != NewActor)
     {
         SelectedActor->UnPick();
+        AABB->SetActorVisibility(false);
         ControlGizmo->SetActorVisibility(false);
     }
 
@@ -25,6 +32,7 @@ void FEditorManager::SelectActor(AActor* NewActor)
     {
         SelectedActor->Pick();
         ControlGizmo->SetActorVisibility(true);
+        AABB->SetActorVisibility(true);
         //FVector Pos = SelectedActor->GetActorTransform().GetPosition();
 		//FTransform GizmoTransform = GizmoHandle->GetActorTransform();
 		//GizmoTransform.SetPosition(Pos);

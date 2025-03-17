@@ -26,6 +26,7 @@ void UPrimitiveComponent::BeginPlay()
 void UPrimitiveComponent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	aabb.UpdateAABB(GetComponentTransform(), GetVertexData());
 }
 
 void UPrimitiveComponent::Render()

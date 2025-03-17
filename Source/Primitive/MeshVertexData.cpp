@@ -54,6 +54,35 @@ TArray<uint32> CubeIndecies = {
 	1, 4, 5   // Second triangle (bottom-left, bottom-right, bottom-right)
 };
 TArray<FVertexSimple> SphereVertices =
+
+TArray<FVertexSimple> BoundingBoxVertices
+{
+	{ -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f },
+	{  0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f },
+	{ -0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f },
+	{  0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f },
+	{ -0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f },
+	{  0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f },
+	{ -0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f },
+	{  0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f }
+};
+
+TArray<uint32> BoundingBoxIndecies = {
+	0, 1,
+	1, 3, 
+	3, 2,
+	2, 0,
+	4, 5,
+	5, 7,
+	7, 6,
+	6, 4,
+	0, 4,
+	1, 5,
+	3, 7,
+	2, 6
+};
+
+FVertexSimple SphereVertices[] =
 {
 	{ 0.000000f, 1.000000f, 0.000000f, 0.500000f, 1.000000f, 0.500000f, 1.000000f },
 	{ 0.156434f, 0.987688f, 0.000000f, 0.578217f, 0.993844f, 0.500000f, 1.000000f },
