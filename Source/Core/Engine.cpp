@@ -9,6 +9,9 @@
 #include "Object/Gizmo/Axis.h"
 #include "Object/World/World.h"
 #include "Static/FEditorManager.h"
+#include <Object/Actor/Cone.h>
+#include <Object/Actor/Cube.h>
+#include <Object/Actor/BillBoardText.h>
 #include "Object/Actor/AABBPicker.h"
 
 // ImGui WndProc 정의
@@ -230,6 +233,7 @@ void UEngine::InitWorld()
 
     //// Test
     //World->SpawnActor<AArrow>();
+    //World->SpawnActor<ABillboardText>();
 
     World->SpawnActor<AAxis>();
     World->SpawnActor<AAABBPicker>();

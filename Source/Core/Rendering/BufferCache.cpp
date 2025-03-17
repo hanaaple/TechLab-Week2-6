@@ -140,3 +140,16 @@ BufferInfo FBufferCache::CreateIndexBufferInfo(EPrimitiveMeshType MeshType)
 	}
 	return BufferInfo(Buffer, Size);
 }
+
+
+/*case EPrimitiveMeshType::EPT_Quad:
+    {
+        Size = std::size(QuadVertices);
+        Buffer = UEngine::Get().GetRenderer() -> CreateVertexBuffer(QuadVertices, sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
+        break;
+    }
+
+case EPrimitiveMeshType::EPT_Quad:
+    Size = QuadIndecies.Num();
+Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(QuadIndecies, sizeof(uint32) * Size, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
+break;*/

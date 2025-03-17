@@ -13,3 +13,6 @@ extern TArray<uint32> BoundingBoxIndecies;
 
 extern TArray<FVertexSimple> CubeVertices;
 extern TArray<uint32> CubeIndecies;
+
+extern TArray<FVertexSimple> QuadVertices;
+extern TArray<uint32> QuadIndecies;

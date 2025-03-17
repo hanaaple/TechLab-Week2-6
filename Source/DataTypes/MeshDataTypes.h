@@ -11,6 +11,7 @@ enum class EPrimitiveMeshType : uint8
     EPT_BoundingBox,
     EPT_GridLine,
     EPT_Cylinder,
+    EPT_Quad,
     EPT_Cone,
     EPT_Torus,
     EPT_Max,

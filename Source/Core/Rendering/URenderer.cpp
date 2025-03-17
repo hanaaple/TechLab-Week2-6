@@ -75,6 +75,7 @@ void URenderer::CreateShader()
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
     };
 
     Device->CreateInputLayout(Layout, ARRAYSIZE(Layout), VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), &SimpleInputLayout);
@@ -133,6 +134,14 @@ void URenderer::CreateConstantBuffer()
     ConstantBufferDescPicking.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;            // CPU에서 쓰기 접근이 가능하게 설정
 
     Device->CreateBuffer(&ConstantBufferDescPicking, nullptr, &ConstantsDepthBuffer);
+
+    D3D11_BUFFER_DESC ConstantBufferDescUV = {};
+    ConstantBufferDescUV.Usage = D3D11_USAGE_DYNAMIC;                        // 매 프레임 업데이트 가능
+    ConstantBufferDescUV.BindFlags = D3D11_BIND_CONSTANT_BUFFER;             // 상수 버퍼로 사용
+    ConstantBufferDescUV.ByteWidth = sizeof(FUVConstants) + 0xf & 0xfffffff0;  // 16byte 정렬
+    ConstantBufferDescUV.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;            // CPU에서 쓰기 가능
+
+    Device->CreateBuffer(&ConstantBufferDescUV, nullptr, &ConstantsUVBuffer);
 }
 
 void URenderer::ReleaseConstantBuffer()
@@ -195,6 +204,9 @@ void URenderer::PrepareShader() const
     {
         DeviceContext->PSSetConstantBuffers(2, 1, &ConstantsDepthBuffer);
     }
+    if (ConstantsUVBuffer) {
+        DeviceContext->PSSetConstantBuffers(3, 1, &ConstantsUVBuffer);
+    }
 }
 
 void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
@@ -218,11 +230,15 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
 
     // TODO CurrentTexture null 여부에 따라 Constant Buffer에 넘겨주기
     
-    ConstantUpdateInfo UpdateInfo{ 
-        PrimitiveComp->GetComponentTransform(), 
-        PrimitiveComp->GetCustomColor(), 
-        PrimitiveComp->IsUseVertexColor()
+    ConstantUpdateInfo UpdateInfo{
+        PrimitiveComp->GetComponentTransform(),
+        PrimitiveComp->GetCustomColor(),
+        PrimitiveComp->IsUseVertexColor(),
+        PrimitiveComp->IsUseTexture()
     };
+
+    //FIMXE : 텍스처 저장 구조에 따라 추후 변경.
+    //UpdateInfo.bUseUV = (PrimitiveComp->Texture != nullptr) ? 1 : 0;
 
     UpdateConstantPrimitive(UpdateInfo);
     
@@ -776,6 +792,23 @@ void URenderer::UpdateConstantDepth(int Depth) const
     DeviceContext->Unmap(ConstantsDepthBuffer, 0);
 }
 
+void URenderer::UpdateConstantUV(char c) const {
+    int correct_c = c - 32;
+    if (!ConstantsUVBuffer) return;
+    D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR;
+    DeviceContext->Map(ConstantsUVBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
+    {
+        FUVConstants* Constants = static_cast<FUVConstants*>(ConstantBufferMSR.pData);
+        
+        CharacterInfo curCharInfo = UTextureLoader::Get().charInfoMap[correct_c];
+        
+        Constants->U = curCharInfo.u;
+        Constants->V = curCharInfo.v;
+        Constants->Width = curCharInfo.width;
+        Constants->Height = curCharInfo.height;
+    }
+    DeviceContext->Unmap(ConstantsUVBuffer, 0);
+}
 void URenderer::PrepareMain()
 {
 	DeviceContext->OMSetDepthStencilState(DepthStencilState, 0);                // DepthStencil 상태 설정. StencilRef: 스텐실 테스트 결과의 레퍼런스
@@ -907,11 +940,14 @@ void URenderer::OnUpdateWindowSize(int Width, int Height)
         };
 
         // 프레임 버퍼를 다시 생성
+        ReleaseFrameBuffer();
         CreateFrameBuffer();
 
+        ReleasePickingFrameBuffer();
 		CreatePickingTexture(UEngine::Get().GetWindowHandle());
 
         // 뎁스 스텐실 버퍼를 다시 생성
+        ReleaseDepthStencilBuffer();
         CreateDepthStencilBuffer();
     }
 }
@@ -925,19 +961,16 @@ void URenderer::PrepareTexture(ID3D11ShaderResourceView* Texture)
     }
 
     CurrentTexture = Texture;
-    ID3D11ShaderResourceView* TextureSRV = nullptr;
-    //ID3D11ShaderResourceView* TextureSRV = TextureLoader::Get().GetTextureSRV(Texture);
-    //ID3D11ShaderResourceView* TextureSRV = TextureMap[Texture];
-
+    
     if (Texture != nullptr)
     {
-        DeviceContext->PSSetShaderResources(0, 1, &TextureSRV);
+        DeviceContext->PSSetShaderResources(0, 1, &Texture);
         DeviceContext->PSSetSamplers(0, 1, &SamplerState);   
     }
     else
     {
         //DeviceContext->PSSetShaderResources(0, 1, nullptr);
-        DeviceContext->PSSetSamplers(0, 1, nullptr);
+        //DeviceContext->PSSetSamplers(0, 1, nullptr);
     }
 }
 

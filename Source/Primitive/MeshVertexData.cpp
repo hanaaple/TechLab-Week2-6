@@ -13,6 +13,21 @@ TArray<FVertexSimple> TriangleVertices =
 	{ -1.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f }  // Bottom-left vertex (blue)
 };
 
+/*FVertexSimple CubeVertices[] =
+{
+    // Front face (Z+)
+    { -0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f,  0.0f, 1.0f }, // Bottom-left (red)
+    {  0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 1.0f,  1.0f, 1.0f }, // Bottom-right (green)
+    { -0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f }, // Top-left (yellow)
+    {  0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f, 1.0f,  1.0f, 0.0f }, // Top-right (blue)
+
+    // Back face (Z-)
+    { -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f, 1.0f,  1.0f, 1.0f }, // Bottom-left (cyan)
+    {  0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 1.0f }, // Bottom-right (magenta)
+    { -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f, 1.0f,  1.0f, 0.0f }, // Top-left (blue)
+    {  0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f }  // Top-right (yellow)
+};*/
+
 TArray<FVertexSimple> CubeVertices =
 {
 	// Front face (Z+)
@@ -53,6 +68,28 @@ TArray<uint32> CubeIndecies = {
 	4, 1, 0,  // First triangle (bottom-left, bottom-right, bottom-left)
 	1, 4, 5   // Second triangle (bottom-left, bottom-right, bottom-right)
 };
+
+TArray<FVertexSimple> QuadVertices =
+{
+    {  0.0f,  0.5f,  -0.5f,  1.0f, 0.0f, 0.0f, 1.0f
+    	//,   1.0f, 1.0f
+    }, // Bottom-left (red)    → (Z, Y, -X)
+    {  0.0f, -0.5f,  -0.5f,  0.0f, 1.0f, 0.0f, 1.0f
+    //	,   0.0f, 1.0f
+    }, // Bottom-right (green) → (Z, Y, -X)
+    {  0.0f,  0.5f, 0.5f,  1.0f, 1.0f, 0.0f, 1.0f
+    	//,   1.0f, 0.0f
+    	}, // Top-left (yellow)    → (Z, Y, -X)
+    {  0.0f, -0.5f, 0.5f,  0.0f, 0.0f, 1.0f, 1.0f
+    //	,   0.0f, 0.0f
+    }  // Top-right (blue)     → (Z, Y, -X)
+};
+
+TArray<uint32> QuadIndecies = {
+    0, 1, 2,
+    1, 3, 2
+};
+
 
 TArray<FVertexSimple> BoundingBoxVertices
 {
