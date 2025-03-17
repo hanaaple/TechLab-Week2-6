@@ -114,7 +114,7 @@ public:
 	FVector GetForward() const
 	{
 		// 쿼터니언을 회전 행렬로 변환
-		FMatrix RotationMatrix = FMatrix::GetRotateMatrix(Rotation);
+		FMatrix RotationMatrix = FMatrix::GetRotateMatrix(FQuat(Rotation));
 
 		// 회전 행렬의 첫 번째 열이 Forward 벡터를 나타냄
 		FVector Forward = FVector(
@@ -128,8 +128,9 @@ public:
 
 	FVector GetRight() const
 	{
+		//return FVector::CrossProduct(FVector(0, 0, 1), GetForward()).GetSafeNormal();
 		// 쿼터니언을 회전 행렬로 변환
-		FMatrix RotationMatrix = FMatrix::GetRotateMatrix(Rotation);
+		FMatrix RotationMatrix = FMatrix::GetRotateMatrix(FQuat(Rotation));
 
 		// 회전 행렬의 두 번째 열이 Right 벡터를 나타냄
 		FVector Forward = FVector(

@@ -41,7 +41,6 @@ void ABoundingBoxActor::UpdateTransform()
 		UPrimitiveComponent* component = dynamic_cast<UPrimitiveComponent*>(rootComp);
 		Min = component->aabb.Min;
 		Max = component->aabb.Max;
-		position = rootComp->GetComponentTransform().GetPosition();
 		FTransform transform = RootComponent->GetComponentTransform();
 		transform.SetPosition((Min + Max) / 2);
 		transform.SetScale(FVector(Max.X - Min.X, Max.Y - Min.Y, Max.Z - Min.Z));
@@ -52,5 +51,5 @@ void ABoundingBoxActor::UpdateTransform()
 
 const char* ABoundingBoxActor::GetTypeName()
 {
-	return "AABBActor";
+	return "BoundingBoxActor";
 }

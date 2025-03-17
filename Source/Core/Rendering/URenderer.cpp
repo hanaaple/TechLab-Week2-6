@@ -3,6 +3,8 @@
 #include "Core/Rendering/BufferCache.h"
 #include "Core/Math/Transform.h"
 #include <Object/Actor/Camera.h>
+
+#include "DataTypes/Structs.h"
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 #include "Static/FEditorManager.h"
 
@@ -248,21 +250,24 @@ void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
             uint32 VertexOffset = 0;
             TArray<uint32> IndexData;
             for (const auto& [MeshType, RenderComponents] : BatchContext.RenderComponentMap)
-            {                
-                uint32 VertexCount = BufferCache->GetVertexBufferInfo(MeshType).GetSize();
-
+            {
                 for (auto* RenderComponent : RenderComponents)
                 {
-                    auto Vertecies = RenderComponent->GetVertexData();
-                    VertexData.Append(Vertecies);
-                    auto ComponentIndices = BufferCache->GetStaticIndexData(MeshType);
-
-                    for (auto Index : ComponentIndices)
+                    TArray<FVertexSimple> Vertecies;
+                    if (RenderComponent->TryGetVertexData(&Vertecies))
                     {
-                        IndexData.Add(Index + VertexOffset);
-                    }
+                        uint32 VertexCount = VertexData.Num();
+                        VertexData.Append(Vertecies);
 
-                    VertexOffset += VertexCount;
+                        TArray<uint32> Indecies = *MeshResourceCache::Get().GetIndexData(MeshType);
+
+                        for (auto Index : Indecies)
+                        {
+                            IndexData.Add(Index + VertexOffset);
+                        }
+
+                        VertexOffset += VertexCount;
+                    }
                 }   
             }
             uint32 IndexDataSize = sizeof(uint32) * IndexData.Num();
@@ -277,9 +282,12 @@ void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
                 // 같은 메시인 컴포넌트
                 for (auto* RenderComponent : RenderComponents)
                 {
-                    // 이렇게 해서 Vertex Data를 알아서 가져오게?
-                    auto Vertecies = RenderComponent->GetVertexData();
-                    VertexData.Append(Vertecies);
+                    TArray<FVertexSimple> Vertecies;
+                    if (RenderComponent->TryGetVertexData(&Vertecies))
+                    {
+                        uint32 VertexCount = VertexData.Num();
+                        VertexData.Append(Vertecies);
+                    }
                 }
             }
         }
@@ -325,6 +333,9 @@ void URenderer::RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, cons
 
 ID3D11Buffer* URenderer::CreateMeshBuffer(const void* Data, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage = D3D11_USAGE_DEFAULT) const
 {
+    if (ByteWidth <= 0)
+        return nullptr;
+    
     D3D11_BUFFER_DESC BufferDesc = {};
     BufferDesc.ByteWidth = ByteWidth;
     BufferDesc.Usage = D3d11Usage;
