@@ -6,6 +6,7 @@ UShader* UShaderManager::LoadShader(ID3D11Device* Device, const FName& Name, con
         return ShaderMap[Name.GetDisplayIndex()];
 
     UShader* NewShader = new UShader();
+    NewShader->SetShaderName(Name);
     if (!NewShader->LoadShader(Device, FileName, *VertexEntry, *PixelEntry)) // FString을 TCHAR*로 변환
     {
         delete NewShader;
