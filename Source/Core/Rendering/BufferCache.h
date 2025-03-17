@@ -7,8 +7,7 @@
 #include <unordered_map>
 
 #include "BatchRenderContext.h"
-#include "Primitive/PrimitiveVertices.h"
-#include "Core/Container/Array.h"
+#include "Primitive/MeshResourceCache.h"
 
 struct BufferInfo
 {
@@ -36,7 +35,6 @@ class FBufferCache
 private:
 	std::unordered_map <EPrimitiveMeshType, BufferInfo> VertexBufferCache;
 	std::unordered_map <EPrimitiveMeshType, BufferInfo> IndexBufferCache;
-	std::unordered_map <EPrimitiveMeshType, TArray<FVertexSimple>> VertexDataCache;
 
 	TMap<ID3D11ShaderResourceView*, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>> BatchIndexBufferCache;
 	TMap<ID3D11ShaderResourceView*, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>> BatchVertexBufferCache;
@@ -46,7 +44,6 @@ public:
 
 	BufferInfo& GetVertexBufferInfo(EPrimitiveMeshType Type);
 	BufferInfo& GetIndexBufferInfo(EPrimitiveMeshType Type);
-	TArray<FVertexSimple>& GetVertexData(EPrimitiveMeshType Type);
 
 	BufferInfo& GetVertexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology);
 	BufferInfo& GetIndexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology);
@@ -54,17 +51,9 @@ public:
 	void UpdateVertexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer);
 	void UpdateIndexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer);
 	
-	TArray<uint32> GetStaticIndexData(EPrimitiveMeshType MeshType);
-	TArray<FVertexSimple> GetStaticVertexData(EPrimitiveMeshType MeshType);
-	
 	void Release();
-public:
-	TArray<FVertexSimple> CreateArrowVertices();
-	TArray<FVertexSimple> CreateConeVertices();
-	TArray<FVertexSimple> CreateCylinderVertices();
 
 private :
-	BufferInfo CreateVertexBufferInfo(EPrimitiveMeshType Type);
-	BufferInfo CreateIndexBufferInfo(EPrimitiveMeshType Type);
-	TArray<FVertexSimple> CreateVertexData(EPrimitiveMeshType Type);
+	BufferInfo CreateVertexBufferInfo(EPrimitiveMeshType MeshType);
+	BufferInfo CreateIndexBufferInfo(EPrimitiveMeshType MeshType);
 };

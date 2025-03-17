@@ -1,6 +1,6 @@
 ﻿#include "UPrimitiveComponent.h"
 #include "Object/World/World.h"
-#include "Debug/DebugConsole.h"
+#include "DataTypes/Structs.h"
 
 void UPrimitiveComponent::Activate()
 {
@@ -26,7 +26,11 @@ void UPrimitiveComponent::BeginPlay()
 void UPrimitiveComponent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	aabb.UpdateAABB(GetComponentTransform(), GetVertexData());
+	TArray<FVertexSimple> VertexData;
+	if (TryGetVertexData(&VertexData))
+	{
+		aabb.UpdateAABB(VertexData);
+	}
 }
 
 void UPrimitiveComponent::Render()
@@ -91,17 +95,25 @@ void UPrimitiveComponent::Render()
 
 
 // 배치 렌더링용 버텍스를 가져와서 
-TArray<FVertexSimple> UPrimitiveComponent::GetVertexData()
+bool UPrimitiveComponent::TryGetVertexData(TArray<FVertexSimple>* VertexData)
 {
-	TArray<FVertexSimple> VertexData = UEngine::Get().GetRenderer()->GetBufferCache()->GetStaticVertexData(GetMeshType());
+	const TArray<FVertexSimple>* OriginVertexData = MeshResourceCache::Get().GetVertexData(GetMeshType());
 
-	for (FVertexSimple& Vertex : VertexData)
+	VertexData->Empty();
+	if (OriginVertexData == nullptr)
 	{
-		FVector Pos = FVector(Vertex.X, Vertex.Y, Vertex.Z) * GetComponentTransform().GetMatrix();
-		Vertex.X = Pos.X;
-		Vertex.Y = Pos.Y;
-		Vertex.Z = Pos.Z;
+		return false;
 	}
-	
-	return VertexData;
+
+	for (const FVertexSimple& Vertex : *OriginVertexData)
+	{
+		FVertexSimple NewVertexSimple;
+		FVector Pos = FVector(Vertex.X, Vertex.Y, Vertex.Z) * GetComponentTransform().GetMatrix();
+		NewVertexSimple.X = Pos.X;
+		NewVertexSimple.Y = Pos.Y;
+		NewVertexSimple.Z = Pos.Z;
+		VertexData->Add(NewVertexSimple);
+	}
+
+	return true;
 }
