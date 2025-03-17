@@ -19,7 +19,7 @@ public:
 
 	// Get Set
 public:
-	void SetVisibility(bool bNewVisibility) const;
+	void SetVisibility(bool bNewVisibility);
 	bool GetVisibleFlag() const	{ return bVisible; }
 	void Pick(bool bPicked);
 	
@@ -41,6 +41,7 @@ public:
 public:
 	/* SnapToTarget을 제외하여 KeepRelative, KeepWorld만 구현 */
 	void SetupAttachment(USceneComponent* InParent, EAttachmentRule AttachmentRule = EAttachmentRule::KeepWorld);
+	void RemoveChild(USceneComponent* Child);
 	const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
 	
 private:

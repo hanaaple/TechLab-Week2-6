@@ -51,6 +51,8 @@ public:
     SizeType Add(const T& Item);
     SizeType Add(T&& Item);
     SizeType AddUnique(const T& Item);
+    void Append(TArray& Source);
+    void Append(T* Source, int Size);
     SizeType Emplace(T&& Item);
     void Empty();
     SizeType Remove(const T& Item);
@@ -173,6 +175,28 @@ typename TArray<T, Allocator>::SizeType TArray<T, Allocator>::AddUnique(const T&
         return Index;
     }
     return Add(Item);
+}
+
+template <typename T, typename Allocator>
+void TArray<T, Allocator>::Append(TArray<T, Allocator>& Source)
+{
+    if(Source.Num() == 0)
+    {
+        return;
+    }
+
+    PrivateVector.insert(PrivateVector.end(), Source.begin(), Source.end());
+}
+
+template <typename T, typename Allocator>
+void TArray<T, Allocator>::Append(T* Source, int Size)
+{
+    if(Size == 0 || Source == nullptr)
+    {
+        return;
+    }
+
+    PrivateVector.insert(PrivateVector.end(), Source, Source + Size);
 }
 
 template <typename T, typename Allocator>

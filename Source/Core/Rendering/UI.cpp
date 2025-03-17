@@ -3,6 +3,7 @@
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
 #include "ImGui/imgui_internal.h"
+#include "Object/Actor/ATorus.h"
 
 #include "Static/FEditorManager.h"
 
@@ -33,52 +34,28 @@ void UI::Initialize(HWND hWnd, const URenderer& Renderer, UINT ScreenWidth, UINT
     ImGui_ImplDX11_Init(Renderer.GetDevice(), Renderer.GetDeviceContext());
 
     ScreenSize = ImVec2(static_cast<float>(ScreenWidth), static_cast<float>(ScreenHeight));
-    InitialScreenSize = ScreenSize;
     bIsInitialized = true;
 
     io.DisplaySize = ScreenSize;
-
-    PreRatio = GetRatio();
-    CurRatio = GetRatio();
 }
 
 void UI::Update()
 {
-    POINT mousePos;
-    if (GetCursorPos(&mousePos))
-    {
-        HWND hwnd = GetActiveWindow();
-        ScreenToClient(hwnd, &mousePos);
-
-        ImVec2 CalculatedMousePos = ResizeToScreenByCurrentRatio(ImVec2(mousePos.x, mousePos.y));
-        ImGui::GetIO().MousePos = CalculatedMousePos;
-        //UE_LOG("MousePos: (%.1f, %.1f), DisplaySize: (%.1f, %.1f)\n",CalculatedMousePos.x, CalculatedMousePos.y, GetRatio().x, GetRatio().y);
-    }
-
-
     // ImGui Frame 생성
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    if (bWasWindowSizeUpdated)
-    {
-        PreRatio = CurRatio;
-        CurRatio = GetRatio();
-        UE_LOG("Current Ratio: %f, %f", CurRatio.x, CurRatio.y);
-    }
 
     RenderControlPanel();
     RenderPropertyWindow();
     RenderSceneManager();
     RenderSettingsPanel();
-    Debug::ShowConsole(bWasWindowSizeUpdated, PreRatio, CurRatio);
+    Debug::ShowConsole();
 
     // ImGui 렌더링
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
-    bWasWindowSizeUpdated = false;
 }
 
 
@@ -96,21 +73,11 @@ void UI::OnUpdateWindowSize(UINT InScreenWidth, UINT InScreenHeight)
     ImGui_ImplDX11_CreateDeviceObjects();
     // ImGui 창 크기 업데이트
     ScreenSize = ImVec2(static_cast<float>(InScreenWidth), static_cast<float>(InScreenHeight));
-
-    bWasWindowSizeUpdated = true;
 }
 
 void UI::RenderControlPanel()
 {
     ImGui::Begin("Jungle Control Panel");
-
-    if (bWasWindowSizeUpdated)
-    {
-        auto* Window = ImGui::GetCurrentWindow();
-
-        ImGui::SetWindowPos(ResizeToScreen(Window->Pos));
-        ImGui::SetWindowSize(ResizeToScreen(Window->Size));
-    }
 
     ImGui::Text("Hello, Jungle World!");
     ImGui::Text("FPS: %.3f (what is that ms)", ImGui::GetIO().Framerate);
@@ -149,7 +116,7 @@ void UI::RenderMemoryUsage()
 
 void UI::RenderPrimitiveSelection()
 {
-    const char* items[] = {"Sphere", "Cube", "Cylinder", "Cone", "BillboardText"};
+    const char* items[] = {"Sphere", "Cube", "Cylinder", "Cone", "Torus", "BillboardText"};
 
     ImGui::Combo("Primitive", &currentItem, items, IM_ARRAYSIZE(items));
 
@@ -176,6 +143,10 @@ void UI::RenderPrimitiveSelection()
             }
             else if (strcmp(items[currentItem], "BillboardText") == 0) {
                 World->SpawnActor<ABillboardText>();
+            }
+            else if (strcmp(items[currentItem], "Torus") == 0)
+            {
+                World->SpawnActor<ATorus>();
             }
             //else if (strcmp(items[currentItem], "Triangle") == 0)
             //{
@@ -379,13 +350,6 @@ void UI::RenderPropertyWindow()
 {
     ImGui::Begin("Properties");
 
-    if (bWasWindowSizeUpdated)
-    {
-        auto* Window = ImGui::GetCurrentWindow();
-        ImGui::SetWindowPos(ResizeToScreen(Window->Pos));
-        ImGui::SetWindowSize(ResizeToScreen(Window->Size));
-    }
-
     AActor* selectedActor = FEditorManager::Get().GetSelectedActor();
     if (selectedActor != nullptr)
     {
@@ -439,9 +403,10 @@ void UI::RenderPropertyWindow()
                                            : "Scale";
             ImGui::Text("GizmoType: %s", GizmoTypeStr);
         }
-
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
         //  계층 구조로 자식 트리 출력
         ImGui::Separator();
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
         ImGui::Text("Children");
 
         if (USceneComponent* RootComponent = selectedActor->GetRootComponent())
@@ -458,13 +423,6 @@ void UI::RenderPropertyWindow()
 void UI::RenderSceneManager()
 {
     ImGui::Begin("Scene Manager");
-
-    if (bWasWindowSizeUpdated)
-    {
-        auto* Window = ImGui::GetCurrentWindow();
-        ImGui::SetWindowPos(ResizeToScreen(Window->Pos));
-        ImGui::SetWindowSize(ResizeToScreen(Window->Size));
-    }
 
     UWorld* World = UEngine::Get().GetWorld();
     if (!World)
@@ -513,8 +471,7 @@ void UI::RenderSceneManager()
     ImGui::End();
 }
 
-void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bool bShowUUID,
-                             ImGuiTreeNodeFlags nodeFlags)
+void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bool bShowUUID, ImGuiTreeNodeFlags nodeFlags)
 {
     if (!Component) return;
 
@@ -562,6 +519,46 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
             ImGui::Text("%u, World Position %f, %f, %f", Component->GetUUID(), ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y, ComponentTransform.GetPosition().Z);
             ImGui::Text("%u, World Rotation %f, %f, %f", Component->GetUUID(), ComponentTransform.GetEulerRotation().X, ComponentTransform.GetEulerRotation().Y, ComponentTransform.GetEulerRotation().Z);
             ImGui::Text("%u, World Scale %f, %f, %f", Component->GetUUID(), ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z);
+
+            if (Component->IsA<UPrimitiveComponent>())
+            {
+                auto* PrimitiveComponent = dynamic_cast<UPrimitiveComponent*>(Component);
+                bool bisBatch = false;
+                if (PrimitiveComponent->GetRenderMode() == ERenderMode::Batch)
+                {
+                    bisBatch = true;
+                }
+                if (ImGui::Checkbox("IsBatch", &bisBatch))
+                {
+                    if (bisBatch)
+                        PrimitiveComponent->SetRenderMode(Batch);
+                    else
+                        PrimitiveComponent->SetRenderMode(Individual);
+                }
+                
+                static const char* TopologyItems[] = {"LineList", "Triangle", "POINTLIST"};
+                int curItem = -1;
+                if (PrimitiveComponent->GetTopology() == D3D11_PRIMITIVE_TOPOLOGY_LINELIST)
+                    curItem = 0;
+                else if (PrimitiveComponent->GetTopology() == D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+                    curItem = 1;
+                else if (PrimitiveComponent->GetTopology() == D3D11_PRIMITIVE_TOPOLOGY_POINTLIST)
+                    curItem = 2;
+                
+                if (ImGui::Combo("##Topology", &curItem, TopologyItems, IM_ARRAYSIZE(TopologyItems)))
+                {
+                    if (FName(TopologyItems[curItem]) == FName("LineList"))
+                    {
+                        PrimitiveComponent->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+                    } else if (FName(TopologyItems[curItem]) == FName("Triangle"))
+                    {
+                        PrimitiveComponent->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                    }else if (FName(TopologyItems[curItem]) == FName("POINTLIST"))
+                    {
+                        PrimitiveComponent->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+                    }
+                }   
+            }
         }
 
         for (auto* Child : Component->GetAttachChildren())

@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "MathUtility.h"
+#include "Matrix.h"
 
 struct FVector4;
 
@@ -14,6 +15,7 @@ struct FVector
 
 public:
     FVector(const FVector4& vector4);
+
 public:
     static FVector Zero() { return {0, 0, 0}; }
     static FVector One() { return {1, 1, 1}; }
@@ -43,6 +45,9 @@ public:
     FVector operator*(const FVector& Other) const;
     FVector operator*(float Scalar) const;
     FVector& operator*=(float Scalar);
+
+    FVector operator*(const FMatrix& Matrix) const;
+    FVector operator*=(const FMatrix& Matrix) const;
 
     FVector operator/(const FVector& Other) const;
     FVector operator/(float Scalar) const;

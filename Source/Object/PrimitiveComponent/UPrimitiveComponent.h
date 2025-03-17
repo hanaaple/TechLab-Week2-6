@@ -1,18 +1,56 @@
 ﻿#pragma once
 
-#include "Core/Rendering/Material.h"
 #include "Core/Rendering/URenderer.h"
+#include "DataTypes/MeshDataTypes.h"
 #include "Object/USceneComponent.h"
+#include <Core/Engine.h>
 
+struct FAABB {
+	FVector Min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+	FVector Max = -Min;
+
+	void UpdateAABB(TArray<FVertexSimple>& vertices) {
+
+		FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+		FVector max = -min;
+		for (const FVertexSimple& vertex : vertices) {
+			min.X = FMath::Min(min.X, vertex.X);
+			min.Y = FMath::Min(min.Y, vertex.Y);
+			min.Z = FMath::Min(min.Z, vertex.Z);
+			max.X = FMath::Max(max.X, vertex.X);
+			max.Y = FMath::Max(max.Y, vertex.Y);
+			max.Z = FMath::Max(max.Z, vertex.Z);
+		}
+		Min = min;
+		Max = max;
+	}
+};
+
+
+enum ERenderMode{
+	Batch,
+	Individual,
+	// Instancing
+};
+
+struct FRenderData
+{
+	ID3D11ShaderResourceView* Texture = nullptr;
+	D3D_PRIMITIVE_TOPOLOGY Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	bool bUseIndexBuffer = false;
+	EPrimitiveMeshType MeshType = EPrimitiveMeshType::EPT_None;
+	ERenderMode RenderMode = ERenderMode::Individual;
+};
 
 class UPrimitiveComponent : public USceneComponent
 {
 	using Super = USceneComponent;
-    DECLARE_OBJECT(UPrimitiveComponent,Super)
+	DECLARE_OBJECT(UPrimitiveComponent,Super)
+
 public:
-	UPrimitiveComponent() : Super(), Depth(0)
-	{
-	}
+	FAABB aabb;
+public:
+	UPrimitiveComponent():Super(), Depth(0){}
 	virtual ~UPrimitiveComponent() = default;
 
 public:
@@ -28,35 +66,68 @@ public:
 	void UpdateConstantUV(const URenderer& Renderer, const char c)const;
 
 	virtual EPrimitiveMeshType GetMeshType() { return EPrimitiveMeshType::EPT_None; }
+	// void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
+	// void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 
+	virtual bool TryGetVertexData(TArray<FVertexSimple>* VertexData);
 
 public:
 	void SetDepth(int InDepth) { Depth = InDepth; }
 	int GetDepth() const { return Depth; }
 
-	//FMaterial* Material;
+	void SetDirty(bool NewIsDirty)
+	{
+		bIsDirty = NewIsDirty;
+		if (NewIsDirty == false){
+			PrevFrameData = CurrentRenderData;
+		}
+	}
+	int GetIsDirty() const { return bIsDirty; }
 
-	// Texture* texture;
+	const FRenderData& GetPrevFrameData() const { return PrevFrameData; }
+	const FRenderData& GetCurFrameData() const { return CurrentRenderData; }
+
+	void SetTexture(ID3D11ShaderResourceView* NewTexture)
+	{
+		if (CurrentRenderData.Texture != NewTexture)
+			SetDirty(true);
+		CurrentRenderData.Texture = NewTexture;		
+	}
+	void SetMesh(EPrimitiveMeshType NewMeshType)
+	{
+		if (CurrentRenderData.MeshType != NewMeshType)
+			SetDirty(true);
+		CurrentRenderData.MeshType = NewMeshType;
+	}
+	void SetUseIndexBuffer(bUseIndexBufferFlag bUseIndexBuffer)
+	{
+		if (CurrentRenderData.bUseIndexBuffer != bUseIndexBuffer)
+			SetDirty(true);
+		CurrentRenderData.bUseIndexBuffer = bUseIndexBuffer;
+	}
+	void SetTopology(D3D11_PRIMITIVE_TOPOLOGY NewTopologyType)
+	{
+		if (CurrentRenderData.Topology != NewTopologyType)
+			SetDirty(true);
+		CurrentRenderData.Topology = NewTopologyType;
+	}
+	void SetRenderMode(ERenderMode NewMode)
+	{
+		if (CurrentRenderData.RenderMode != NewMode)
+			SetDirty(true);
+		
+		CurrentRenderData.RenderMode = NewMode;
+	}
+	EPrimitiveMeshType GetMeshType() const { return CurrentRenderData.MeshType; }
+
+	ERenderMode GetRenderMode() const { return CurrentRenderData.RenderMode; }
 
 	
-	//UMaterial* GetMaterial() const { return CurFrameData.Material; }
-	//void SetMaterial(UMaterial* NewMaterial);
-	//void SetTopology(D3D11_PRIMITIVE_TOPOLOGY NewTopologyType);
-	//D3D11_PRIMITIVE_TOPOLOGY GetTopology() const { return CurFrameData.TopologyType; }
-	//ERenderMode GetERenderMode() const { return RenderMode; }
-
-private:
-	void CheckIsDirty();
-
-protected:
-	//FRenderData PrevFrameData;
-	//FRenderData CurFrameData;
 	
-	bool bIsDirty;	// if Material or Topology .... Changes
-
-public:
-	ID3D11ShaderResourceView* Texture;
-
+	D3D11_PRIMITIVE_TOPOLOGY GetTopology() const { return CurrentRenderData.Topology; }
+	ID3D11ShaderResourceView* GetTexture() const { return CurrentRenderData.Texture; }
+	
+	
 public:
 	bool IsUseVertexColor() const { return bUseVertexColor; }
 	bool IsUseTexture() const { return bUseUV; }
@@ -78,7 +149,10 @@ protected:
 	FVector4 CustomColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 private:
+	FRenderData PrevFrameData = FRenderData();
+	FRenderData CurrentRenderData = FRenderData();
 	uint32 Depth;
+	bool bIsDirty;
 };
 
 class UCubeComp : public UPrimitiveComponent
@@ -86,16 +160,13 @@ class UCubeComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 	DECLARE_OBJECT(UCubeComp,Super)
 public:
-	UCubeComp() : Super() {
-
+	UCubeComp() : Super()
+	{
+		SetMesh(EPrimitiveMeshType::EPT_Cube);
 		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
 		Texture = UTextureLoader::Get().m_texture;
 	}
 	virtual ~UCubeComp() = default;
-	EPrimitiveMeshType GetMeshType() override
-	{
-		return EPrimitiveMeshType::EPT_Cube;
-	}
 };
 
 class USphereComp : public UPrimitiveComponent
@@ -103,12 +174,11 @@ class USphereComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 	DECLARE_OBJECT(USphereComp,Super)
 public:
-	USphereComp() = default;
-	virtual ~USphereComp() = default;
-	EPrimitiveMeshType GetMeshType() override
+	USphereComp() : Super()
 	{
-		return EPrimitiveMeshType::EPT_Sphere;
+		SetMesh(EPrimitiveMeshType::EPT_Sphere);
 	}
+	virtual ~USphereComp() = default;
 };
 
 class UTriangleComp : public UPrimitiveComponent
@@ -116,12 +186,11 @@ class UTriangleComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 	DECLARE_OBJECT(UTriangleComp,Super)
 public:
-	UTriangleComp() = default;
-	virtual ~UTriangleComp() = default;
-	EPrimitiveMeshType GetMeshType() override
+	UTriangleComp() : Super()
 	{
-		return EPrimitiveMeshType::EPT_Triangle;
+		SetMesh(EPrimitiveMeshType::EPT_Triangle);
 	}
+	virtual ~UTriangleComp() = default;
 };
 
 class ULineComp : public UPrimitiveComponent
@@ -130,12 +199,12 @@ class ULineComp : public UPrimitiveComponent
 	DECLARE_OBJECT(ULineComp,Super)
 
 public:
-	ULineComp() = default;
-	virtual ~ULineComp() = default;
-	EPrimitiveMeshType GetMeshType() override
+	ULineComp() : Super()
 	{
-		return EPrimitiveMeshType::EPT_Line;
+		SetMesh(EPrimitiveMeshType::EPT_Line);
+		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	}
+	virtual ~ULineComp() = default;
 };
 
 class UCylinderComp : public UPrimitiveComponent
@@ -144,12 +213,11 @@ class UCylinderComp : public UPrimitiveComponent
 	DECLARE_OBJECT(UCylinderComp,Super)
 
 public:
-	UCylinderComp() = default;
-	virtual ~UCylinderComp() = default;
-	EPrimitiveMeshType GetMeshType() override
+	UCylinderComp() : Super()
 	{
-		return EPrimitiveMeshType::EPT_Cylinder;
+		SetMesh(EPrimitiveMeshType::EPT_Cylinder);
 	}
+	virtual ~UCylinderComp() = default;
 };
 
 class UConeComp : public UPrimitiveComponent
@@ -157,10 +225,35 @@ class UConeComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 	DECLARE_OBJECT(UConeComp,Super)
 public:
-	UConeComp() = default;
-	virtual ~UConeComp() = default;
-	EPrimitiveMeshType GetMeshType() override
+	UConeComp() : Super()
 	{
-		return EPrimitiveMeshType::EPT_Cone;
+		SetMesh(EPrimitiveMeshType::EPT_Cone);
 	}
+	virtual ~UConeComp() = default;
+};
+
+class UTorusComp : public UPrimitiveComponent
+{
+	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UTorusComp,Super)
+public:
+	UTorusComp() : Super()
+	{
+		SetMesh(EPrimitiveMeshType::EPT_Torus);
+	}
+	virtual ~UTorusComp() = default;
+};
+
+
+class UBoundingBoxComp : public UPrimitiveComponent
+{
+	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UBoundingBoxComp, Super)
+public:
+	UBoundingBoxComp()
+	{
+		SetMesh(EPrimitiveMeshType::EPT_BoundingBox);
+		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	}
+	virtual ~UBoundingBoxComp() = default;
 };

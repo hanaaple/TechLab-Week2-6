@@ -52,6 +52,10 @@ void USceneComponent::SetupAttachment(USceneComponent* InParent, EAttachmentRule
 {
 	if (InParent)
 	{
+		if (AttachParent != nullptr)
+		{
+			AttachParent->RemoveChild(this);
+		}
 		AttachParent = InParent;
 		InParent->AttachChildren.Add(this);
 
@@ -77,6 +81,11 @@ void USceneComponent::SetupAttachment(USceneComponent* InParent, EAttachmentRule
 	{
 		UE_LOG("Parent is nullptr");
 	}
+}
+
+void USceneComponent::RemoveChild(USceneComponent* Child)
+{
+	AttachChildren.Remove(Child);
 }
 
 // void USceneComponent::ApplyParentWorldTransform()
@@ -148,10 +157,10 @@ void USceneComponent::UpdateRelativeTransform()
 	}
 }
 
-void USceneComponent::SetVisibility(bool bNewVisibility) const
+void USceneComponent::SetVisibility(bool bNewVisibility)
 {
 	// UE5 - Visibility 변경시 Flag Update
-
+	bVisible = bNewVisibility;
 	const TArray<USceneComponent*>& AttachedChildren = AttachChildren;
 	if (AttachedChildren.Num() <= 0)
 		return;

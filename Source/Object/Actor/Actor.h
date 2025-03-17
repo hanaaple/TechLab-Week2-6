@@ -10,7 +10,7 @@ class UWorld;
 class AActor : public UObject
 {
     DECLARE_OBJECT(AActor, UObject)
-	friend class FEditorManager;
+    friend class FEditorManager;
 public:
 	AActor() = default;
 	virtual ~AActor() override = default;
@@ -22,6 +22,8 @@ public:
 	virtual void Destroyed();
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 	TSet<UActorComponent*>& GetComponents() { return Components; }
+
+	void ActivateComponent();
 
 	UWorld* GetWorld() const { return World; }
 	void SetWorld(UWorld* InWorld) { World = InWorld; }
@@ -40,6 +42,7 @@ public:
 	{
 		T* ObjectInstance = FObjectFactory::ConstructObject<T>();
 		Components.Add(ObjectInstance);
+		ToActiveComponents.Add(ObjectInstance);
 		ObjectInstance->SetOwner(this);
 
 		return ObjectInstance;
@@ -50,6 +53,7 @@ public:
 		requires std::derived_from<T, UActorComponent>
 	void RemoveComponent(T* Object)
 	{
+		Object->Deactivate();
 		Components.Remove(Object);
 	}
 
@@ -84,5 +88,6 @@ protected:
 private:
 	UWorld* World = nullptr;
 	TSet<UActorComponent*> Components;
+	TArray<UActorComponent*> ToActiveComponents;	// 컴포넌트 생성 시 일시적으로 넣어줌.
 };
 

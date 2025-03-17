@@ -1,5 +1,6 @@
 ﻿#include "UPrimitiveComponent.h"
 #include "Object/World/World.h"
+#include "DataTypes/Structs.h"
 
 void UPrimitiveComponent::Activate()
 {
@@ -10,7 +11,7 @@ void UPrimitiveComponent::Activate()
 
 void UPrimitiveComponent::Deactivate()
 {
-	USceneComponent::Deactivate();
+	Super::Deactivate();
 
 	UWorld* World = GetOwner()->GetWorld();
 	
@@ -25,8 +26,11 @@ void UPrimitiveComponent::BeginPlay()
 void UPrimitiveComponent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	CheckIsDirty();
+	TArray<FVertexSimple> VertexData;
+	if (TryGetVertexData(&VertexData))
+	{
+		aabb.UpdateAABB(VertexData);
+	}
 }
 
 void UPrimitiveComponent::Render()
@@ -79,37 +83,41 @@ void UPrimitiveComponent::Render()
 // 	// }
 //}
 
-void UPrimitiveComponent::UpdateConstantPicking(const URenderer& Renderer, const FVector4 UUIDColor)const
-{
-	Renderer.UpdateConstantPicking(UUIDColor);
-}
+// void UPrimitiveComponent::UpdateConstantPicking(const URenderer& Renderer, const FVector4 UUIDColor)const
+// {
+// 	Renderer.UpdateConstantPicking(UUIDColor);
+// }
+//
+// void UPrimitiveComponent::UpdateConstantDepth(const URenderer& Renderer, const int Depth)const
+// {
+// 	Renderer.UpdateConstantDepth(Depth);
+// }
 
-void UPrimitiveComponent::UpdateConstantDepth(const URenderer& Renderer, const int Depth)const
-{
-	Renderer.UpdateConstantDepth(Depth);
-}
 
 void UPrimitiveComponent::UpdateConstantUV(const URenderer& Renderer, const char c)const {
 	Renderer.UpdateConstantUV(c);
 }
 
-void UPrimitiveComponent::CheckIsDirty()
+// 배치 렌더링용 버텍스를 가져와서 
+bool UPrimitiveComponent::TryGetVertexData(TArray<FVertexSimple>* VertexData)
 {
+	const TArray<FVertexSimple>* OriginVertexData = MeshResourceCache::Get().GetVertexData(GetMeshType());
 
-	// 1. 변경사항이 있는가 -> batch나 Instancing이었던 경우 Update해줘야됨.
-
-	// 2. 변경사항이 없다. ->
-
-	// 2.1. 배치나 인스턴싱인 경우
-	// 2.2. 개별 렌더링 -> 바로 렌더링
-
-	
-	if (bIsDirty)
+	VertexData->Empty();
+	if (OriginVertexData == nullptr)
 	{
-		
+		return false;
 	}
-	else
+
+	for (const FVertexSimple& Vertex : *OriginVertexData)
 	{
-		
+		FVertexSimple NewVertexSimple;
+		FVector Pos = FVector(Vertex.X, Vertex.Y, Vertex.Z) * GetComponentTransform().GetMatrix();
+		NewVertexSimple.X = Pos.X;
+		NewVertexSimple.Y = Pos.Y;
+		NewVertexSimple.Z = Pos.Z;
+		VertexData->Add(NewVertexSimple);
 	}
+
+	return true;
 }

@@ -36,7 +36,6 @@ public:
 	void Render();
 	//void RenderPickingTexture(URenderer& Renderer);
 	//void DisplayPickingTexture(URenderer& Renderer);
-	void DrawBatch(URenderer& Renderer, FBatchRenderContext BatchRenderContext);
 	void RenderMainTargets(URenderer& Renderer);
 
 	void ClearWorld();
@@ -46,9 +45,12 @@ public:
 	void AddRenderComponent(class UPrimitiveComponent* Component);
 	void RemoveRenderComponent(class UPrimitiveComponent* Component) { RenderComponents.Remove(Component); }
 	const TArray<AActor*>& GetActors() const { return Actors; }
+	const TArray<UPrimitiveComponent*> GetRenderComponents() const { return RenderComponents; }
 private:
 	UWorldInfo GetWorldInfo() const;
-
+	bool HasBatchRendersKey(ID3D11ShaderResourceView	* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer);
+	void CheckRemoveMap(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer, EPrimitiveMeshType MeshType);
+	void CheckInitMap(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer, EPrimitiveMeshType MeshType);
 public:
 	FString SceneName;
 	uint32 Version = 1;
@@ -63,17 +65,17 @@ protected:
 	
 	//TArray<UPrimitiveComponent*> InstancingRenders;
 	//TMap<UMaterial*, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<uint8, FBatchRenderContext>>> BatchRenders;
-	TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<uint8, FBatchRenderContext>> BatchRenders;
+	TMap<ID3D11ShaderResourceView*, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<bUseIndexBufferFlag, FBatchRenderContext>>> BatchRenders;
 };
 
 template <typename T>
 	requires std::derived_from<T, AActor>
 T* UWorld::SpawnActor()
 {
-	T* Actor = FObjectFactory::ConstructObject<T>();
 	
 	if (UWorld* World = UEngine::Get().GetWorld())
 	{
+		T* Actor = FObjectFactory::ConstructObject<T>();
 		Actor->SetWorld(World);
 		Actors.Add(Actor);
 		ActorsToSpawn.Add(Actor);

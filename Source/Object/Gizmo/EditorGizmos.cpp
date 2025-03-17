@@ -9,29 +9,29 @@
 AEditorGizmos::AEditorGizmos()
 {
 	bIsGizmo = true;
-	// !NOTE : Z방향으로 서있음
-	// z
+	
 	UCylinderComp* ZArrow = AddComponent<UCylinderComp>();
 	ZArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	ZArrow->SetCustomColor(FVector4(0.0f, 0.0f, 1.0f, 1.0f));
+	axisComponents.Add(ZArrow);
 	
-	// x
 	UCylinderComp* XArrow = AddComponent<UCylinderComp>();
 	XArrow->SetupAttachment(ZArrow);
-	XArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 90.0f, 0.0f), FVector(1, 1, 1)));
+	XArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, -90.0f, 0.0f), FVector(1, 1, 1)));
 	XArrow->SetCustomColor(FVector4(1.0f, 0.0f, 0.0f, 1.0f));
+	axisComponents.Add(XArrow);
 
-
-	// y
 	UCylinderComp* YArrow = AddComponent<UCylinderComp>();
 	YArrow->SetupAttachment(ZArrow);
 	YArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(90.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	YArrow->SetCustomColor(FVector4(0.0f, 1.0f, 0.0f, 1.0f));
-	//RootComponent = ZArrow;
+	axisComponents.Add(YArrow);
 
-	ZArrow->SetDepth(1);
-	YArrow->SetDepth(1);
-	XArrow->SetDepth(1);
+	RootComponent = ZArrow;
+
+	ZArrow->SetDepth(1001);
+	YArrow->SetDepth(1001);
+	XArrow->SetDepth(1001);
 	
 	SetActorVisibility(false);
 }
@@ -39,12 +39,14 @@ AEditorGizmos::AEditorGizmos()
 void AEditorGizmos::Tick(float DeltaTime)
 {
 	AActor* SelectedActor  = FEditorManager::Get().GetSelectedActor();
-	if (SelectedActor != nullptr && RootComponent && RootComponent->GetVisibleFlag())
+	if (SelectedActor != nullptr && RootComponent
+		//&& RootComponent->GetVisibleFlag()
+		)
 	{
-		FTransform GizmoTr = RootComponent->GetComponentTransform();
-		GizmoTr.SetPosition(SelectedActor->GetActorTransform().GetPosition());
-		GizmoTr.SetRotation(SelectedActor->GetActorTransform().GetEulerRotation());
-		SetActorTransform(GizmoTr);
+		FTransform GizmoTransform = RootComponent->GetComponentTransform();
+		GizmoTransform.SetPosition(SelectedActor->GetActorTransform().GetPosition());
+		GizmoTransform.SetRotation(SelectedActor->GetActorTransform().GetEulerRotation());
+		SetActorTransform(GizmoTransform);
 	}
 
 	//SetScaleByDistance();
@@ -70,35 +72,38 @@ void AEditorGizmos::Tick(float DeltaTime)
 			float PosY = -2.0f * pt.y / ScreenHeight + 1.0f;
 			
 			// Projection 공간으로 변환
-			FVector4 RayOrigin {PosX, PosY, 0.0f, 1.0f};
-			FVector4 RayEnd {PosX, PosY, 1.0f, 1.0f};
-			
+			FVector4 RayOrigin {PosX, PosY, 1.0f, 1.0f};
 			// View 공간으로 변환
 			FMatrix InvProjMat = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
 			RayOrigin = RayOrigin * InvProjMat;
 			RayOrigin.W = 1;
-			RayEnd = RayEnd * InvProjMat;
-			RayEnd *= 1000.0f;  // 프러스텀의 Far 값이 적용이 안돼서 수동으로 곱함
-			RayEnd.W = 1;
 			
 			// 마우스 포인터의 월드 위치와 방향
 			FMatrix InvViewMat = FEditorManager::Get().GetCamera()->GetViewMatrix().Inverse();
 			RayOrigin = RayOrigin * InvViewMat;
 			RayOrigin /= RayOrigin.W = 1;
-			RayEnd = RayEnd * InvViewMat;
-			RayEnd /= RayEnd.W = 1;
-			FVector4 RayDir = (RayEnd - RayOrigin).GetSafeNormal();
-	
-			// 액터와의 거리
-			float Distance = FVector4::Distance(RayOrigin, Actor->GetActorTransform().GetPosition());
+			FVector4 RayDir = (RayOrigin - prevMousePos);
 			
-			// Ray 방향으로 Distance만큼 재계산
-			FVector Result = RayOrigin + RayDir * Distance;
-	
 			FTransform AT = Actor->GetActorTransform();
+			float Result = 0;
+			switch (SelectedAxis)
+			{
+			case ESelectedAxis::X:
+				Result = RayDir.Dot(actorXAxis);
+				break;
+			case ESelectedAxis::Y:
+				Result = RayDir.Dot(actorYAxis);
+				break;
+			case ESelectedAxis::Z:
+				Result = RayDir.Dot(actorZAxis);
+				break;
+			default:
+				break;
+			}
+			UE_LOG("result: %f", Result);
+			
 
 			DoTransform(AT, Result, Actor);
-			
 		}
 	}
 
@@ -142,12 +147,49 @@ void AEditorGizmos::SetActorVisibility(bool bNewActive)
 		RootComponent->SetVisibility(bNewActive);
 }
 
+ESelectedAxis AEditorGizmos::IsAxis(UCylinderComp* axis)
+{
+	if (axis == axisComponents[0]) {
+		SelectedAxis = ESelectedAxis::Z;
+	}
+	else if (axis == axisComponents[1]) {
+		SelectedAxis = ESelectedAxis::X;
+	}
+	else if (axis == axisComponents[2]) {
+		SelectedAxis = ESelectedAxis::Y;
+	}
+	else {
+		SelectedAxis = ESelectedAxis::None;
+	}
+	return SelectedAxis;
+}
+
+void AEditorGizmos::SetPrevMousePos(FVector4 mouse)
+{
+	prevMousePos = mouse;
+}
+
+void AEditorGizmos::SetActorXAxis(FVector4 axis)
+{
+	actorXAxis = axis;
+}
+
+void AEditorGizmos::SetActorYAxis(FVector4 axis)
+{
+	actorYAxis = axis;
+}
+
+void AEditorGizmos::SetActorZAxis(FVector4 axis)
+{
+	actorZAxis = axis;
+}
+
 const char* AEditorGizmos::GetTypeName()
 {
 	return "GizmoHandle";
 }
 
-void AEditorGizmos::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
+void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 {
 	const FVector& AP = AT.GetPosition();
 
@@ -156,13 +198,13 @@ void AEditorGizmos::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ Result.X, AP.Y, AP.Z });
+			AT.SetPosition({ AP.X + Result, AP.Y, AP.Z });
 			break;
 		case EGizmoType::Rotate:
-			AT.RotatePitch(Result.X);
+			AT.RotateRoll(Result * 2.0f);
 			break;
 		case EGizmoType::Scale:
-			AT.AddScale({ Result.X * .1f, 0, AP.Z * .1f });
+			AT.AddScale({ Result * .1f, 0, 0 });
 			break;
 		}
 	}
@@ -171,13 +213,13 @@ void AEditorGizmos::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP.X, Result.Y, AP.Z });
+			AT.SetPosition({ AP.X, AP.Y + Result, AP.Z });
 			break;
 		case EGizmoType::Rotate:
-			AT.RotateRoll(Result.Y);
+			AT.RotatePitch(Result * 2.0f);
 			break;
 		case EGizmoType::Scale:
-			AT.AddScale({ 0, Result.Y * .1f, 0 });
+			AT.AddScale({ 0, Result * .1f, 0 });
 			break;
 		}
 	}
@@ -186,13 +228,13 @@ void AEditorGizmos::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP.X, AP.Y, Result.Z });
+			AT.SetPosition({ AP.X, AP.Y, AP.Z + Result });
 			break;
 		case EGizmoType::Rotate:
-			AT.RotatePitch(-Result.Z);
+			AT.RotateYaw(-Result * 2.0f);
 			break;
 		case EGizmoType::Scale:
-			AT.AddScale({0, 0, Result.Z * .1f });
+			AT.AddScale({0, 0, Result * .1f });
 			break;
 		}
 	}

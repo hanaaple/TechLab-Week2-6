@@ -4,7 +4,6 @@
 
 #include "URenderer.h"
 #include "Core/Engine.h"
-#include "Primitive/PrimitiveVertices.h"
 
 FBufferCache::FBufferCache()
 {
@@ -20,6 +19,11 @@ BufferInfo& FBufferCache::GetVertexBufferInfo(EPrimitiveMeshType Type)
 	{
 		//여기서 버텍스 버퍼 생성한다
 		auto bufferInfo = CreateVertexBufferInfo(Type);
+		if (bufferInfo.GetSize() <= 0)
+		{
+			BufferInfo bufferInfo;
+			return bufferInfo;
+		}
 		VertexBufferCache.insert({ Type, bufferInfo });
 	}
 
@@ -39,6 +43,60 @@ BufferInfo& FBufferCache::GetIndexBufferInfo(EPrimitiveMeshType Type)
 	return IndexBufferCache[Type];
 }
 
+BufferInfo& FBufferCache::GetVertexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology)
+{
+	if (BatchVertexBufferCache.Contains(Texture))
+	{
+		if (BatchVertexBufferCache[Texture].Contains(Topology))
+		{
+			return BatchVertexBufferCache[Texture][Topology];
+		}
+	}
+	BufferInfo bufferInfo;
+	return bufferInfo;
+}
+
+BufferInfo& FBufferCache::GetIndexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology)
+{
+	if (BatchIndexBufferCache.Contains(Texture))
+	{
+		if (BatchIndexBufferCache[Texture].Contains(Topology))
+		{
+			return BatchIndexBufferCache[Texture][Topology];
+		}
+	}
+	BufferInfo bufferInfo;
+	return bufferInfo;
+}
+
+void FBufferCache::UpdateVertexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer)
+{
+	// TODO Batch - 고쳐야됨
+	if (!BatchVertexBufferCache.Contains(Texture))
+	{
+		BatchVertexBufferCache.Add(Texture, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>());
+	}
+	if (!BatchVertexBufferCache[Texture].Contains(Topology))
+	{
+		//BatchVertexBufferCache[Texture].Add(Topology, );
+	}
+	BatchVertexBufferCache[Texture][Topology].GetBuffer()->Release();	
+	//BatchVertexBufferCache[Texture][Topology] = BufferInfo(Buffer, BufferSize);
+}
+
+void FBufferCache::UpdateIndexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer)
+{
+	// TODO Batch - 고쳐야됨
+	if (BatchIndexBufferCache.Contains(Texture))
+	{
+		if (BatchIndexBufferCache[Texture].Contains(Topology))
+		{
+			BatchVertexBufferCache[Texture][Topology].GetBuffer()->Release();
+			//BatchIndexBufferCache[Texture][Topology] = BufferInfo(Buffer, BufferSize);
+		}
+	}
+}
+
 void FBufferCache::Release()
 {
 	for (auto& BufferInfo : IndexBufferCache | std::views::values)
@@ -55,186 +113,43 @@ void FBufferCache::Release()
 	VertexBufferCache.clear();
 }
 
-BufferInfo FBufferCache::CreateVertexBufferInfo(EPrimitiveMeshType Type)
+BufferInfo FBufferCache::CreateVertexBufferInfo(EPrimitiveMeshType MeshType)
 {
+	const TArray<FVertexSimple>* VertexData = MeshResourceCache::Get().GetVertexData(MeshType);
+	uint32 Size = 0;
 	ID3D11Buffer* Buffer = nullptr;
-	int Size = 0;
-	D3D_PRIMITIVE_TOPOLOGY Topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
-	switch (Type)
+	if (VertexData != nullptr)
 	{
-	case EPrimitiveMeshType::EPT_Line:
-		Size = std::size(LineVertices);
-		Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(LineVertices, sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-		Topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
-		break;
-	case EPrimitiveMeshType::EPT_Triangle:
-		Size = std::size(TriangleVertices);
-		Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(TriangleVertices, sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-		break;
-	case EPrimitiveMeshType::EPT_Cube:
-		Size = std::size(CubeVertices);
-		Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(CubeVertices, sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-		break;
-	case EPrimitiveMeshType::EPT_Sphere:
-		Size = std::size(SphereVertices);
-		Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(SphereVertices, sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-		break;
-	case EPrimitiveMeshType::EPT_Cylinder:
-		{
-			TArray<FVertexSimple> Vertices = CreateCylinderVertices();
-			Size = Vertices.Num();
-			Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(Vertices.GetData(), sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-			break;
-		}
-	case EPrimitiveMeshType::EPT_Cone:
-		{
-			TArray<FVertexSimple> Vertices = CreateConeVertices();
-			Size = Vertices.Num();
-			Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(Vertices.GetData(), sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-			break;
-		}
-	case EPrimitiveMeshType::EPT_Quad:
-	{
-		Size = std::size(QuadVertices);
-		Buffer = UEngine::Get().GetRenderer() -> CreateVertexBuffer(QuadVertices, sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-		break;
-	}
-	default:
-		// ERROR
-		break;
+		Size = VertexData->Num();
+		Buffer = UEngine::Get().GetRenderer()->CreateMeshBuffer(VertexData->GetData(), sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
 	}
 	
-
-	return BufferInfo(Buffer, Size, Topology);
+	return BufferInfo(Buffer, Size);
 }
 
-BufferInfo FBufferCache::CreateIndexBufferInfo(EPrimitiveMeshType Type)
+BufferInfo FBufferCache::CreateIndexBufferInfo(EPrimitiveMeshType MeshType)
 {
+	const TArray<uint32>* IndexData = MeshResourceCache::Get().GetIndexData(MeshType);
+
 	ID3D11Buffer* Buffer = nullptr;
-	int Size = 0;
-	D3D_PRIMITIVE_TOPOLOGY Topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
-	switch (Type)
+	uint32 Size = 0;
+	if (IndexData != nullptr)
 	{
-	// case EPrimitiveType::EPT_Line:
-	// 	Size = std::size(LineVertices);
-	// 	Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(LineVertices, sizeof(FVertexSimple) * Size, TODO, TODO);
-	// 	Topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
-	// 	break;
-	// case EPrimitiveType::EPT_Triangle:
-	// 	Size = std::size(TriangleVertices);
-	// 	Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(TriangleVertices, sizeof(FVertexSimple) * Size, TODO, TODO);
-	// 	break;
-	case EPrimitiveMeshType::EPT_Cube:
-		Size = CubeIndecies.Num();
-		Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(CubeIndecies, sizeof(uint32) * Size, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-		break;
-	// case EPrimitiveType::EPT_Sphere:
-	// 	//Size = std::size(SphereVertices);
-	// 	Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(SphereVertices, sizeof(FVertexSimple) * Size, TODO, TODO);
-	// 	break;
-	// case EPrimitiveType::EPT_Cylinder:
-	// 	{
-	// 		//TArray<FVertexSimple> Vertices = CreateCylinderVertices();
-	// 		Size = Vertices.Num();
-	// 		Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(Vertices.GetData(), sizeof(FVertexSimple) * Size, TODO, TODO);
-	// 		break;
-	// 	}
-	// case EPrimitiveType::EPT_Cone:
-	// 	{
-	// 		//TArray<FVertexSimple> Vertices = CreateConeVertices();
-	// 		Size = Vertices.Num();
-	// 		Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(Vertices.GetData(), sizeof(FVertexSimple) * Size, TODO, TODO);
-	// 		break;
-	// 	}
-		// TODO TEMP
-
-	case EPrimitiveMeshType::EPT_Quad:
-		Size = QuadIndecies.Num();
-		Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(QuadIndecies, sizeof(uint32) * Size, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-		break;
-	default:
-		return BufferInfo();
+		Size = IndexData->Num();
+		Buffer = UEngine::Get().GetRenderer()->CreateMeshBuffer(IndexData->GetData(), sizeof(uint32) * Size, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
 	}
-
-	return BufferInfo(Buffer, Size, Topology);	
+	return BufferInfo(Buffer, Size);
 }
 
 
-TArray<FVertexSimple> FBufferCache::CreateConeVertices()
-{
-	TArray<FVertexSimple> vertices;
+/*case EPrimitiveMeshType::EPT_Quad:
+    {
+        Size = std::size(QuadVertices);
+        Buffer = UEngine::Get().GetRenderer() -> CreateVertexBuffer(QuadVertices, sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
+        break;
+    }
 
-	int segments = 36;
-	float radius = 1.f;
-	float height = 1.f;
-
-
-	// 원뿔의 바닥
-	for (int i = 0; i < segments; ++i)
-	{
-		float angle = 2.0f * PI * i / segments;
-		float nextAngle = 2.0f * PI * (i + 1) / segments;
-
-		float x1 = radius * cos(angle);
-		float y1 = radius * sin(angle);
-		float x2 = radius * cos(nextAngle);
-		float y2 = radius * sin(nextAngle);
-
-		 // 바닥 삼각형 (반시계 방향으로 추가)
-        vertices.Add({ 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f });
-        vertices.Add({ x2, y2, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f });
-        vertices.Add({ x1, y1, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f });
-
-        // 옆면 삼각형 (시계 방향으로 추가)
-        vertices.Add({ x1, y1, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f });
-        vertices.Add({ x2, y2, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f });
-        vertices.Add({ 0.0f, 0.0f, height, 0.0f, 1.0f, 0.0f, 1.0f });
-	}
-
-	return vertices;
-}
-
-TArray<FVertexSimple> FBufferCache::CreateCylinderVertices()
-{
-	TArray<FVertexSimple> vertices;
-	
-	int segments = 36;
-	float radius = .03f;
-	float height = .5f;
-
-
-	// 원기둥의 바닥과 윗면
-	for (int i = 0; i < segments; ++i)
-	{
-		float angle = 2.0f * PI * i / segments;
-		float nextAngle = 2.0f * PI * (i + 1) / segments;
-
-		float x1 = radius * cos(angle);
-		float y1 = radius * sin(angle);
-		float x2 = radius * cos(nextAngle);
-		float y2 = radius * sin(nextAngle);
-
-		// 바닥 삼각형
-		vertices.Add({ 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f });
-		vertices.Add({ x2, y2, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f });
-		vertices.Add({ x1, y1, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f });
-
-		// 윗면 삼각형
-		vertices.Add({ 0.0f, 0.0f, height, 0.0f, 1.0f, 0.0f, 1.0f });
-		vertices.Add({ x1, y1, height, 0.0f, 1.0f, 0.0f, 1.0f });
-		vertices.Add({ x2, y2, height, 0.0f, 1.0f, 0.0f, 1.0f });
-
-		// 옆면 삼각형 두 개
-		vertices.Add({ x1, y1, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f });
-		vertices.Add({ x2, y2, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f });
-		vertices.Add({ x1, y1, height, 0.0f, 0.0f, 1.0f, 1.0f });
-
-		vertices.Add({ x2, y2, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f });
-		vertices.Add({ x2, y2, height, 0.0f, 0.0f, 1.0f, 1.0f });
-		vertices.Add({ x1, y1, height, 0.0f, 0.0f, 1.0f, 1.0f });
-	}
-
-	return vertices;
-}
+case EPrimitiveMeshType::EPT_Quad:
+    Size = QuadIndecies.Num();
+Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(QuadIndecies, sizeof(uint32) * Size, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
+break;*/
