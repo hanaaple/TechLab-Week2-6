@@ -6,6 +6,7 @@
 
 #include "DataTypes/Structs.h"
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
+//#include "Primitive/UShaderManager.h"
 #include "Static/FEditorManager.h"
 
 void URenderer::Create(HWND hWindow)
@@ -20,6 +21,8 @@ void URenderer::Create(HWND hWindow)
     CreatePickingTexture(hWindow);
     
     InitMatrix();
+    //UShaderManager::Get().LoadShader(Device, FName("ShaderW0"), "Shaders/ShaderW0.hlsl", "mainVS", "mainPS");
+
 }
 
 void URenderer::Release()

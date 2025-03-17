@@ -1,15 +1,16 @@
 #pragma once
-#include <unordered_map>
+#define _TCHAR_DEFINED
+#include "Core/Container/Map.h"
 #include "UShader.h"
 
-class UShaderManager:TSingleton<UShaderManager>
+class UShaderManager:public TSingleton<UShaderManager>
 {
 public:
     
-    UShader* LoadShader(ID3D11Device* Device, const FName& Name, const wchar_t* FileName, const char* VertexEntry, const char* PixelEntry);
+    UShader* LoadShader(ID3D11Device* Device, const FName& Name, const wchar_t* FileName, const FString& VertexEntry, const FString& PixelEntry);
     UShader* GetShader(const FName& Name);
     void ReleaseAll();
     
 private:
-    std::unordered_map<FName, UShader*> ShaderMap;
+    TMap<int32, UShader*> ShaderMap;
 };
