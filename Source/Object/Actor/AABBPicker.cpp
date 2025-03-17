@@ -20,9 +20,6 @@ void AAABBPicker::LateTick(float DeltaTime)
 
 	if (APlayerInput::Get().GetMouseDown(false)) {
 		FVector mousePos = APlayerInput::Get().GetMouseDownNDCPos(false);
-		AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
-		gizmo->SetPrevMousePos(FVector4(mousePos.X, mousePos.Y, 1.0f, 1.0f));
-		UE_LOG("prevMousePos: %f, %f", mousePos.X, mousePos.Y);
 		ACamera* camera = FEditorManager::Get().GetCamera();
 		FVector rayOrigin = camera->GetActorTransform().GetPosition();
 		FVector rayDir = RayCast(mousePos, camera);
@@ -35,10 +32,6 @@ void AAABBPicker::LateTick(float DeltaTime)
 			return;
 		}
 		if (pickedActor->IsGizmoActor() == false) {
-			FTransform AT = pickedActor->GetActorTransform();
-			gizmo->SetActorXAxis(FVector4(AT.GetForward().X, AT.GetForward().Y, AT.GetForward().Z, 1.0f));
-			gizmo->SetActorYAxis(FVector4(AT.GetRight().X, AT.GetRight().Y, AT.GetRight().Z, 1.0f));
-			gizmo->SetActorZAxis(FVector4(AT.GetUp().X, AT.GetUp().Y, AT.GetUp().Z, 1.0f));
 			if (pickedActor == FEditorManager::Get().GetSelectedActor())
 			{
 				return;
@@ -58,6 +51,14 @@ void AAABBPicker::LateTick(float DeltaTime)
 			FVector rayDir = RayCast(mousePos, camera);
 			UCylinderComp* pickedAxis = CheckGizmo(rayOrigin, rayDir);
 			if (pickedAxis != nullptr) {
+				if (FEditorManager::Get().GetGizmoHandle() != nullptr && FEditorManager::Get().GetSelectedActor() != nullptr) {
+					AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
+					gizmo->SetPrevMousePos(clickedPosition);
+					FTransform AT = FEditorManager::Get().GetSelectedActor()->GetActorTransform();
+					gizmo->SetActorXAxis(FVector4(AT.GetForward().X, AT.GetForward().Y, AT.GetForward().Z, 1.0f));
+					gizmo->SetActorYAxis(FVector4(AT.GetRight().X, AT.GetRight().Y, AT.GetRight().Z, 1.0f));
+					gizmo->SetActorZAxis(FVector4(AT.GetUp().X, AT.GetUp().Y, AT.GetUp().Z, 1.0f));
+				}
 				ESelectedAxis selectedAxis = FEditorManager::Get().GetGizmoHandle()->IsAxis(pickedAxis);
 			}
 		}
@@ -80,7 +81,7 @@ FVector AAABBPicker::RayCast(FVector mouse, ACamera* camera)
 {
 	FVector rayOrigin = camera->GetActorTransform().GetPosition();
 	FVector4 ndc(mouse.X, mouse.Y, 1.0f, 1.0f);
-	FMatrix inverseView = camera->GetActorTransform().GetViewMatrix().Inverse();
+	FMatrix inverseView = camera->GetViewMatrix().Inverse();
 	UEngine::Get().GetRenderer()->UpdateProjectionMatrix(camera);
 	FMatrix inverseProjection = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
 
@@ -92,6 +93,7 @@ FVector AAABBPicker::RayCast(FVector mouse, ACamera* camera)
 		rayView.W = 1.0f;
 	}
 	FVector4 rayWorld = rayView * inverseView;
+	clickedPosition = rayWorld;
 	FVector rayDir = FVector(rayWorld.X, rayWorld.Y, rayWorld.Z) - rayOrigin;
 	rayDir.Normalize();
 	return rayDir;

@@ -23,10 +23,6 @@ class AEditorGizmos : public AActor
 {
     DECLARE_OBJECT(AEditorGizmos, AActor)
 public:
-	FVector4 actorXAxis;
-	FVector4 actorYAxis;
-	FVector4 actorZAxis;
-public:
 	AEditorGizmos();
 
 public:
@@ -50,7 +46,11 @@ private:
 	virtual const char* GetTypeName() override;
 
 private:
+	FVector4 actorXAxis;
+	FVector4 actorYAxis;
+	FVector4 actorZAxis;
 	FVector4 prevMousePos;
+	FVector4 curMousePos;
 	void DoTransform(FTransform& AT, float Result, AActor* Actor);
 };
 
