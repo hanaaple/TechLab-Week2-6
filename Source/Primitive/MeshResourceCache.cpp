@@ -17,6 +17,9 @@ const TArray<FVertexSimple>* MeshResourceCache::GetVertexData(EPrimitiveMeshType
         case EPrimitiveMeshType::EPT_Cube:
             VertexDataMap.Add(MeshType, CubeVertices);
             break;
+        case EPrimitiveMeshType::EPT_Quad:
+            VertexDataMap.Add(MeshType, QuadVertices);
+            break;
         case EPrimitiveMeshType::EPT_Sphere:
             VertexDataMap.Add(MeshType, SphereVertices);
             break;
@@ -40,6 +43,7 @@ const TArray<FVertexSimple>* MeshResourceCache::GetVertexData(EPrimitiveMeshType
             break;
         case EPrimitiveMeshType::EPT_Max:
             break;
+        
         default: ;
         }
     }
@@ -82,6 +86,9 @@ const TArray<uint32>* MeshResourceCache::GetIndexData(EPrimitiveMeshType MeshTyp
             IndexDataMap.Add(MeshType, VertexDataCreator::CreateTorusIndecies());
             break;
         case EPrimitiveMeshType::EPT_Max:
+            break;
+        case EPrimitiveMeshType::EPT_Quad:
+            IndexDataMap.Add(MeshType, QuadIndecies);
             break;
         default: ;
         }

@@ -176,6 +176,9 @@ void URenderer::Prepare() const
     DeviceContext->ClearRenderTargetView(FrameBufferRTV, ClearColor);
     DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
+    //PREV
+    //DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
     // Rasterization할 Viewport를 설정 
     DeviceContext->RSSetViewports(1, &ViewportInfo);
     //DeviceContext->RSSetState(RasterizerState);
@@ -386,6 +389,7 @@ void URenderer::UpdateConstantPrimitive(const ConstantUpdateInfo& UpdateInfo) co
         Constants->MVP = MVP;
 		Constants->Color = UpdateInfo.Color;
 		Constants->bUseVertexColor = UpdateInfo.bUseVertexColor ? 1 : 0;
+        Constants->bUseUV = UpdateInfo.bUseUV;
     }
     DeviceContext->Unmap(ConstantBuffer, 0);
 }

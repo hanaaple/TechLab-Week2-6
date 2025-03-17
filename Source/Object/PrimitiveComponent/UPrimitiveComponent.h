@@ -162,8 +162,8 @@ public:
 	UCubeComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Cube);
-		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
-		SetTexture(UTextureLoader::Get().m_texture);
+		/*UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
+		SetTexture(UTextureLoader::Get().m_texture);*/
 	}
 	virtual ~UCubeComp() = default;
 };

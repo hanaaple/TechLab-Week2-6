@@ -9,6 +9,8 @@ public:
 		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
 		SetTexture(UTextureLoader::Get().m_texture);
 		SetMesh(EPrimitiveMeshType::EPT_Quad);
+		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		SetUseIndexBuffer(true);
 	}
 	virtual ~UTextComp() = default;
 
