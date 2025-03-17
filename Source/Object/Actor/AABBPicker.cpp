@@ -31,7 +31,6 @@ void AAABBPicker::LateTick(float DeltaTime)
 			}
 			return;
 		}
-		UE_LOG("picked %s", pickedActor->GetTypeName());
 		if (pickedActor->IsGizmoActor() == false) {
 			if (pickedActor == FEditorManager::Get().GetSelectedActor())
 			{

@@ -355,7 +355,7 @@ void UI::RenderPropertyWindow()
     {
         FTransform selectedTransform = selectedActor->GetActorTransform();
  
-        UPrimitiveComponent* component = dynamic_cast<UPrimitiveComponent*>(selectedActor->GetRootComponent());
+        /*UPrimitiveComponent* component = dynamic_cast<UPrimitiveComponent*>(selectedActor->GetRootComponent());
         float xAxis[] = {
             component->obb.axis[0].X,
             component->obb.axis[0].Y,
@@ -386,7 +386,7 @@ void UI::RenderPropertyWindow()
         ImGui::InputFloat3("y axis", yAxis, "%.3f");
         ImGui::InputFloat3("z axis", zAxis, "%.3f");
         ImGui::InputFloat3("center", center, "%.3f");
-        ImGui::InputFloat3("half", halfSize, "%.3f");
+        ImGui::InputFloat3("half", halfSize, "%.3f");*/
         // 선택된 오브젝트의 이름을 표시하고 변경 가능하도록 함
         uint32 bufferSize = 100;
         char SceneNameInput[100];
