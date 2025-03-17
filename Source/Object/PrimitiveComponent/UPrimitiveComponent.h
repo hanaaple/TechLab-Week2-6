@@ -65,7 +65,6 @@ public:
 	void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 	void UpdateConstantUV(const URenderer& Renderer, const char c)const;
 
-	virtual EPrimitiveMeshType GetMeshType() { return EPrimitiveMeshType::EPT_None; }
 	// void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
 	// void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 
@@ -164,7 +163,7 @@ public:
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Cube);
 		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
-		Texture = UTextureLoader::Get().m_texture;
+		SetTexture(UTextureLoader::Get().m_texture);
 	}
 	virtual ~UCubeComp() = default;
 };

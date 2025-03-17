@@ -5,14 +5,12 @@ class UTextComp: public UPrimitiveComponent {
 	DECLARE_OBJECT(UTextComp, Super)
 public:
 	UTextComp() : Super() {
+		bUseUV = true;
 		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
-		Texture = UTextureLoader::Get().m_texture;
-		Super::bUseUV = true;
+		SetTexture(UTextureLoader::Get().m_texture);
+		SetMesh(EPrimitiveMeshType::EPT_Quad);
 	}
 	virtual ~UTextComp() = default;
-	EPrimitiveMeshType GetMeshType() override {
-		return EPrimitiveMeshType::EPT_Quad;
-	}
 
 	//string compText
 	//void SetText() 글자별 Quad 추가

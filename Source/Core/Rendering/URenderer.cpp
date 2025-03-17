@@ -962,9 +962,9 @@ void URenderer::PrepareTexture(ID3D11ShaderResourceView* Texture)
 
     CurrentTexture = Texture;
     
-    if (TextureSRV != nullptr)
+    if (Texture != nullptr)
     {
-        DeviceContext->PSSetShaderResources(0, 1, &TextureSRV);
+        DeviceContext->PSSetShaderResources(0, 1, &Texture);
         DeviceContext->PSSetSamplers(0, 1, &SamplerState);   
     }
     else
