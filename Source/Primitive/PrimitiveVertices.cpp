@@ -54,17 +54,25 @@ TArray<uint32> CubeIndecies = {
 	1, 4, 5   // Second triangle (bottom-left, bottom-right, bottom-right)
 };
 
+//FVertexSimple QuadVertices[] =
+//{
+//	{ -0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 1.0f }, // Bottom-left (red),    UV: (0,1)
+//	{  0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 1.0f,   1.0f, 1.0f }, // Bottom-right (green), UV: (1,1)
+//	{ -0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f, 1.0f,   0.0f, 0.0f }, // Top-left (yellow),    UV: (0,0)
+//	{  0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f }  // Top-right (blue),     UV: (1,0)
+//};
+
 FVertexSimple QuadVertices[] =
 {
-	{ -0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f }, // Bottom-left (red)
-	{  0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 1.0f }, // Bottom-right (green)
-	{ -0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f, 1.0f }, // Top-left (yellow)
-	{  0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f, 1.0f }, // Top-right (blue)
+	{  0.0f,  0.5f,  -0.5f,  1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 1.0f }, // Bottom-left (red)    → (Z, Y, -X)
+	{  0.0f, -0.5f,  -0.5f,  0.0f, 1.0f, 0.0f, 1.0f,   1.0f, 1.0f }, // Bottom-right (green) → (Z, Y, -X)
+	{  0.0f,  0.5f, 0.5f,  1.0f, 1.0f, 0.0f, 1.0f,   0.0f, 0.0f }, // Top-left (yellow)    → (Z, Y, -X)
+	{  0.0f, -0.5f, 0.5f,  0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f }  // Top-right (blue)     → (Z, Y, -X)
 };
 
 TArray<uint32> QuadIndecies = {
 	0, 1, 2,
-	3, 2, 1
+	1, 3, 2
 };
 
 FVertexSimple SphereVertices[] =

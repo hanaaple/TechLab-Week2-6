@@ -173,6 +173,7 @@
     <ClCompile Include="Source\Core\Name\FNameTable.cpp" />
     <ClCompile Include="Source\Core\Rendering\BatchRenderContext.cpp" />
     <ClCompile Include="Source\Core\Rendering\Material.cpp" />
+    <ClCompile Include="Source\Object\Actor\BillboardText.cpp" />
     <ClCompile Include="Source\Object\Actor\Camera.cpp" />
     <ClCompile Include="Source\Object\Actor\Cone.cpp" />
     <ClCompile Include="Source\Object\Actor\Cylinder.cpp" />
@@ -194,6 +195,7 @@
     <ClCompile Include="Source\Core\Math\Matrix.cpp" />
     <ClCompile Include="Source\Core\Math\Vector.cpp" />
     <ClCompile Include="Source\JsonSaveHelper.cpp" />
+    <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp" />
     <ClCompile Include="Source\Texture\TextComponent.cpp" />
     <ClCompile Include="Source\Texture\TextureLoader.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui.cpp" />
@@ -223,6 +225,7 @@
     <ClInclude Include="Source\Core\Name\FNameTable.h" />
     <ClInclude Include="Source\Core\Rendering\BatchRenderContext.h" />
     <ClInclude Include="Source\Core\Rendering\Material.h" />
+    <ClInclude Include="Source\Object\Actor\BillBoardText.h" />
     <ClInclude Include="Source\Object\Actor\Camera.h" />
     <ClInclude Include="Source\Object\Actor\Cone.h" />
     <ClInclude Include="Source\Object\Actor\Cube.h" />
@@ -249,6 +252,7 @@
     <ClInclude Include="Source\Core\Math\Transform.h" />
     <ClInclude Include="Source\Object\Actor\Cylinder.h" />
     <ClInclude Include="Source\Object\ObjectFactory.h" />
+    <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
     <ClInclude Include="Source\Texture\TextComponent.h" />
     <ClInclude Include="Source\Texture\TextureLoader.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\imconfig.h" />

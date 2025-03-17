@@ -86,7 +86,11 @@ class UCubeComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 	DECLARE_OBJECT(UCubeComp,Super)
 public:
-	UCubeComp() = default;
+	UCubeComp() : Super() {
+
+		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
+		Texture = UTextureLoader::Get().m_texture;
+	}
 	virtual ~UCubeComp() = default;
 	EPrimitiveMeshType GetMeshType() override
 	{
@@ -153,11 +157,7 @@ class UConeComp : public UPrimitiveComponent
 	using Super = UPrimitiveComponent;
 	DECLARE_OBJECT(UConeComp,Super)
 public:
-	UConeComp() : Super() {
-
-		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
-		Texture = UTextureLoader::Get().m_texture;
-	}
+	UConeComp() = default;
 	virtual ~UConeComp() = default;
 	EPrimitiveMeshType GetMeshType() override
 	{

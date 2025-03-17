@@ -11,6 +11,7 @@
 #include "Static/FEditorManager.h"
 #include <Object/Actor/Cone.h>
 #include <Object/Actor/Cube.h>
+#include <Object/Actor/BillBoardText.h>
 
 // ImGui WndProc 정의
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -233,11 +234,12 @@ void UEngine::InitWorld()
     FEditorManager::Get().SetCamera(World->SpawnActor<ACamera>());
 
     //// Test
-    World->SpawnActor<AArrow>();
+    //World->SpawnActor<AArrow>();
     //World->SpawnActor<ACone>();
-    World->SpawnActor<ACube>();
-    World->SpawnActor<AAxis>();
-    World->SpawnActor<APicker>();
+    //World->SpawnActor<ACube>();
+    World->SpawnActor<ABillboardText>();
+    //World->SpawnActor<AAxis>();
+    //World->SpawnActor<APicker>();
 
 	World->BeginPlay();
 }

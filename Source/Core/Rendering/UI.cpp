@@ -12,6 +12,7 @@
 #include "Object/Actor/Cylinder.h"
 #include "Object/Gizmo/EditorGizmos.h"
 #include "Object/World/World.h"
+#include <Object/Actor/BillBoardText.h>
 
 
 void UI::Initialize(HWND hWnd, const URenderer& Renderer, UINT ScreenWidth, UINT ScreenHeight)
@@ -148,7 +149,7 @@ void UI::RenderMemoryUsage()
 
 void UI::RenderPrimitiveSelection()
 {
-    const char* items[] = {"Sphere", "Cube", "Cylinder", "Cone"};
+    const char* items[] = {"Sphere", "Cube", "Cylinder", "Cone", "BillboardText"};
 
     ImGui::Combo("Primitive", &currentItem, items, IM_ARRAYSIZE(items));
 
@@ -172,6 +173,9 @@ void UI::RenderPrimitiveSelection()
             else if (strcmp(items[currentItem], "Cone") == 0)
             {
                 World->SpawnActor<ACone>();
+            }
+            else if (strcmp(items[currentItem], "BillboardText") == 0) {
+                World->SpawnActor<ABillboardText>();
             }
             //else if (strcmp(items[currentItem], "Triangle") == 0)
             //{
