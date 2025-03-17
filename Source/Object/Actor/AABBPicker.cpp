@@ -20,26 +20,32 @@ void AAABBPicker::LateTick(float DeltaTime)
 
 	if (APlayerInput::Get().GetMouseDown(false)) {
 		FVector mousePos = APlayerInput::Get().GetMouseDownNDCPos(false);
+		AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
+		gizmo->SetPrevMousePos(FVector4(mousePos.X, mousePos.Y, 1.0f, 1.0f));
+		UE_LOG("prevMousePos: %f, %f", mousePos.X, mousePos.Y);
 		ACamera* camera = FEditorManager::Get().GetCamera();
 		FVector rayOrigin = camera->GetActorTransform().GetPosition();
 		FVector rayDir = RayCast(mousePos, camera);
 		AActor* pickedActor = CheckCollision(rayOrigin, rayDir);
-		if (pickedActor == nullptr) {
-			FEditorManager::Get().SelectActor(nullptr);
+		if (pickedActor == nullptr) { 
+			if(CheckGizmo(rayOrigin, rayDir) == nullptr)
+			{
+				FEditorManager::Get().SelectActor(nullptr);
+			}
 			return;
 		}
 		if (pickedActor->IsGizmoActor() == false) {
+			FTransform AT = pickedActor->GetActorTransform();
+			gizmo->SetActorXAxis(FVector4(AT.GetForward().X, AT.GetForward().Y, AT.GetForward().Z, 1.0f));
+			gizmo->SetActorYAxis(FVector4(AT.GetRight().X, AT.GetRight().Y, AT.GetRight().Z, 1.0f));
+			gizmo->SetActorZAxis(FVector4(AT.GetUp().X, AT.GetUp().Y, AT.GetUp().Z, 1.0f));
 			if (pickedActor == FEditorManager::Get().GetSelectedActor())
 			{
-				//물체의 기즈모가 바운딩 박스 밖에 있을 경우 픽이 해제돼서
-				//바운딩 박스 다시 클릭해야 픽 해제되는 방식 유지
-				//FEditorManager::Get().SelectActor(nullptr);
 				return;
 			}
 			else
 			{
 				FEditorManager::Get().SelectActor(pickedActor);
-				UE_LOG(pickedActor->GetTypeName());
 				UE_LOG("Pick - UUID: %d", pickedActor->GetUUID());
 			}
 		}

@@ -72,35 +72,38 @@ void AEditorGizmos::Tick(float DeltaTime)
 			float PosY = -2.0f * pt.y / ScreenHeight + 1.0f;
 			
 			// Projection 공간으로 변환
-			FVector4 RayOrigin {PosX, PosY, 0.0f, 1.0f};
-			FVector4 RayEnd {PosX, PosY, 1.0f, 1.0f};
-			
+			FVector4 RayOrigin {PosX, PosY, 1.0f, 1.0f};
 			// View 공간으로 변환
 			FMatrix InvProjMat = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
 			RayOrigin = RayOrigin * InvProjMat;
 			RayOrigin.W = 1;
-			RayEnd = RayEnd * InvProjMat;
-			RayEnd *= 1000.0f;  // 프러스텀의 Far 값이 적용이 안돼서 수동으로 곱함
-			RayEnd.W = 1;
 			
 			// 마우스 포인터의 월드 위치와 방향
 			FMatrix InvViewMat = FEditorManager::Get().GetCamera()->GetViewMatrix().Inverse();
 			RayOrigin = RayOrigin * InvViewMat;
 			RayOrigin /= RayOrigin.W = 1;
-			RayEnd = RayEnd * InvViewMat;
-			RayEnd /= RayEnd.W = 1;
-			FVector4 RayDir = (RayEnd - RayOrigin).GetSafeNormal();
-	
-			// 액터와의 거리
-			float Distance = FVector4::Distance(RayOrigin, Actor->GetActorTransform().GetPosition());
+			FVector4 RayDir = (RayOrigin - prevMousePos);
 			
-			// Ray 방향으로 Distance만큼 재계산
-			FVector Result = RayOrigin + RayDir * Distance;
-	
 			FTransform AT = Actor->GetActorTransform();
+			float Result = 0;
+			switch (SelectedAxis)
+			{
+			case ESelectedAxis::X:
+				Result = RayDir.Dot(actorXAxis);
+				break;
+			case ESelectedAxis::Y:
+				Result = RayDir.Dot(actorYAxis);
+				break;
+			case ESelectedAxis::Z:
+				Result = RayDir.Dot(actorZAxis);
+				break;
+			default:
+				break;
+			}
+			UE_LOG("result: %f", Result);
+			
 
 			DoTransform(AT, Result, Actor);
-			
 		}
 	}
 
@@ -161,12 +164,32 @@ ESelectedAxis AEditorGizmos::IsAxis(UCylinderComp* axis)
 	return SelectedAxis;
 }
 
+void AEditorGizmos::SetPrevMousePos(FVector4 mouse)
+{
+	prevMousePos = mouse;
+}
+
+void AEditorGizmos::SetActorXAxis(FVector4 axis)
+{
+	actorXAxis = axis;
+}
+
+void AEditorGizmos::SetActorYAxis(FVector4 axis)
+{
+	actorYAxis = axis;
+}
+
+void AEditorGizmos::SetActorZAxis(FVector4 axis)
+{
+	actorZAxis = axis;
+}
+
 const char* AEditorGizmos::GetTypeName()
 {
 	return "GizmoHandle";
 }
 
-void AEditorGizmos::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
+void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 {
 	const FVector& AP = AT.GetPosition();
 
@@ -175,13 +198,13 @@ void AEditorGizmos::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ Result.X, AP.Y, AP.Z });
+			AT.SetPosition({ AP.X + Result, AP.Y, AP.Z });
 			break;
 		case EGizmoType::Rotate:
-			AT.RotateRoll(Result.X);
+			AT.RotateRoll(Result * 2.0f);
 			break;
 		case EGizmoType::Scale:
-			AT.AddScale({ Result.X * .1f, 0, 0 });
+			AT.AddScale({ Result * .1f, 0, 0 });
 			break;
 		}
 	}
@@ -190,13 +213,13 @@ void AEditorGizmos::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP.X, Result.Y, AP.Z });
+			AT.SetPosition({ AP.X, AP.Y + Result, AP.Z });
 			break;
 		case EGizmoType::Rotate:
-			AT.RotatePitch(Result.Y);
+			AT.RotatePitch(Result * 2.0f);
 			break;
 		case EGizmoType::Scale:
-			AT.AddScale({ 0, Result.Y * .1f, 0 });
+			AT.AddScale({ 0, Result * .1f, 0 });
 			break;
 		}
 	}
@@ -205,13 +228,13 @@ void AEditorGizmos::DoTransform(FTransform& AT, FVector Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP.X, AP.Y, Result.Z });
+			AT.SetPosition({ AP.X, AP.Y, AP.Z + Result });
 			break;
 		case EGizmoType::Rotate:
-			AT.RotateYaw(-Result.Z);
+			AT.RotateYaw(-Result * 2.0f);
 			break;
 		case EGizmoType::Scale:
-			AT.AddScale({0, 0, Result.Z * .1f });
+			AT.AddScale({0, 0, Result * .1f });
 			break;
 		}
 	}
