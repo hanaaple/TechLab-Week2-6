@@ -10,7 +10,6 @@ void UTextComp::SetText(string NextText)
 
 	 // 새 텍스트 저장
 	 Text = NextText;
-	 //FVector BasePosition = GetRelativeTransform().GetPosition();		// UTextComp의 현재 위치
 
 	 // 각문자에 대해 UCharComp 생성 및 배치
 	 float YOffset = 0.0f;

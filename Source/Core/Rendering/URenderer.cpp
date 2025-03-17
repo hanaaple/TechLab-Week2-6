@@ -415,8 +415,6 @@ void URenderer::UpdateConstantBatch(const FBatchRenderContext& BatchRenderContex
         // 매핑된 메모리를 FConstants 구조체로 캐스팅
         FConstants* Constants = static_cast<FConstants*>(ConstantBufferMSR.pData);
         Constants->MVP = VP;
-        //Constants->Color = UpdateInfo.Color;
-        //Constants->bUseVertexColor = UpdateInfo.bUseVertexColor ? 1 : 0;
     }
     DeviceContext->Unmap(ConstantBuffer, 0);
 }
