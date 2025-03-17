@@ -48,7 +48,7 @@ private:
 	void UpdateChildTransforms();
 	void UpdateComponentToWorld();	// Relative 기반 World Update
 	void UpdateRelativeTransform();	// World 기반 Relative Update
-	
+	virtual void OnTransformation();
 private:
 	
 	USceneComponent* AttachParent = nullptr;

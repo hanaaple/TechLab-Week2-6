@@ -42,15 +42,35 @@ public:
 	void LoadWorld(const char* SceneName);
 	void SaveWorld();
 	
-	void AddRenderComponent(class UPrimitiveComponent* Component);
-	void RemoveRenderComponent(class UPrimitiveComponent* Component) { RenderComponents.Remove(Component); }
+	void AddRenderComponent(class UPrimitiveComponent* Component)
+	{
+		RenderComponents.Add(Component);
+
+		Component->SetDirty(true);
+	}
+	void RemoveRenderComponent(class UPrimitiveComponent* Component)
+	{
+		RenderComponents.Remove(Component);
+
+		if (Component->GetRenderMode() == Individual)
+		{
+			IndividualRenders.Remove(Component);
+		}
+		else if (Component->GetRenderMode() == Batch)
+		{
+			RemoveFromBatch(Component, Component->GetCurFrameData());
+		}
+	}
 	const TArray<AActor*>& GetActors() const { return Actors; }
 	const TArray<UPrimitiveComponent*> GetRenderComponents() const { return RenderComponents; }
 private:
 	UWorldInfo GetWorldInfo() const;
-	bool HasBatchRendersKey(ID3D11ShaderResourceView	* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer);
+	bool HasBatchRendersKey(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer);
 	void CheckRemoveMap(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer, EPrimitiveMeshType MeshType);
-	void CheckInitMap(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer, EPrimitiveMeshType MeshType);
+	void CheckInitMap(const FRenderData& FrameData);
+	void AddToBatch(UPrimitiveComponent* Component);
+	void RemoveFromBatch(UPrimitiveComponent* Component, const FRenderData& FrameData);
+	
 public:
 	FString SceneName;
 	uint32 Version = 1;
@@ -61,8 +81,9 @@ protected:
 	TArray<AActor*> PendingDestroyActors; // TODO: 추후에 TQueue로 변경
 	
 	TArray<UPrimitiveComponent*> RenderComponents;	
-	TArray<UPrimitiveComponent*> IndividualRenders;
+
 	
+	TArray<UPrimitiveComponent*> IndividualRenders;
 	//TArray<UPrimitiveComponent*> InstancingRenders;
 	//TMap<UMaterial*, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<uint8, FBatchRenderContext>>> BatchRenders;
 	TMap<ID3D11ShaderResourceView*, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<bUseIndexBufferFlag, FBatchRenderContext>>> BatchRenders;
