@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Core/Rendering/URenderer.h"
+#include "DataTypes/MeshDataTypes.h"
 #include "Object/USceneComponent.h"
 
 
@@ -41,7 +42,7 @@ public:
 	// void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
 	// void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 
-	virtual TArray<FVertexSimple> GetVertexData();
+	virtual TArray<FVertexSimple>* GetVertexData();
 
 public:
 	void SetDepth(int InDepth) { Depth = InDepth; }
@@ -199,4 +200,16 @@ public:
 		SetMesh(EPrimitiveMeshType::EPT_Cone);
 	}
 	virtual ~UConeComp() = default;
+};
+
+class UTorusComp : public UPrimitiveComponent
+{
+	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UTorusComp,Super)
+public:
+	UTorusComp()
+	{
+		SetMesh(EPrimitiveMeshType::EPT_Torus);
+	}
+	virtual ~UTorusComp() = default;
 };

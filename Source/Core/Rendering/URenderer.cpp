@@ -3,6 +3,8 @@
 #include "Core/Rendering/BufferCache.h"
 #include "Core/Math/Transform.h"
 #include <Object/Actor/Camera.h>
+
+#include "DataTypes/Structs.h"
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 #include "Static/FEditorManager.h"
 
@@ -254,10 +256,10 @@ void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
                 for (auto* RenderComponent : RenderComponents)
                 {
                     auto Vertecies = RenderComponent->GetVertexData();
-                    VertexData.Append(Vertecies);
-                    auto ComponentIndices = BufferCache->GetStaticIndexData(MeshType);
+                    VertexData.Append(*Vertecies);
+                    TArray<uint32> Indecies = *MeshResourceCache::Get().GetIndexData(MeshType);
 
-                    for (auto Index : ComponentIndices)
+                    for (auto Index : Indecies)
                     {
                         IndexData.Add(Index + VertexOffset);
                     }
@@ -279,7 +281,7 @@ void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
                 {
                     // 이렇게 해서 Vertex Data를 알아서 가져오게?
                     auto Vertecies = RenderComponent->GetVertexData();
-                    VertexData.Append(Vertecies);
+                    VertexData.Append(*Vertecies);
                 }
             }
         }
@@ -325,6 +327,9 @@ void URenderer::RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, cons
 
 ID3D11Buffer* URenderer::CreateMeshBuffer(const void* Data, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage = D3D11_USAGE_DEFAULT) const
 {
+    if (ByteWidth <= 0)
+        return nullptr;
+    
     D3D11_BUFFER_DESC BufferDesc = {};
     BufferDesc.ByteWidth = ByteWidth;
     BufferDesc.Usage = D3d11Usage;

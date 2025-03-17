@@ -1,5 +1,6 @@
 ﻿#include "UPrimitiveComponent.h"
 #include "Object/World/World.h"
+#include "DataTypes/Structs.h"
 
 void UPrimitiveComponent::Activate()
 {
@@ -89,16 +90,19 @@ void UPrimitiveComponent::Render()
 
 
 // 배치 렌더링용 버텍스를 가져와서 
-TArray<FVertexSimple> UPrimitiveComponent::GetVertexData()
+TArray<FVertexSimple>* UPrimitiveComponent::GetVertexData()
 {
-	TArray<FVertexSimple> VertexData = UEngine::Get().GetRenderer()->GetBufferCache()->GetStaticVertexData(GetMeshType());
+	TArray<FVertexSimple>* VertexData = MeshResourceCache::Get().GetVertexData(GetMeshType());
 
-	for (FVertexSimple& Vertex : VertexData)
+	if (VertexData != nullptr)
 	{
-		FVector Pos = FVector(Vertex.X, Vertex.Y, Vertex.Z) * GetComponentTransform().GetMatrix();
-		Vertex.X = Pos.X;
-		Vertex.Y = Pos.Y;
-		Vertex.Z = Pos.Z;
+		for (FVertexSimple& Vertex : *VertexData)
+		{
+			FVector Pos = FVector(Vertex.X, Vertex.Y, Vertex.Z) * GetComponentTransform().GetMatrix();
+			Vertex.X = Pos.X;
+			Vertex.Y = Pos.Y;
+			Vertex.Z = Pos.Z;
+		}	
 	}
 	
 	return VertexData;

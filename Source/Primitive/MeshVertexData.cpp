@@ -1,19 +1,19 @@
-﻿#include "PrimitiveVertices.h"
+﻿#include "MeshVertexData.h"
 
-FVertexSimple LineVertices[2] =
+TArray<FVertexSimple> LineVertices =
 {
 	{ -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f }, // 시작점 (흰색)
 	{ 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f }  // 끝점 (흰색)
 };
 
-FVertexSimple TriangleVertices[] =
+TArray<FVertexSimple> TriangleVertices =
 {
 	{  0.0f,  1.0f, 0.0f,  1.0f, 0.0f, 0.0f, 1.0f }, // Top vertex (red)
 	{  1.0f, -1.0f, 0.0f,  0.0f, 1.0f, 0.0f, 1.0f }, // Bottom-right vertex (green)
 	{ -1.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f }  // Bottom-left vertex (blue)
 };
 
-FVertexSimple CubeVertices[] =
+TArray<FVertexSimple> CubeVertices =
 {
 	// Front face (Z+)
 	{ -0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f }, // Bottom-left (red)
@@ -53,7 +53,7 @@ TArray<uint32> CubeIndecies = {
 	4, 1, 0,  // First triangle (bottom-left, bottom-right, bottom-left)
 	1, 4, 5   // Second triangle (bottom-left, bottom-right, bottom-right)
 };
-FVertexSimple SphereVertices[] =
+TArray<FVertexSimple> SphereVertices =
 {
 	{ 0.000000f, 1.000000f, 0.000000f, 0.500000f, 1.000000f, 0.500000f, 1.000000f },
 	{ 0.156434f, 0.987688f, 0.000000f, 0.578217f, 0.993844f, 0.500000f, 1.000000f },

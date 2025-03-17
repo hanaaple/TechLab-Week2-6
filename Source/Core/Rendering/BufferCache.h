@@ -7,8 +7,7 @@
 #include <unordered_map>
 
 #include "BatchRenderContext.h"
-#include "Primitive/PrimitiveVertices.h"
-#include "Core/Container/Array.h"
+#include "Primitive/MeshResourceCache.h"
 
 struct BufferInfo
 {
@@ -52,16 +51,9 @@ public:
 	void UpdateVertexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer);
 	void UpdateIndexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer);
 	
-	TArray<uint32> GetStaticIndexData(EPrimitiveMeshType MeshType);
-	TArray<FVertexSimple> GetStaticVertexData(EPrimitiveMeshType MeshType);
-	
 	void Release();
-public:
-	TArray<FVertexSimple> CreateArrowVertices();
-	TArray<FVertexSimple> CreateConeVertices();
-	TArray<FVertexSimple> CreateCylinderVertices();
 
 private :
-	BufferInfo CreateVertexBufferInfo(EPrimitiveMeshType Type);
-	BufferInfo CreateIndexBufferInfo(EPrimitiveMeshType Type);
+	BufferInfo CreateVertexBufferInfo(EPrimitiveMeshType MeshType);
+	BufferInfo CreateIndexBufferInfo(EPrimitiveMeshType MeshType);
 };
