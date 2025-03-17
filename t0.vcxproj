@@ -250,6 +250,7 @@
       <AdditionalOptions>/utf-8 </AdditionalOptions>
       <LinkCompiled>true</LinkCompiled>
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MultiThreadedDLL</RuntimeLibrary>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NDEBUG;_CONSOLE;_UNICODE;UNICODE;</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="Source\Object\Actor\AABBPicker.cpp" />
     <ClCompile Include="Source\Object\Actor\ABoundingBox.cpp" />
