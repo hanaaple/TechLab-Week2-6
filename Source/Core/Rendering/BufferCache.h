@@ -36,6 +36,7 @@ class FBufferCache
 private:
 	std::unordered_map <EPrimitiveMeshType, BufferInfo> VertexBufferCache;
 	std::unordered_map <EPrimitiveMeshType, BufferInfo> IndexBufferCache;
+	std::unordered_map <EPrimitiveMeshType, TArray<FVertexSimple>> VertexDataCache;
 
 	TMap<ID3D11ShaderResourceView*, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>> BatchIndexBufferCache;
 	TMap<ID3D11ShaderResourceView*, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>> BatchVertexBufferCache;
@@ -45,6 +46,7 @@ public:
 
 	BufferInfo& GetVertexBufferInfo(EPrimitiveMeshType Type);
 	BufferInfo& GetIndexBufferInfo(EPrimitiveMeshType Type);
+	TArray<FVertexSimple>& GetVertexData(EPrimitiveMeshType Type);
 
 	BufferInfo& GetVertexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology);
 	BufferInfo& GetIndexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology);
@@ -64,4 +66,5 @@ public:
 private :
 	BufferInfo CreateVertexBufferInfo(EPrimitiveMeshType Type);
 	BufferInfo CreateIndexBufferInfo(EPrimitiveMeshType Type);
+	TArray<FVertexSimple> CreateVertexData(EPrimitiveMeshType Type);
 };

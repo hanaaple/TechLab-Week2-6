@@ -19,7 +19,7 @@ public:
 
 	// Get Set
 public:
-	void SetVisibility(bool bNewVisibility) const;
+	void SetVisibility(bool bNewVisibility);
 	bool GetVisibleFlag() const	{ return bVisible; }
 	void Pick(bool bPicked);
 	

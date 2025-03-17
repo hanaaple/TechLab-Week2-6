@@ -4,6 +4,8 @@
 
 class AEditorGizmos;
 
+class ABoundingBoxActor;
+
 class FEditorManager : public TSingleton<FEditorManager>
 {
 public:
@@ -17,8 +19,11 @@ public:
 
     AEditorGizmos* GetGizmoHandle() const {return ControlGizmo;}
     
+    ABoundingBoxActor* GetAABB() const { return AABB; }
 private:
     ACamera* Camera = nullptr;
     AActor* SelectedActor = nullptr;
+    AEditorGizmos* GizmoHandle = nullptr;
+    ABoundingBoxActor* AABB = nullptr;
     AEditorGizmos* ControlGizmo = nullptr;
 };

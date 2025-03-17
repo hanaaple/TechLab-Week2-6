@@ -27,3 +27,5 @@ extern FVertexSimple CubeVertices[36];
 extern FVertexSimple SphereVertices[2400];
 extern FVertexSimple TriangleVertices[3];
 extern TArray<uint32> CubeIndecies;
+extern FVertexSimple BoundingBoxVertices[8];
+extern TArray<uint32> BoundingBoxIndecies;

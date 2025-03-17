@@ -86,6 +86,11 @@ void APicker::LateTick(float DeltaTime)
         {
             if (AEditorGizmos* Gizmo = dynamic_cast<AEditorGizmos*>(PickedComponent->GetOwner()))
             {
+                //if (Gizmo->IsAxis(PickedComponent)) {
+                //    
+                //}
+
+
                 if (Gizmo->GetSelectedAxis() != ESelectedAxis::None) return;
                 UCylinderComp* CylinderComp = static_cast<UCylinderComp*>(PickedComponent);
                 FVector4 CompColor = CylinderComp->GetCustomColor();

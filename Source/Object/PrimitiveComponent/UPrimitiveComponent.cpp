@@ -1,5 +1,6 @@
 ﻿#include "UPrimitiveComponent.h"
 #include "Object/World/World.h"
+#include "Debug/DebugConsole.h"
 
 void UPrimitiveComponent::Activate()
 {
@@ -25,6 +26,7 @@ void UPrimitiveComponent::BeginPlay()
 void UPrimitiveComponent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	aabb.UpdateAABB(GetComponentTransform(), GetVertexData());
 }
 
 void UPrimitiveComponent::Render()

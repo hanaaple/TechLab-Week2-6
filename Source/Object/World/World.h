@@ -45,6 +45,7 @@ public:
 	void AddRenderComponent(class UPrimitiveComponent* Component);
 	void RemoveRenderComponent(class UPrimitiveComponent* Component) { RenderComponents.Remove(Component); }
 	const TArray<AActor*>& GetActors() const { return Actors; }
+	const TArray<UPrimitiveComponent*> GetRenderComponents() const { return RenderComponents; }
 private:
 	UWorldInfo GetWorldInfo() const;
 	bool HasBatchRendersKey(ID3D11ShaderResourceView	* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer);

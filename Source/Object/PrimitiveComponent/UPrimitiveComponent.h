@@ -2,6 +2,44 @@
 
 #include "Core/Rendering/URenderer.h"
 #include "Object/USceneComponent.h"
+#include "Primitive/PrimitiveVertices.h"
+#include <Core/Engine.h>
+
+struct FAABB {
+	FVector Min;
+	FVector Max;
+
+	void GenerateAABB(EPrimitiveMeshType type) {
+		TArray<FVertexSimple> vertices = UEngine::Get().GetRenderer()->GetBufferCache()->GetStaticVertexData(type);
+		FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+		FVector max = -min;
+		for (const FVertexSimple& vertex : vertices) {
+			min.X = FMath::Min(min.X, vertex.X);
+			min.Y = FMath::Min(min.Y, vertex.Y);
+			min.Z = FMath::Min(min.Z, vertex.Z);
+			max.X = FMath::Max(max.X, vertex.X);
+			max.Y = FMath::Max(max.Y, vertex.Y);
+			max.Z = FMath::Max(max.Z, vertex.Z);
+		}
+		Min = min;
+		Max = max;
+	}
+
+	void UpdateAABB(FTransform transform, TArray<FVertexSimple> vertices) {
+		FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+		FVector max = -min;
+		for (const FVertexSimple& vertex : vertices) {
+			min.X = FMath::Min(min.X, vertex.X);
+			min.Y = FMath::Min(min.Y, vertex.Y);
+			min.Z = FMath::Min(min.Z, vertex.Z);
+			max.X = FMath::Max(max.X, vertex.X);
+			max.Y = FMath::Max(max.Y, vertex.Y);
+			max.Z = FMath::Max(max.Z, vertex.Z);
+		}
+		Min = min;
+		Max = max;
+	}
+};
 
 
 enum ERenderMode{
@@ -25,9 +63,9 @@ class UPrimitiveComponent : public USceneComponent
 	DECLARE_OBJECT(UPrimitiveComponent,Super)
 
 public:
-	UPrimitiveComponent() : Super(), Depth(0)
-	{
-	}
+	FAABB aabb;
+public:
+	UPrimitiveComponent():Super(), Depth(0) {};
 	virtual ~UPrimitiveComponent() = default;
 
 public:
@@ -133,6 +171,7 @@ class UCubeComp : public UPrimitiveComponent
 public:
 	UCubeComp()
 	{
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cube);
 		SetMesh(EPrimitiveMeshType::EPT_Cube);
 	}
 	virtual ~UCubeComp() = default;
@@ -145,6 +184,7 @@ class USphereComp : public UPrimitiveComponent
 public:
 	USphereComp()
 	{
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Sphere);
 		SetMesh(EPrimitiveMeshType::EPT_Sphere);
 	}
 	virtual ~USphereComp() = default;
@@ -157,6 +197,7 @@ class UTriangleComp : public UPrimitiveComponent
 public:
 	UTriangleComp()
 	{
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Triangle);
 		SetMesh(EPrimitiveMeshType::EPT_Triangle);
 	}
 	virtual ~UTriangleComp() = default;
@@ -170,6 +211,7 @@ class ULineComp : public UPrimitiveComponent
 public:
 	ULineComp()
 	{
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Line);
 		SetMesh(EPrimitiveMeshType::EPT_Line);
 		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	}
@@ -184,8 +226,10 @@ class UCylinderComp : public UPrimitiveComponent
 public:
 	UCylinderComp()
 	{
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cylinder);
 		SetMesh(EPrimitiveMeshType::EPT_Cylinder);
 	}
+	
 	virtual ~UCylinderComp() = default;
 };
 
@@ -196,7 +240,22 @@ class UConeComp : public UPrimitiveComponent
 public:
 	UConeComp()
 	{
+		aabb.GenerateAABB(EPrimitiveMeshType::EPT_Cone);
 		SetMesh(EPrimitiveMeshType::EPT_Cone);
 	}
 	virtual ~UConeComp() = default;
+};
+
+
+class UBoundingBoxComp : public UPrimitiveComponent
+{
+	using Super = UPrimitiveComponent;
+	DECLARE_OBJECT(UBoundingBoxComp, Super)
+public:
+	UBoundingBoxComp()
+	{
+		SetMesh(EPrimitiveMeshType::EPT_BoundingBox);
+		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	}
+	virtual ~UBoundingBoxComp() = default;
 };
