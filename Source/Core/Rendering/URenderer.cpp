@@ -56,10 +56,9 @@ void URenderer::CreateShader()
          */
     // UShaderManager를 통해 셰이더 로드
     //UShaderManager::Get().LoadShader(Device, FName("DefaultShader"), L"Shaders/DefaultShader.hlsl", "mainVS", "mainPS");
-    UShaderManager::Get().LoadShader(Device, L"Shaders/DefaultShader.hlsl");
-    UShaderManager::Get().LoadShader(Device, FName("PickingShader"), L"Shaders/ShaderW0.hlsl", "mainVS", "PickingPS");
-
-    UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+    UShaderManager::Get().LoadAllShaders();
+    //UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+    UShader* DefaultShader = UShaderManager::Get().GetShader(EShaderType::DefaultShader);
     if (!DefaultShader)
     {
         std::cerr << "Failed to load DefaultShader." << std::endl;
@@ -143,7 +142,8 @@ void URenderer::Prepare() const
 void URenderer::PrepareShader() const
 {
     // UShaderManager에서 기본 셰이더 가져오기
-    UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+    //UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+    UShader* DefaultShader = UShaderManager::Get().GetShader(EShaderType::DefaultShader);
     if (!DefaultShader)
     {
         return;

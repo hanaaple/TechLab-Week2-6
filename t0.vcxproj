@@ -402,7 +402,11 @@
     <ClInclude Include="Source\Object\Actor\Sphere.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Shaders\CustomShader.hlsl" />
     <Content Include="Shaders\DefaultShader.hlsl" />
+    <Content Include="Shaders\OutlineShader.hlsl" />
+    <Content Include="Shaders\PickingShader.hlsl" />
+    <Content Include="Shaders\TextShader.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
