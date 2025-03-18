@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Object/Actor/Actor.h"
 #include "Object/Actor/Camera.h"
+#include "Object/Gizmo/WorldGrid.h"
 
 class AEditorGizmos;
 
@@ -20,10 +21,15 @@ public:
     AEditorGizmos* GetGizmoHandle() const {return ControlGizmo;}
     
     ABoundingBoxActor* GetAABB() const { return AABB; }
+
+    void SetWorldGrid(AWorldGrid* grid);
+
+    AWorldGrid* GetWorldGrid() const { return WorldGrid; }
 private:
     ACamera* Camera = nullptr;
     AActor* SelectedActor = nullptr;
     AEditorGizmos* GizmoHandle = nullptr;
     ABoundingBoxActor* AABB = nullptr;
     AEditorGizmos* ControlGizmo = nullptr;
+    AWorldGrid* WorldGrid = nullptr;
 };

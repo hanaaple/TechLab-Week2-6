@@ -45,3 +45,8 @@ void FEditorManager::SetCamera(ACamera* NewCamera)
 {
     Camera = NewCamera;
 }
+
+void FEditorManager::SetWorldGrid(AWorldGrid* grid)
+{
+    WorldGrid = grid;
+}

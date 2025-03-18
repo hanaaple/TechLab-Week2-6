@@ -336,12 +336,17 @@ void UI::RenderSettingsPanel()
     //Grid Spacing UI (양쪽 컬럼을 합쳐 넓게 표시)
     ImGui::Columns(1); // 컬럼 분할 해제 → 전체 너비 사용
 
-    static float GridSpacing = 10.0f; //임시 변수 (나중에 실제 값으로 변경 필요)
+    static float GridSpacing = 0.2f; //임시 변수 (나중에 실제 값으로 변경 필요)
 
     ImGui::Text("Grid Spacing");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(-1);
-    ImGui::SliderFloat("##GridSpacing", &GridSpacing, 1.0f, 100.0f, "%.1f");
+    ImGui::SliderFloat("##GridSpacing", &GridSpacing, 0.1f, 10.0f, "%.2f");
+
+    if (FEditorManager::Get().GetWorldGrid()->GetSpacing() != GridSpacing) {
+        FEditorManager::Get().GetWorldGrid()->SetSpacing(GridSpacing);
+        FEditorManager::Get().GetWorldGrid()->UpdateGrid();
+    }
 
     ImGui::End();
 }
