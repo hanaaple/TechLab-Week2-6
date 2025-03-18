@@ -401,6 +401,9 @@
     <ClInclude Include="Source\Object\World\World.h" />
     <ClInclude Include="Source\Object\Actor\Sphere.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Shaders\DefaultShader.hlsl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

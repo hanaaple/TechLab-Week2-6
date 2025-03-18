@@ -53,7 +53,8 @@ void URenderer::CreateShader()
          *     - 버퍼의 크기(바이트 갯수)를 돌려준다
          */
     // UShaderManager를 통해 셰이더 로드
-    UShaderManager::Get().LoadShader(Device, FName("DefaultShader"), L"Shaders/ShaderW0.hlsl", "mainVS", "mainPS");
+    //UShaderManager::Get().LoadShader(Device, FName("DefaultShader"), L"Shaders/DefaultShader.hlsl", "mainVS", "mainPS");
+    UShaderManager::Get().LoadShader(Device, L"Shaders/DefaultShader.hlsl");
     UShaderManager::Get().LoadShader(Device, FName("PickingShader"), L"Shaders/ShaderW0.hlsl", "mainVS", "PickingPS");
 
     UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
@@ -272,7 +273,7 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
 
 
     // TODO CurrentTexture null 여부에 따라 Constant Buffer에 넘겨주기
-    
+    //일단 bUseUV는 안 넘어가는 중
     ConstantUpdateInfo UpdateInfo{
         PrimitiveComp->GetComponentTransform(),
         PrimitiveComp->GetCustomColor(),
@@ -420,16 +421,11 @@ void URenderer::UpdateConstantPrimitive(const ConstantUpdateInfo& UpdateInfo) co
         std::cerr << "Failed to retrieve DefaultShader." << std::endl;
         return;
     }
-
-    // MVP 행렬 설정
-    DefaultShader->VertexConstants.MVP = FMatrix::Transpose(UpdateInfo.Transform.GetMatrix() * ViewMatrix * ProjectionMatrix);
-    
-    // Pixel Color 정보 설정
-    DefaultShader->VertexConstants.Color = UpdateInfo.Color;
-    DefaultShader->VertexConstants.bUseVertexColor = UpdateInfo.bUseVertexColor ? 1 : 0;
-    // 상수 버퍼 업데이트
-    DefaultShader->UpdateVertexConstantBuffer(DeviceContext);
-    DefaultShader->UpdatePixelConstantBuffer(DeviceContext);
+    FMatrix MVP = FMatrix::Transpose(UpdateInfo.Transform.GetMatrix() * ViewMatrix * ProjectionMatrix);
+    DefaultShader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+    struct PSConstants { FVector4 Color; uint32 bUseVertexColor; };
+    PSConstants PSData = { UpdateInfo.Color, UpdateInfo.bUseVertexColor };
+    DefaultShader->UpdateConstantBuffer(DeviceContext, 1, &PSData, sizeof(PSData));
 }
 
 
@@ -442,9 +438,9 @@ void URenderer::UpdateConstantBatch(const FBatchRenderContext& BatchRenderContex
         std::cerr << "Failed to retrieve DefaultShader." << std::endl;
         return;
     }
-    
-    DefaultShader->VertexConstants.MVP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);
-    DefaultShader->UpdateVertexConstantBuffer(DeviceContext);
+    DefaultShader->UpdateConstantBuffer(DeviceContext, 0, &BatchRenderContext, sizeof(BatchRenderContext));
+    //DefaultShader->VertexConstants.MVP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);
+    //DefaultShader->UpdateVertexConstantBuffer(DeviceContext);
 }
 
 

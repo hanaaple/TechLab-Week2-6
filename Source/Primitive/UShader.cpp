@@ -1,4 +1,6 @@
 #include "UShader.h"
+
+#include <fstream>
 #include <iostream>
 
 UShader::~UShader()
@@ -11,8 +13,13 @@ bool UShader::LoadShader(ID3D11Device* Device, const wchar_t* FileName, const FS
     ID3DBlob* VertexShaderBlob = nullptr;
     ID3DBlob* PixelShaderBlob = nullptr;
     ID3DBlob* ErrorMsg = nullptr;
-
-    if (FAILED(D3DCompileFromFile(FileName, nullptr, nullptr, *VertexEntry, "vs_5_0", 0, 0, &VertexShaderBlob, &ErrorMsg)))
+    std::ifstream ShaderFile(FileName);
+    if (!ShaderFile.good())
+    {
+        std::cerr << "Error: Shader file not found: "  << std::endl;
+        return false;
+    }
+    if (FAILED(D3DCompileFromFile(FileName, nullptr, nullptr, *VertexEntry, "vs_5_0", 0, 0, &VertexShaderBlob, &ErrorMsg))) 
     {
         std::cerr << "Vertex Shader Compilation Failed" << std::endl;
         if (ErrorMsg) ErrorMsg->Release();
@@ -35,83 +42,78 @@ bool UShader::LoadShader(ID3D11Device* Device, const wchar_t* FileName, const FS
         PixelShaderBlob->Release();
         return false;
     }
-    // 입력 레이아웃 정의 및 생성
+    // 기본적인 Input Layout 생성
     D3D11_INPUT_ELEMENT_DESC Layout[] =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
     };
-
-    if (FAILED(Device->CreateInputLayout(Layout, ARRAYSIZE(Layout), VertexShaderBlob->GetBufferPointer(), VertexShaderBlob->GetBufferSize(), &InputLayout)))
-    {
-        std::cerr << "Failed to create input layout." << std::endl;
-        VertexShaderBlob->Release();
-        PixelShaderBlob->Release();
-        return false;
-    }
-    
-    D3D11_BUFFER_DESC ConstantVertexBufferDesc = {};
-    ConstantVertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;                        // 매 프레임 CPU에서 업데이트 하기 위해
-    ConstantVertexBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;             // 상수 버퍼로 설정
-    ConstantVertexBufferDesc.ByteWidth = sizeof(VertexConstants) + 0xf & 0xfffffff0;  // 16byte의 배수로 올림
-    ConstantVertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;            // CPU에서 쓰기 접근이 가능하게 설정
-
-    Device->CreateBuffer(&ConstantVertexBufferDesc, nullptr, &VertexConstantBuffer);
-
-    D3D11_BUFFER_DESC ConstantPixelBufferDesc = {};
-    ConstantPixelBufferDesc.Usage = D3D11_USAGE_DYNAMIC;                        // 매 프레임 CPU에서 업데이트 하기 위해
-    ConstantPixelBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;             // 상수 버퍼로 설정
-    ConstantPixelBufferDesc.ByteWidth = sizeof(PixelConstants) + 0xf & 0xfffffff0;  // 16byte의 배수로 올림
-    ConstantPixelBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;            // CPU에서 쓰기 접근이 가능하게 설정
-
-    Device->CreateBuffer(&ConstantPixelBufferDesc, nullptr, &PixelConstantBuffer);
-    
+    CreateInputLayout(Device, Layout, ARRAYSIZE(Layout), VertexShaderBlob);
     VertexShaderBlob->Release();
     PixelShaderBlob->Release();
     return true;
 }
-
+void UShader::CreateInputLayout(ID3D11Device* Device, const D3D11_INPUT_ELEMENT_DESC* LayoutDesc, UINT NumElements, ID3DBlob* VertexShaderBlob)
+{
+    if (InputLayout) InputLayout->Release();
+    Device->CreateInputLayout(LayoutDesc, NumElements, VertexShaderBlob->GetBufferPointer(), VertexShaderBlob->GetBufferSize(), &InputLayout);
+}
 void UShader::Apply(ID3D11DeviceContext* DeviceContext) const
 {
     DeviceContext->VSSetShader(VertexShader, nullptr, 0);
     DeviceContext->PSSetShader(PixelShader, nullptr, 0);
-    
-    if (VertexConstantBuffer)
-        DeviceContext->VSSetConstantBuffers(0, 1, &VertexConstantBuffer);
-    
-    if (PixelConstantBuffer)
-        DeviceContext->PSSetConstantBuffers(0, 1, &PixelConstantBuffer);
     DeviceContext->IASetInputLayout(GetInputLayout());
-
+    // InputLayout이 존재할 경우에만 적용
+    if (InputLayout)
+        DeviceContext->IASetInputLayout(InputLayout);
+    
+    for (const auto& Buffer : ConstantBuffers)
+    {
+        DeviceContext->VSSetConstantBuffers(Buffer.first, 1, &Buffer.second);
+        DeviceContext->PSSetConstantBuffers(Buffer.first, 1, &Buffer.second);
+    }
 }
 
-void UShader::UpdateVertexConstantBuffer(ID3D11DeviceContext* DeviceContext)
+void UShader::UpdateConstantBuffer(ID3D11DeviceContext* DeviceContext, uint32 BufferSlot, const void* Data, size_t DataSize)
 {
-    D3D11_MAPPED_SUBRESOURCE MappedResource;
-    if (SUCCEEDED(DeviceContext->Map(VertexConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource)))
-    {
-        memcpy(MappedResource.pData, &VertexConstants, sizeof(FVertexConstants));
-        DeviceContext->Unmap(VertexConstantBuffer, 0);
+    if (ConstantBuffers.find(BufferSlot) == ConstantBuffers.end()){
+        ID3D11Device* Device;
+        DeviceContext->GetDevice(&Device);
+        CreateConstantBuffer(Device, BufferSlot, DataSize);
     }
-    DeviceContext->VSSetConstantBuffers(0, 1, &VertexConstantBuffer);
-}
 
-void UShader::UpdatePixelConstantBuffer(ID3D11DeviceContext* DeviceContext)
-{
     D3D11_MAPPED_SUBRESOURCE MappedResource;
-    if (SUCCEEDED(DeviceContext->Map(PixelConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource)))
+    if (SUCCEEDED(DeviceContext->Map(ConstantBuffers[BufferSlot], 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource)))
     {
-        memcpy(MappedResource.pData, &PixelConstants, sizeof(FPixelConstants));
-        DeviceContext->Unmap(PixelConstantBuffer, 0);
+        memcpy(MappedResource.pData, Data, DataSize);
+        DeviceContext->Unmap(ConstantBuffers[BufferSlot], 0);
     }
-    DeviceContext->PSSetConstantBuffers(0, 1, &PixelConstantBuffer);
+}
+void UShader::CreateConstantBuffer(ID3D11Device* Device, uint32 BufferSlot, size_t BufferSize)
+{
+    D3D11_BUFFER_DESC BufferDesc = {};
+    BufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+    BufferDesc.ByteWidth = static_cast<UINT>((BufferSize + 0xf) & 0xfffffff0);
+    BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    
+    ID3D11Buffer* NewBuffer = nullptr;
+    if (SUCCEEDED(Device->CreateBuffer(&BufferDesc, nullptr, &NewBuffer)))
+    {
+        ConstantBuffers[BufferSlot] = NewBuffer;
+    }
 }
 
 void UShader::Release()
 {
     if (VertexShader) { VertexShader->Release(); VertexShader = nullptr; }
     if (PixelShader) { PixelShader->Release(); PixelShader = nullptr; }
-    if (VertexConstantBuffer) { VertexConstantBuffer->Release(); VertexConstantBuffer = nullptr; }
-    if (PixelConstantBuffer) { PixelConstantBuffer->Release(); PixelConstantBuffer = nullptr; }
+    if (InputLayout) { InputLayout->Release(); InputLayout = nullptr; }
+    
+    for (auto& Buffer : ConstantBuffers)
+    {
+        if (Buffer.second) { Buffer.second->Release(); }
+    }
+    ConstantBuffers.clear();
 }

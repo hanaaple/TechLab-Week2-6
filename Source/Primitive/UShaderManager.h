@@ -6,7 +6,7 @@
 class UShaderManager:public TSingleton<UShaderManager>
 {
 public:
-    
+    UShader* LoadShader(ID3D11Device* Device, const wchar_t* FileName);
     UShader* LoadShader(ID3D11Device* Device, const FName& Name, const wchar_t* FileName, const FString& VertexEntry, const FString& PixelEntry);
     UShader* GetShader(const FName& Name);
     void ReleaseAll();
