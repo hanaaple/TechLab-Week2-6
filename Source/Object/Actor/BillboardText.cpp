@@ -5,21 +5,22 @@ ABillboardText::ABillboardText()
 {
 	bCanEverTick = true;
 
-	UTextComp* TextComponent = AddComponent<UTextComp>();
-	RootComponent = TextComponent;
-	TextComponent->SetRelativeTransform(FTransform());
-
-	TextComponent->SetText("Hello World!");
 	
-	//FIXME : testcode
-	//text = "W";
-	UTextureLoader::Get().DrawText("");
-	//UTextureLoader::Get().DrawTextW(text); 
 }
 
 void ABillboardText::BeginPlay()
 {
 	Super::BeginPlay();
+	UTextComp* TextComponent = AddComponent<UTextComp>();
+	RootComponent = TextComponent;
+	TextComponent->SetRelativeTransform(FTransform());
+
+	TextComponent->SetText("Hello World!");
+	TextComponent->SetText("Bye World!");
+	//FIXME : testcode
+	//text = "W";
+	UTextureLoader::Get().DrawText("");
+	//UTextureLoader::Get().DrawTextW(text); 
 }
 
 void ABillboardText::Tick(float DeltaTime)
