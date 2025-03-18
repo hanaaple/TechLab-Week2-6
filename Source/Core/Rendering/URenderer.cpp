@@ -22,6 +22,8 @@ void URenderer::Create(HWND hWindow)
     CreatePickingTexture(hWindow);
     
     InitMatrix();
+
+    UShaderManager::Get().Initialize(*this);
     //UShaderManager::Get().LoadShader(Device, FName("DefaultShader"), L"Shaders/ShaderW0.hlsl", "mainVS", "mainPS");
 
 }
@@ -161,6 +163,7 @@ void URenderer::PrepareShader() const
 
 void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
 {
+    /*
     if (BufferCache == nullptr)
     {
         return;
@@ -192,6 +195,23 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
 
     UpdateConstantPrimitive(UpdateInfo);
     
+    RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
+    */
+    if (BufferCache == nullptr)
+    {
+        return;
+    }
+
+    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(PrimitiveComp->GetMeshType());
+    
+    if (VertexBufferInfo.GetBuffer() == nullptr)
+    {
+        return;
+    }
+
+    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(PrimitiveComp->GetMeshType());
+
+    UpdateTopology(PrimitiveComp->GetTopology());
     RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
 }
 

@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "Object/PrimitiveComponent/UPrimitiveComponent.h"
+
 UShader::~UShader()
 {
     Release();
@@ -74,7 +76,13 @@ void UShader::Apply(ID3D11DeviceContext* DeviceContext) const
         DeviceContext->PSSetConstantBuffers(Buffer.first, 1, &Buffer.second);
     }
 }
-
+void UShader::UpdateConstantBuffer(UPrimitiveComponent* PrimitiveComp)
+{
+    if (UpdateConstantBufferFunction)
+    {
+        UpdateConstantBufferFunction(PrimitiveComp);
+    }
+}
 void UShader::UpdateConstantBuffer(ID3D11DeviceContext* DeviceContext, uint32 BufferSlot, const void* Data, size_t DataSize)
 {
     if (ConstantBuffers.find(BufferSlot) == ConstantBuffers.end()){
