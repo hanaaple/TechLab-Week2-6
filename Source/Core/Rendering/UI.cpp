@@ -264,7 +264,9 @@ void UI::RenderCameraSettings()
         Transform.SetRotation(UIEulerAngle);
         Camera->SetActorTransform(Transform);
     }
-    ImGui::DragFloat("Camera Speed", &Camera->CameraSpeed, 0.1f);
+    if(ImGui::DragFloat("Camera Speed", &Camera->CameraSpeed, 0.1f)) {
+        SettingManager::Get().SaveCamSensitivty(Camera->CameraSpeed);
+    }
 
     FVector Forward = Camera->GetActorTransform().GetForward();
     FVector Up = Camera->GetActorTransform().GetUp();
@@ -336,11 +338,14 @@ void UI::RenderSettingsPanel()
     //Grid Spacing UI (양쪽 컬럼을 합쳐 넓게 표시)
     ImGui::Columns(1); // 컬럼 분할 해제 → 전체 너비 사용
 
-    static float GridSpacing = 0.2f; //임시 변수 (나중에 실제 값으로 변경 필요)
+    static float GridSpacing = SettingManager::Get().LoadGridSpacing(); // 임시 변수
 
     ImGui::Text("Grid Spacing");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(-1);
+    if (ImGui::SliderFloat("##GridSpacing", &GridSpacing, 1.0f, 100.0f, "%.1f")) {
+        SettingManager::Get().SaveGridSpacing(GridSpacing);
+    }
     ImGui::SliderFloat("##GridSpacing", &GridSpacing, 0.1f, 50.0f, "%.2f");
 
     if (FEditorManager::Get().GetWorldGrid()->GetSpacing() != GridSpacing) {
