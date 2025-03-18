@@ -12,16 +12,14 @@ struct alignas(16) FMatrix
 	FMatrix(const FVector4& InX, const FVector4& InY, const FVector4& InZ, const FVector4& InW);
 
 	static FMatrix Identity();
-	static FMatrix Transpose(const FMatrix& Matrix);
 	static FMatrix GetTranslateMatrix(float X, float Y, float Z);
 	static FMatrix GetTranslateMatrix(FVector Translation);
 	static FMatrix GetScaleMatrix(float X, float Y, float Z);
 	static FMatrix GetScaleMatrix(const FVector& InScale);
-	static FMatrix GetRotateMatrix(const FVector& InEulerAngle);
-	static FMatrix GetRotateMatrix(const FQuat& Q);
-	static FMatrix LookAtLH(const FVector& EyePosition, const FVector& FocusPoint, const FVector& WorldUp);
+	//static FMatrix GetRotationMatrix(const FVector& InEulerAngle);
+	static FMatrix GetRotationMatrix(const FQuat& Q);
+	static FMatrix LookAtLH(const FVector& EyePosition, const FVector& FocusPoint, const FVector& Up);
 	static FMatrix PerspectiveFovLH(float FieldOfView, float AspectRatio, float NearPlane, float FarPlane);
-	FMatrix Orthographic(float Left, float Right, float Bottom, float Top, float NearZ, float FarZ);
 	FMatrix OrthoForLH(float ViewWidth, float VeiwHeight, float NearPlane, float FarPlane);
 	
 	FMatrix operator+(const FMatrix& Other) const;
@@ -38,11 +36,13 @@ struct alignas(16) FMatrix
 	FMatrix GetTransposed() const;
 	float Determinant() const;
 	FMatrix Inverse() const;
+	FMatrix Transpose() const;
+	
 
 	FVector GetTranslation() const;
 	FVector GetScale() const;
 	FVector GetEulerRotation() const;
-	static FMatrix GetVisualRotationMatrix(const FQuat& Q);
+	FQuat GetQuaterion() const;
 	//FQuat GetRotation() const;
 
 	//FVector4 TransformVector4(const FVector4& Vector) const;

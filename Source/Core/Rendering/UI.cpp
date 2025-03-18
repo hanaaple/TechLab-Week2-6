@@ -354,26 +354,47 @@ void UI::RenderPropertyWindow()
     if (selectedActor != nullptr)
     {
         FTransform selectedTransform = selectedActor->GetActorTransform();
-        AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
-        float xAxis[] = {
-            gizmo->GetXAxis().X,
-            gizmo->GetXAxis().Y,
-            gizmo->GetXAxis().Z
-        };
-        float yAxis[] = {
-            gizmo->GetYAxis().X,
-            gizmo->GetYAxis().Y,
-            gizmo->GetYAxis().Z
-        };
-        float zAxis[] = {
-            gizmo->GetZAxis().X,
-            gizmo->GetZAxis().Y,
-            gizmo->GetZAxis().Z
-        };
+        {
+            AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
+            float xAxis[] = {
+                selectedTransform.GetForward().X,
+                selectedTransform.GetForward().Y,
+                selectedTransform.GetForward().Z
+            };
+            float yAxis[] = {
+                selectedTransform.GetRight().X,
+                selectedTransform.GetRight().Y,
+                selectedTransform.GetRight().Z
+            };
+            float zAxis[] = {
+                selectedTransform.GetUp().X,
+                selectedTransform.GetUp().Y,
+                selectedTransform.GetUp().Z
+            };
 
-        ImGui::InputFloat3("x axis", xAxis, "%.3f");
-        ImGui::InputFloat3("y axis", yAxis, "%.3f");
-        ImGui::InputFloat3("z axis", zAxis, "%.3f");
+            ImGui::InputFloat3("x axis", xAxis, "%.3f");
+            ImGui::InputFloat3("y axis", yAxis, "%.3f");
+            ImGui::InputFloat3("z axis", zAxis, "%.3f");
+        }
+
+
+        {
+            FVector UIEulerAngle = FVector();
+            if (ImGui::DragFloat3("Axis Rotation", reinterpret_cast<float*>(&UIEulerAngle), 4.f))
+            {
+                FVector Delta = UIEulerAngle;
+                UE_LOG("%f, %f, %f", Delta.X, Delta.Y, Delta.Z);
+                selectedTransform.RotateByAxis(selectedActor->GetActorTransform().GetForward(), Delta.X);
+                selectedTransform.RotateByAxis(selectedActor->GetActorTransform().GetRight(), Delta.Y);
+                selectedTransform.RotateByAxis(selectedActor->GetActorTransform().GetUp(), Delta.Z);
+                selectedActor->SetActorTransform(selectedTransform);
+            }
+        }
+
+
+
+
+        
         // 선택된 오브젝트의 이름을 표시하고 변경 가능하도록 함
         uint32 bufferSize = 100;
         char SceneNameInput[100];

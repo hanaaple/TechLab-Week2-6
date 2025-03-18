@@ -31,10 +31,6 @@ AAxis::AAxis()
 
 	LineY->SetupAttachment(RootComponent);
 	LineZ->SetupAttachment(RootComponent);
-	
-	LineX->SetDepth(1000);
-	LineY->SetDepth(1000);
-	LineZ->SetDepth(1000);
 } 
 
 void AAxis::BeginPlay()

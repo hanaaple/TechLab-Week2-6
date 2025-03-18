@@ -19,6 +19,10 @@ void AAABBPicker::LateTick(float DeltaTime)
 	AActor::LateTick(DeltaTime);
 
 	if (APlayerInput::Get().GetMouseDown(false)) {
+
+		AActor* selectedActor = FEditorManager::Get().GetSelectedActor();
+		AEditorGizmos* GizmoHandle = FEditorManager::Get().GetGizmoHandle();
+		// Actor Picking
 		FVector mousePos = APlayerInput::Get().GetMouseDownNDCPos(false);
 		ACamera* camera = FEditorManager::Get().GetCamera();
 		FVector rayOrigin = camera->GetActorTransform().GetPosition();
@@ -32,7 +36,7 @@ void AAABBPicker::LateTick(float DeltaTime)
 			return;
 		}
 		if (pickedActor->IsGizmoActor() == false) {
-			if (pickedActor == FEditorManager::Get().GetSelectedActor())
+			if (pickedActor == selectedActor)
 			{
 				return;
 			}
@@ -42,24 +46,22 @@ void AAABBPicker::LateTick(float DeltaTime)
 				UE_LOG("Pick - UUID: %d", pickedActor->GetUUID());
 			}
 		}
-	}
-	if (APlayerInput::Get().IsPressedMouse(false)) {
-		if (FEditorManager::Get().GetGizmoHandle()->GetSelectedAxis() == ESelectedAxis::None) {
-			FVector mousePos = APlayerInput::Get().GetMouseDownNDCPos(false);
-			ACamera* camera = FEditorManager::Get().GetCamera();
-			FVector rayOrigin = camera->GetActorTransform().GetPosition();
-			FVector rayDir = RayCast(mousePos, camera);
-			UCylinderComp* pickedAxis = CheckGizmo(rayOrigin, rayDir);
-			if (pickedAxis != nullptr) {
-				if (FEditorManager::Get().GetGizmoHandle() != nullptr && FEditorManager::Get().GetSelectedActor() != nullptr) {
-					AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
-					gizmo->SetPrevMousePos(clickedPosition);
-					FTransform AT = FEditorManager::Get().GetSelectedActor()->GetActorTransform();
-					gizmo->SetActorXAxis(FVector4(AT.GetVisualForward().X, AT.GetVisualForward().Y, AT.GetVisualForward().Z, 1.0f));
-					gizmo->SetActorYAxis(FVector4(AT.GetVisualRight().X, AT.GetVisualRight().Y, AT.GetVisualRight().Z, 1.0f));
-					gizmo->SetActorZAxis(FVector4(AT.GetVisualUp().X, AT.GetVisualUp().Y, AT.GetVisualUp().Z, 1.0f));
+		
+		// Gizmos Picking
+		selectedActor = FEditorManager::Get().GetSelectedActor();
+		if (GizmoHandle != nullptr && selectedActor != nullptr)
+		{
+			if (GizmoHandle->GetSelectedAxis() == ESelectedAxis::None)
+			{
+				UCylinderComp* pickedAxis = CheckGizmo(rayOrigin, rayDir);
+				if (pickedAxis != nullptr) {
+					FTransform AT = selectedActor->GetActorTransform();
+					GizmoHandle->SetPrevMousePos(clickedPosition);
+					//GizmoHandle->SetActorXAxis(FVector4(AT.GetVisualForward().X, AT.GetVisualForward().Y, AT.GetVisualForward().Z, 1.0f));
+					//GizmoHandle->SetActorYAxis(FVector4(AT.GetVisaaualRight().X, AT.GetVisualRight().Y, AT.GetVisualRight().Z, 1.0f));
+					//GizmoHandle->SetActorZAxis(FVector4(AT.GetVisualUp().X, AT.GetVisualUp().Y, AT.GetVisualUp().Z, 1.0f));
+					ESelectedAxis selectedAxis = GizmoHandle->IsAxis(pickedAxis);
 				}
-				ESelectedAxis selectedAxis = FEditorManager::Get().GetGizmoHandle()->IsAxis(pickedAxis);
 			}
 		}
 	}

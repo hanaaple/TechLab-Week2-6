@@ -27,21 +27,24 @@ public:
 
 public:
 	virtual void Tick(float DeltaTime) override;
+
+	ESelectedAxis IsAxis(UCylinderComp* axis);
+	
 	void SetScaleByDistance();
-	void SetActorVisibility(bool bNewActive);
+	void SetActorVisibility(bool bNewActive) { 	if (RootComponent != nullptr) RootComponent->SetVisibility(bNewActive); }
 	void SetSelectedAxis(ESelectedAxis NewAxis) { SelectedAxis = NewAxis; }
 	TArray<UCylinderComp*> GetAxis() { return axisComponents; }
-	ESelectedAxis IsAxis(UCylinderComp* axis);
 	ESelectedAxis GetSelectedAxis() const { return SelectedAxis; }
 	EGizmoType GetGizmoType() const { return GizmoType; }
-	void SetPrevMousePos(FVector4 mouse);
-	void SetActorXAxis(FVector4 axis);
-	void SetActorYAxis(FVector4 axis);
-	void SetActorZAxis(FVector4 axis);
 
-	FVector4 GetXAxis() { return actorXAxis; }
-	FVector4 GetYAxis() { return actorYAxis; }
-	FVector4 GetZAxis() { return actorZAxis; }
+	void SetPrevMousePos(FVector mouse) { prevMousePos = mouse; }
+	void SetActorXAxis(FVector axis) { actorXAxis = axis; }
+	void SetActorYAxis(FVector axis) { actorYAxis = axis; }
+	void SetActorZAxis(FVector axis) { actorZAxis = axis; }
+
+    FVector GetXAxis() const { return actorXAxis; }
+	FVector GetYAxis() const { return actorYAxis; }
+	FVector GetZAxis() const { return actorZAxis; }
 private:
 	ESelectedAxis SelectedAxis = ESelectedAxis::None;
 	EGizmoType GizmoType = EGizmoType::Translate;
@@ -49,10 +52,10 @@ private:
 	virtual const char* GetTypeName() override;
 
 private:
-	FVector4 actorXAxis;
-	FVector4 actorYAxis;
-	FVector4 actorZAxis;
-	FVector4 prevMousePos;
+	FVector actorXAxis;
+	FVector actorYAxis;
+	FVector actorZAxis;
+	FVector prevMousePos;
 	void DoTransform(FTransform& AT, float Result, AActor* Actor);
 };
 

@@ -27,12 +27,12 @@ public:
 	{
 	}
 
-	// FTransform(FVector InPosition, FQuat InQuat, FVector InScale)
-	// 	: Position(InPosition)
-	// 	, Rotation(InQuat)
-	// 	, Scale(InScale)
-	// {
-	// }
+	FTransform(FVector InPosition, FQuat InQuat, FVector InScale)
+		: Position(InPosition)
+		, Rotation(InQuat.GetEuler())
+		, Scale(InScale)
+	{
+	}
 
 	FTransform(const FMatrix& matrix)
 	{
@@ -58,7 +58,7 @@ public:
 	{
 		Rotation = InRotation;
 	}
-	//
+
 	// inline virtual void SetRotation(const FQuat& InRotation)
 	// {
 	// 	Rotation = InRotation;
@@ -107,20 +107,20 @@ public:
 	{
 		// 순서 맞음.
 		return FMatrix::GetScaleMatrix(Scale.X, Scale.Y, Scale.Z)
-			* FMatrix::GetRotateMatrix(FQuat(Rotation))
-			* FMatrix::GetTranslateMatrix(Position.X, Position.Y, Position.Z);
+			* FMatrix::GetRotationMatrix(FQuat(Rotation))
+			* FMatrix::GetTranslateMatrix(Position);
 	}
-
+	
 	FVector GetForward() const
 	{
 		// 쿼터니언을 회전 행렬로 변환
-		FMatrix RotationMatrix = FMatrix::GetRotateMatrix(FQuat(Rotation));
+		FMatrix RotationMatrix = FMatrix::GetRotationMatrix(FQuat(Rotation));
 
 		// 회전 행렬의 첫 번째 열이 Forward 벡터를 나타냄
 		FVector Forward = FVector(
 			RotationMatrix.M[0][0],
-			RotationMatrix.M[1][0],
-			RotationMatrix.M[2][0]
+			RotationMatrix.M[0][1],
+			RotationMatrix.M[0][2]
 		);
 
 		return Forward.GetSafeNormal();
@@ -130,55 +130,30 @@ public:
 	{
 		//return FVector::CrossProduct(FVector(0, 0, 1), GetForward()).GetSafeNormal();
 		// 쿼터니언을 회전 행렬로 변환
-		FMatrix RotationMatrix = FMatrix::GetRotateMatrix(FQuat(Rotation));
+		FMatrix RotationMatrix = FMatrix::GetRotationMatrix(FQuat(Rotation));
 
 		// 회전 행렬의 두 번째 열이 Right 벡터를 나타냄
 		FVector Forward = FVector(
-			RotationMatrix.M[0][1],
+			RotationMatrix.M[1][0],
 			RotationMatrix.M[1][1],
-			RotationMatrix.M[2][1]
+			RotationMatrix.M[1][2]
 		);
 		return Forward.GetSafeNormal();
 	}
 
 	FVector GetUp() const{
-		return FVector::CrossProduct(GetForward(), GetRight()).GetSafeNormal();
+		//return FVector::CrossProduct(GetForward(), GetRight()).GetSafeNormal();
 
-	}
-
-	FVector GetVisualForward() const
-	{
-		// 쿼터니언을 회전 행렬로 변환
-		FMatrix RotationMatrix = FMatrix::GetVisualRotationMatrix(FQuat(Rotation));
-
-		// 회전 행렬의 첫 번째 열이 Forward 벡터를 나타냄
-		FVector Forward = FVector(
-			RotationMatrix.M[0][0],
-			RotationMatrix.M[1][0],
-			RotationMatrix.M[2][0]
-		);
-
-		return Forward.GetSafeNormal();
-	}
-
-	FVector GetVisualRight() const
-	{
-		//return FVector::CrossProduct(FVector(0, 0, 1), GetForward()).GetSafeNormal();
-		// 쿼터니언을 회전 행렬로 변환
-		FMatrix RotationMatrix = FMatrix::GetVisualRotationMatrix(FQuat(Rotation));
+		
+		FMatrix RotationMatrix = FMatrix::GetRotationMatrix(FQuat(Rotation));
 
 		// 회전 행렬의 두 번째 열이 Right 벡터를 나타냄
-		FVector Forward = FVector(
-			RotationMatrix.M[0][1],
-			RotationMatrix.M[1][1],
-			RotationMatrix.M[2][1]
+		FVector Up = FVector(
+			RotationMatrix.M[2][0],
+			RotationMatrix.M[2][1],
+			RotationMatrix.M[2][2]
 		);
-		return Forward.GetSafeNormal();
-	}
-
-	FVector GetVisualUp() const {
-		return FVector::CrossProduct(GetVisualForward(), GetVisualRight()).GetSafeNormal();
-
+		return Up.GetSafeNormal();
 	}
 
 	void Translate(const FVector& InTranslation)
@@ -205,6 +180,41 @@ public:
 	void RotateRoll(float Angle)
 	{
 		Rotation.X += Angle;
+	}
+
+	void RotateByAxis(const FVector& Axis, float AngleDegrees)
+	{
+		//Rotate(-Axis);
+		
+		float rad = FMath::DegreesToRadians(AngleDegrees);
+		FQuat AxisQuat = FQuat(Axis, rad);
+		FMatrix rotaitonMatrix = FMatrix::GetRotationMatrix(FQuat(Rotation));
+		FMatrix AxisMatrix = FMatrix::GetRotationMatrix(AxisQuat);
+		// //Rotation = FQuat::MultiplyQuaternions(AxisQuat, FQuat(Rotation)).GetEuler();
+		Rotation = (AxisMatrix * rotaitonMatrix).GetEulerRotation();
+		
+		// // 현재 Transform의 회전 값을 Quaternion으로 변환
+		// FQuat CurrentRotation = FQuat(Rotation);
+		//
+		// // 축을 기준으로 회전할 Quaternion 생성
+		// FQuat RotationDelta = FQuat(Axis, FMath::DegreesToRadians(AngleDegrees));
+		//
+		// // 최종 회전 적용
+		// FQuat NewRotation = FQuat::MultiplyQuaternions(RotationDelta, CurrentRotation);
+		// Rotation = NewRotation.GetEuler();
+
+		// FMatrix I = FMatrix::Identity();
+		// FMatrix v_cross = {
+		// 	{0, -Axis.Z,  Axis.Y, 0},
+		// 	{Axis.Z, 0, -Axis.X, 0},
+		// 	{-Axis.Y, Axis.X, 0, 0},
+		// 	{0, 0, 0, 1}
+		// 	};
+		// v_cross = FMatrix::Transpose(v_cross);
+		//
+		// FMatrix R = I + v_cross * sin(theta) + (v_cross * v_cross) * (1 - cos(theta));
+		//
+		// point * R;
 	}
 
 	FTransform operator*(const FTransform& OtherMatrix) const

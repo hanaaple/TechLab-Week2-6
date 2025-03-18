@@ -39,7 +39,7 @@ struct alignas(16) FQuat : public FVector4{
     static FQuat MultiplyQuaternions(const FQuat& q1, const FQuat& q2);
     static FQuat SubtractQuaternions(const FQuat& q1, const FQuat& q2);
 
-    static FQuat MakeFromRotationMatrix(const struct FMatrix& M);
+    static FQuat MakeFromRotationMatrix(const struct FMatrix& matrix);
     FVector GetEuler() const { return QuaternionToEuler(*this); }
     FQuat Inverse() const;
     float MagnitudeSquared() const;

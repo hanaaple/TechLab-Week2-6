@@ -376,7 +376,7 @@ void URenderer::UpdateConstantPrimitive(const ConstantUpdateInfo& UpdateInfo) co
     D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR;
 
     // 상수 버퍼를 CPU 메모리에 매핑
-    FMatrix MVP = FMatrix::Transpose(UpdateInfo.Transform.GetMatrix() * ViewMatrix * ProjectionMatrix);
+    FMatrix MVP = (UpdateInfo.Transform.GetMatrix() * ViewMatrix * ProjectionMatrix).Transpose();
 
     // D3D11_MAP_WRITE_DISCARD는 이전 내용을 무시하고 새로운 데이터로 덮어쓰기 위해 사용
     DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
@@ -398,7 +398,7 @@ void URenderer::UpdateConstantBatch(const FBatchRenderContext& BatchRenderContex
     D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR;
     
     // 상수 버퍼를 CPU 메모리에 매핑
-    FMatrix VP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);
+    FMatrix VP = (ViewMatrix * ProjectionMatrix).Transpose();
 
     // D3D11_MAP_WRITE_DISCARD는 이전 내용을 무시하고 새로운 데이터로 덮어쓰기 위해 사용
     DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
@@ -910,9 +910,10 @@ void URenderer::UpdateProjectionMatrix(ACamera* Camera)
     {
         ProjectionMatrix = FMatrix::PerspectiveFovLH(FOV, AspectRatio, Near, Far);
     }
-    else if (Camera->ProjectionMode == ECameraProjectionMode::Perspective)
+    else if (Camera->ProjectionMode == ECameraProjectionMode::Orthographic)
     {
         ProjectionMatrix = FMatrix::PerspectiveFovLH(FOV, AspectRatio, Near, Far);
+        //ProjectionMatrix = FMatrix::OrthoForLH(, Near, Far);
 
         // TODO: 추가 필요.
         // ProjectionMatrix = FMatrix::OrthoForLH(FOV, AspectRatio, Near, Far);
