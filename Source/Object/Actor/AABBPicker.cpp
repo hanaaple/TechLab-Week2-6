@@ -18,29 +18,34 @@ void AAABBPicker::LateTick(float DeltaTime)
 {
 	AActor::LateTick(DeltaTime);
 
-	if (APlayerInput::Get().GetMouseDown(false)) {
+	if (APlayerInput::Get().GetMouseDown(false))
+	{
 		FVector mousePos = APlayerInput::Get().GetMouseDownNDCPos(false);
 		ACamera* camera = FEditorManager::Get().GetCamera();
 		FVector rayOrigin = camera->GetActorTransform().GetPosition();
 		FVector rayDir = RayCast(mousePos, camera);
+
+		//기즈모가 잡혔으면 다른 Actor를 선택하지 않음
+		if (CheckGizmo(rayOrigin, rayDir) != nullptr)
+		{
+			return; // 기즈모가 선택된 경우, 다른 Actor를 선택하지 않음
+		}
+
+		//기즈모가 선택되지 않은 경우, Actor 피킹 진행
 		AActor* pickedActor = CheckCollision(rayOrigin, rayDir);
-		if (pickedActor == nullptr) { 
-			if(CheckGizmo(rayOrigin, rayDir) == nullptr)
-			{
-				FEditorManager::Get().SelectActor(nullptr);
-			}
+
+		//피킹된 Actor가 없으면 선택 해제
+		if (pickedActor == nullptr)
+		{
+			FEditorManager::Get().SelectActor(nullptr);
 			return;
 		}
-		if (pickedActor->IsGizmoActor() == false) {
-			if (pickedActor == FEditorManager::Get().GetSelectedActor())
-			{
-				return;
-			}
-			else
-			{
-				FEditorManager::Get().SelectActor(pickedActor);
-				UE_LOG("Pick - UUID: %d", pickedActor->GetUUID());
-			}
+
+		//선택된 Actor가 현재 선택된 Actor와 다르면 변경
+		if (!pickedActor->IsGizmoActor() && pickedActor != FEditorManager::Get().GetSelectedActor())
+		{
+			FEditorManager::Get().SelectActor(pickedActor);
+			UE_LOG("Pick - UUID: %d", pickedActor->GetUUID());
 		}
 	}
 	if (APlayerInput::Get().IsPressedMouse(false)) {
