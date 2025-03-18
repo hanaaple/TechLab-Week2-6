@@ -42,6 +42,7 @@ public:
     void ReleaseAll();
     ID3D11Device* Device;
     ID3D11DeviceContext* DeviceContext;
+    const URenderer* Renderer;
 
 private:
     TMap<int32, UShader*> ShaderMap;

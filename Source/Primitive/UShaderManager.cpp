@@ -10,6 +10,7 @@ void UShaderManager::Initialize(const URenderer& Renderer)
 {
     Device = Renderer.GetDevice();
     DeviceContext = Renderer.GetDeviceContext();
+    this->Renderer=&Renderer;
 }
 
 void UShaderManager::LoadAllShaders()
@@ -55,28 +56,10 @@ UShader* UShaderManager::LoadShader(ID3D11Device* Device, const FName& Name, con
     {
         UpdateConstantBufferFunction = [](UPrimitiveComponent* PrimitiveComp)
         {
-            ACamera* Camera = FEditorManager::Get().GetCamera();
             ID3D11DeviceContext* DeviceContext = UShaderManager::Get().DeviceContext;
-            FMatrix ViewMatrix = Camera->GetViewMatrix();
-            FMatrix ProjectionMatrix;
-
-            //카메라의 프로젝션 타입 확인
-            float AspectRatio = UEngine::Get().GetScreenRatio();
-            float FOV = FMath::DegreesToRadians(Camera->GetFieldOfView());
-            float Near = Camera->GetNear();
-            float Far = Camera->GetFar();
-
-            if (Camera->ProjectionMode == ECameraProjectionMode::Perspective)
-            {
-                ProjectionMatrix = FMatrix::PerspectiveFovLH(FOV, AspectRatio, Near, Far);
-            }
-            else if (Camera->ProjectionMode == ECameraProjectionMode::Perspective)
-            {
-                ProjectionMatrix = FMatrix::PerspectiveFovLH(FOV, AspectRatio, Near, Far);
-
-                // TODO: 추가 필요.
-                // ProjectionMatrix = FMatrix::OrthoForLH(FOV, AspectRatio, Near, Far);
-            }
+            const URenderer *Renderer=UShaderManager::Get().Renderer;
+            FMatrix ViewMatrix = Renderer->GetViewMatrix();
+            FMatrix ProjectionMatrix=Renderer->GetProjectionMatrix();
 
             //MVP 행렬 계산
             FMatrix MVP = FMatrix::Transpose(
@@ -86,7 +69,6 @@ UShader* UShaderManager::LoadShader(ID3D11Device* Device, const FName& Name, con
             if (Shader)
             {
                 Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
-
                 struct PSConstants
                 {
                     FVector4 Color;
