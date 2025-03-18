@@ -339,10 +339,7 @@ void UI::RenderSettingsPanel()
     ImGui::Columns(1); // 컬럼 분할 해제 → 전체 너비 사용
 
     static float GridSpacing = SettingManager::Get().LoadGridSpacing(); // 임시 변수
-    if (FEditorManager::Get().GetWorldGrid()->GetSpacing() != GridSpacing) {
-        FEditorManager::Get().GetWorldGrid()->SetSpacing(GridSpacing);
-        FEditorManager::Get().GetWorldGrid()->UpdateGrid();
-    }
+    
     ImGui::Text("Grid Spacing");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(-1);

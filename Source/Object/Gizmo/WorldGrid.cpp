@@ -4,7 +4,7 @@
 AWorldGrid::AWorldGrid()
 {
 	bIsGizmo = true;
-	Spacing = 0.2f;
+	Spacing = SettingManager::Get().LoadGridSpacing();
 	ULineComp* line = AddComponent<ULineComp>();
 	//line->SetRenderMode(ERenderMode::Batch);
 	FTransform transform = line->GetRelativeTransform();
@@ -12,7 +12,8 @@ AWorldGrid::AWorldGrid()
 	line->SetRelativeTransform(transform);
 	line->SetCustomColor(FVector4(1.0f, 1.0f, 1.0f, 1.0f));
 	RootComponent = line;
-	for (int i = 0; i < (maxGridDistance / Spacing) * 2; i++) {
+	int q1 = (maxGridDistance / Spacing);
+	for (int i = 0; i < q1 * 2; i++) {
 		ULineComp* verticalLine = AddComponent<ULineComp>();
 		ULineComp* horizontalLine = AddComponent<ULineComp>();
 		VerticalGridLines.Add(verticalLine);
@@ -31,6 +32,7 @@ AWorldGrid::AWorldGrid()
 		horizontalLine->SetCustomColor(FVector4(1.0f, 1.0f, 1.0f, 1.0f));
 		HorizontalGridLines[i]->SetupAttachment(RootComponent);
 	}
+	UpdateGrid();
 }
 
 void AWorldGrid::BeginPlay()
@@ -59,36 +61,36 @@ void AWorldGrid::UpdateGrid()
 	int q2 = q1 * 2;
 
 	int num = HorizontalGridLines.Num();
-	if (num == 0)
-		num = 1;
 
-	if (q2 < num) {
-		for (int i = num - 1; i >= q2; i--) {
-			RemoveComponent(HorizontalGridLines[i]);
-			RemoveComponent(VerticalGridLines[i]);
-			HorizontalGridLines.RemoveAt(i);
-			VerticalGridLines.RemoveAt(i);
+	if (num != q1) {
+		if (q2 < num) {
+			for (int i = num - 1; i >= q2; i--) {
+				RemoveComponent(HorizontalGridLines[i]);
+				RemoveComponent(VerticalGridLines[i]);
+				HorizontalGridLines.RemoveAt(i);
+				VerticalGridLines.RemoveAt(i);
+			}
 		}
-	}
-	else {
-		for (int i = num; i < q2; i++) {
-			ULineComp* VerticalLine = AddComponent<ULineComp>();
-			VerticalGridLines.Add(VerticalLine);
-			//VerticalGridLines[i]->SetRenderMode(ERenderMode::Batch);
-			FTransform vtransform = VerticalGridLines[i]->GetRelativeTransform();
-			vtransform.SetScale(FVector(maxGridDistance, 1, 1));
-			VerticalGridLines[i]->SetRelativeTransform(vtransform);
-			VerticalGridLines[i]->SetCustomColor(FVector4(1.0f, 1.0f, 1.0f, 1.0f));
-			VerticalGridLines[i]->SetupAttachment(RootComponent);
-			ULineComp* HorizontalLine = AddComponent<ULineComp>();
-			HorizontalGridLines.Add(HorizontalLine);
-			//HorizontalGridLines[i]->SetRenderMode(ERenderMode::Batch);
-			FTransform htransform = HorizontalGridLines[i]->GetRelativeTransform();
-			htransform.SetScale(FVector(maxGridDistance, 1, 1));
-			htransform.SetRotation(FVector(0, 0, 90));   
-			HorizontalGridLines[i]->SetRelativeTransform(htransform);
-			HorizontalGridLines[i]->SetCustomColor(FVector4(1.0f, 1.0f, 1.0f, 1.0f));
-			HorizontalGridLines[i]->SetupAttachment(RootComponent);
+		else {
+			for (int i = num; i < q2; i++) {
+				ULineComp* VerticalLine = AddComponent<ULineComp>();
+				VerticalGridLines.Add(VerticalLine);
+				//VerticalGridLines[i]->SetRenderMode(ERenderMode::Batch);
+				FTransform vtransform = VerticalGridLines[i]->GetRelativeTransform();
+				vtransform.SetScale(FVector(maxGridDistance, 1, 1));
+				VerticalGridLines[i]->SetRelativeTransform(vtransform);
+				VerticalGridLines[i]->SetCustomColor(FVector4(1.0f, 1.0f, 1.0f, 1.0f));
+				VerticalGridLines[i]->SetupAttachment(RootComponent);
+				ULineComp* HorizontalLine = AddComponent<ULineComp>();
+				HorizontalGridLines.Add(HorizontalLine);
+				//HorizontalGridLines[i]->SetRenderMode(ERenderMode::Batch);
+				FTransform htransform = HorizontalGridLines[i]->GetRelativeTransform();
+				htransform.SetScale(FVector(maxGridDistance, 1, 1));
+				htransform.SetRotation(FVector(0, 0, 90));
+				HorizontalGridLines[i]->SetRelativeTransform(htransform);
+				HorizontalGridLines[i]->SetCustomColor(FVector4(1.0f, 1.0f, 1.0f, 1.0f));
+				HorizontalGridLines[i]->SetupAttachment(RootComponent);
+			}
 		}
 	}
 
