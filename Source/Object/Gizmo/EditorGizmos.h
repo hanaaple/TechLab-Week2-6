@@ -11,14 +11,6 @@ enum class ESelectedAxis : uint8
 	Z
 };
 
-enum class EGizmoType : uint8
-{
-	Translate,
-	Rotate,
-	Scale,
-	Max
-};
-
 class AEditorGizmos : public AActor
 {
     DECLARE_OBJECT(AEditorGizmos, AActor)
@@ -30,10 +22,9 @@ public:
 	void SetScaleByDistance();
 	void SetActorVisibility(bool bNewActive);
 	void SetSelectedAxis(ESelectedAxis NewAxis) { SelectedAxis = NewAxis; }
-	TArray<UCylinderComp*> GetAxis() { return axisComponents; }
-	ESelectedAxis IsAxis(UCylinderComp* axis);
+	TArray<UPrimitiveComponent*> GetAxis() { return axisComponents; }
+	ESelectedAxis IsAxis(UPrimitiveComponent* axis);
 	ESelectedAxis GetSelectedAxis() const { return SelectedAxis; }
-	EGizmoType GetGizmoType() const { return GizmoType; }
 	void SetPrevMousePos(FVector4 mouse);
 	void SetActorXAxis(FVector4 axis);
 	void SetActorYAxis(FVector4 axis);
@@ -44,8 +35,7 @@ public:
 	FVector4 GetZAxis() { return actorZAxis; }
 private:
 	ESelectedAxis SelectedAxis = ESelectedAxis::None;
-	EGizmoType GizmoType = EGizmoType::Translate;
-	TArray<UCylinderComp*> axisComponents;
+	TArray<UPrimitiveComponent*> axisComponents;
 	virtual const char* GetTypeName() override;
 
 private:

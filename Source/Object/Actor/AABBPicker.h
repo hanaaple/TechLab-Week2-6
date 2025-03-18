@@ -15,6 +15,7 @@ public:
 
 	FVector RayCast(FVector mouse, ACamera* camera);
 	AActor* CheckCollision(FVector rayOrigin, FVector rayDir);
-	UCylinderComp* CheckGizmo(FVector rayOrigin, FVector rayDir);
+	UPrimitiveComponent* CheckGizmo(FVector rayOrigin, FVector rayDir);
+	UTorusComp* CheckRotationGizmo(FVector rayOrigin, FVector rayDir);
 	FVector4 clickedPosition;
 };
