@@ -144,9 +144,6 @@
     <ClCompile Include="Source\Object\Actor\Cube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Texture\TextComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Texture\TextureLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -175,9 +172,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Object\Actor\Picker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Static\FEditorManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Core\Name\FName.cpp">
@@ -211,6 +205,15 @@
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Primitive\MeshResourceCache.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\SettingManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Static\FEditorManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -364,9 +367,6 @@
     <ClInclude Include="Source\Core\EngineTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Static\FEditorManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Core\Math\Vector4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -407,9 +407,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Primitive\VertexDataCreator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Texture\TextComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Texture\TextureLoader.h">
@@ -482,6 +479,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Primitive\MeshResourceCache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Object\PrimitiveComponent\CharComp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\SettingManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Static\FEditorManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

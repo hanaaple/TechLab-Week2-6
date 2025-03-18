@@ -249,6 +249,7 @@
       <AdditionalOptions>/utf-8 </AdditionalOptions>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Source\Core\SettingManager.cpp" />
     <ClCompile Include="Source\Object\Actor\AABBPicker.cpp" />
     <ClCompile Include="Source\Object\Actor\ABoundingBox.cpp" />
     <ClCompile Include="Source\Object\Actor\ATorus.cpp" />
@@ -276,6 +277,7 @@
     <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp" />
     <ClCompile Include="Source\Primitive\MeshVertexData.cpp" />
     <ClCompile Include="Source\Primitive\VertexDataCreator.cpp" />
+    <ClCompile Include="Source\Static\FEditorManager.cpp" />
     <ClCompile Include="Source\Texture\TextureLoader.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_demo.cpp" />
@@ -304,6 +306,7 @@
     <ClInclude Include="Source\Core\Name\FNameTable.h" />
     <ClInclude Include="Source\Core\Rendering\BatchRenderContext.h" />
     <ClInclude Include="Source\Core\Rendering\BufferCache.h" />
+    <ClInclude Include="Source\Core\SettingManager.h" />
     <ClInclude Include="Source\Object\Actor\AABBPicker.h" />
     <ClInclude Include="Source\Object\Actor\ABoundingBox.h" />
     <ClInclude Include="Source\DataTypes\MeshDataTypes.h" />
@@ -339,6 +342,7 @@
     <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
     <ClInclude Include="Source\Primitive\MeshVertexData.h" />
     <ClInclude Include="Source\Primitive\VertexDataCreator.h" />
+    <ClInclude Include="Source\Static\FEditorManager.h" />
     <ClInclude Include="Source\Texture\TextureLoader.h" />
     <ClInclude Include="Source\ThirdParty\DirectXTK\Audio.h" />
     <ClInclude Include="Source\ThirdParty\DirectXTK\BufferHelpers.h" />
@@ -381,12 +385,10 @@
     <ClInclude Include="Source\Object\Gizmo\EditorGizmos.h" />
     <ClInclude Include="Source\Core\Container\CString.h" />
     <ClInclude Include="Source\Object\Actor\Picker.h" />
-    <ClCompile Include="Source\Static\FEditorManager.cpp" />
     <ClInclude Include="Source\Object\Actor\Arrow.h" />
     <ClInclude Include="Source\Core\Input\PlayerController.h" />
     <ClInclude Include="Source\Core\Input\PlayerInput.h" />
     <ClInclude Include="Source\Core\EngineTypes.h" />
-    <ClInclude Include="Source\Static\FEditorManager.h" />
     <ClInclude Include="Source\Primitive\MeshResourceCache.h" />
     <ClInclude Include="Source\Object\UObject.h" />
     <ClInclude Include="Source\Object\USceneComponent.h" />
