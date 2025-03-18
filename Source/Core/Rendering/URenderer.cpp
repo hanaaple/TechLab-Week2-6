@@ -182,9 +182,6 @@ void URenderer::Prepare() const
     DeviceContext->ClearRenderTargetView(FrameBufferRTV, ClearColor);
     DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-    //PREV
-    //DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
     // Rasterization할 Viewport를 설정 
     DeviceContext->RSSetViewports(1, &ViewportInfo);
     //DeviceContext->RSSetState(RasterizerState);
@@ -247,8 +244,7 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
     };
 
     
-    //FIMXE : 텍스처 저장 구조에 따라 추후 변경.
-    //UpdateInfo.bUseUV = (PrimitiveComp->Texture != nullptr) ? 1 : 0;
+    //FIMXE : 쉐이더 구조 변경, 텍스처 저장 구조에 따라 추후 변경.
     if (PrimitiveComp->IsA<UCharComp>()) {
         UpdateConstantUV(dynamic_cast<UCharComp*>(PrimitiveComp)->c);
     }

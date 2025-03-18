@@ -18,4 +18,6 @@ public:
 	virtual ~UTextComp() = default;
 
 	void SetText(string NewText);
+	void RemoveLongerCharComp(int& curIdx, int PrevCharCompLen);
+	void CreateAdditionCharComp(int& curIdx, int TextLen);
 };
