@@ -123,6 +123,8 @@ void USceneComponent::UpdateComponentToWorld()
 		ComponentToWorld = RelativeTransform;
 	}
 
+	OnTransformation();
+
 	if (AttachChildren.Num() > 0)
 	{
 		UpdateChildTransforms();
@@ -133,16 +135,6 @@ void USceneComponent::UpdateRelativeTransform()
 {
 	if (AttachParent != nullptr)
 	{
-		// Parent 기반 RelativeTransform Update
-		
-		//RelativeTransform = ComponentToWorld.GetRelativeTransform(ParentToWorld);
-
-		
-		// 부모가 있다면, RelativeTransform = 부모의 Inverse(ComponentToWorld) * NewTransform 계산.
-		//RelativeTransform = ComponentToWorld
-		
-
-
 		const FTransform& ParentToWorld = AttachParent->GetComponentTransform();
 		RelativeTransform = ComponentToWorld * ParentToWorld.Inverse();
 	}
@@ -151,10 +143,16 @@ void USceneComponent::UpdateRelativeTransform()
 		RelativeTransform = ComponentToWorld;
 	}
 
+	OnTransformation();
+
 	if (AttachChildren.Num() > 0)
 	{
 		UpdateChildTransforms();
 	}
+}
+
+void USceneComponent::OnTransformation()
+{
 }
 
 void USceneComponent::SetVisibility(bool bNewVisibility)

@@ -18,36 +18,34 @@ void AAABBPicker::LateTick(float DeltaTime)
 {
 	AActor::LateTick(DeltaTime);
 
-	if (APlayerInput::Get().GetMouseDown(false)) {
+	if (APlayerInput::Get().GetMouseDown(false))
+	{
 		FVector mousePos = APlayerInput::Get().GetMouseDownNDCPos(false);
-		AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
-		gizmo->SetPrevMousePos(FVector4(mousePos.X, mousePos.Y, 1.0f, 1.0f));
-		UE_LOG("prevMousePos: %f, %f", mousePos.X, mousePos.Y);
 		ACamera* camera = FEditorManager::Get().GetCamera();
 		FVector rayOrigin = camera->GetActorTransform().GetPosition();
 		FVector rayDir = RayCast(mousePos, camera);
+
+		//기즈모가 잡혔으면 다른 Actor를 선택하지 않음
+		if (CheckGizmo(rayOrigin, rayDir) != nullptr)
+		{
+			return; // 기즈모가 선택된 경우, 다른 Actor를 선택하지 않음
+		}
+
+		//기즈모가 선택되지 않은 경우, Actor 피킹 진행
 		AActor* pickedActor = CheckCollision(rayOrigin, rayDir);
-		if (pickedActor == nullptr) { 
-			if(CheckGizmo(rayOrigin, rayDir) == nullptr)
-			{
-				FEditorManager::Get().SelectActor(nullptr);
-			}
+
+		//피킹된 Actor가 없으면 선택 해제
+		if (pickedActor == nullptr)
+		{
+			FEditorManager::Get().SelectActor(nullptr);
 			return;
 		}
-		if (pickedActor->IsGizmoActor() == false) {
-			FTransform AT = pickedActor->GetActorTransform();
-			gizmo->SetActorXAxis(FVector4(AT.GetForward().X, AT.GetForward().Y, AT.GetForward().Z, 1.0f));
-			gizmo->SetActorYAxis(FVector4(AT.GetRight().X, AT.GetRight().Y, AT.GetRight().Z, 1.0f));
-			gizmo->SetActorZAxis(FVector4(AT.GetUp().X, AT.GetUp().Y, AT.GetUp().Z, 1.0f));
-			if (pickedActor == FEditorManager::Get().GetSelectedActor())
-			{
-				return;
-			}
-			else
-			{
-				FEditorManager::Get().SelectActor(pickedActor);
-				UE_LOG("Pick - UUID: %d", pickedActor->GetUUID());
-			}
+
+		//선택된 Actor가 현재 선택된 Actor와 다르면 변경
+		if (!pickedActor->IsGizmoActor() && pickedActor != FEditorManager::Get().GetSelectedActor())
+		{
+			FEditorManager::Get().SelectActor(pickedActor);
+			UE_LOG("Pick - UUID: %d", pickedActor->GetUUID());
 		}
 	}
 	if (APlayerInput::Get().IsPressedMouse(false)) {
@@ -58,6 +56,14 @@ void AAABBPicker::LateTick(float DeltaTime)
 			FVector rayDir = RayCast(mousePos, camera);
 			UCylinderComp* pickedAxis = CheckGizmo(rayOrigin, rayDir);
 			if (pickedAxis != nullptr) {
+				if (FEditorManager::Get().GetGizmoHandle() != nullptr && FEditorManager::Get().GetSelectedActor() != nullptr) {
+					AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
+					gizmo->SetPrevMousePos(clickedPosition);
+					FTransform AT = FEditorManager::Get().GetSelectedActor()->GetActorTransform();
+					gizmo->SetActorXAxis(FVector4(AT.GetForward().X, AT.GetForward().Y, AT.GetForward().Z, 1.0f));
+					gizmo->SetActorYAxis(FVector4(AT.GetRight().X, AT.GetRight().Y, AT.GetRight().Z, 1.0f));
+					gizmo->SetActorZAxis(FVector4(AT.GetUp().X, AT.GetUp().Y, AT.GetUp().Z, 1.0f));
+				}
 				ESelectedAxis selectedAxis = FEditorManager::Get().GetGizmoHandle()->IsAxis(pickedAxis);
 			}
 		}
@@ -80,7 +86,7 @@ FVector AAABBPicker::RayCast(FVector mouse, ACamera* camera)
 {
 	FVector rayOrigin = camera->GetActorTransform().GetPosition();
 	FVector4 ndc(mouse.X, mouse.Y, 1.0f, 1.0f);
-	FMatrix inverseView = camera->GetActorTransform().GetViewMatrix().Inverse();
+	FMatrix inverseView = camera->GetViewMatrix().Inverse();
 	UEngine::Get().GetRenderer()->UpdateProjectionMatrix(camera);
 	FMatrix inverseProjection = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
 
@@ -92,6 +98,7 @@ FVector AAABBPicker::RayCast(FVector mouse, ACamera* camera)
 		rayView.W = 1.0f;
 	}
 	FVector4 rayWorld = rayView * inverseView;
+	clickedPosition = rayWorld;
 	FVector rayDir = FVector(rayWorld.X, rayWorld.Y, rayWorld.Z) - rayOrigin;
 	rayDir.Normalize();
 	return rayDir;
@@ -106,30 +113,44 @@ AActor* AAABBPicker::CheckCollision(FVector rayOrigin, FVector rayDir)
 	for (auto component : components) {
 		if (component != nullptr && !component->GetOwner()->IsGizmoActor()) {
 			if (component->GetVisibleFlag()) {
-				FAABB boundingBox = component->aabb;
+				FOBB boundingBox = component->obb;
 
-				FVector center = (boundingBox.Max + boundingBox.Min) / 2.0f;
-				float t1 = (boundingBox.Min.X - rayOrigin.X) / rayDir.X;
-				float t2 = (boundingBox.Max.X - rayOrigin.X) / rayDir.X;
+				FVector center = boundingBox.Center;
+				FVector localOrigin = center - rayOrigin;
 
-				float t3 = (boundingBox.Min.Y - rayOrigin.Y) / rayDir.Y;
-				float t4 = (boundingBox.Max.Y - rayOrigin.Y) / rayDir.Y;
+				float tMin = -FLT_MAX;
+				float tMax = FLT_MAX;
 
-				float t5 = (boundingBox.Min.Z - rayOrigin.Z) / rayDir.Z;
-				float t6 = (boundingBox.Max.Z - rayOrigin.Z) / rayDir.Z;
+				for (int i = 0; i < 3; i++) {
+					FVector axis = boundingBox.axis[i];
+					float axisAlignedOrigin = axis.Dot(localOrigin);
+					float axisAlignedDir = axis.Dot(rayDir);
 
-				float tMax = FMath::Min(FMath::Max(t1, t2), FMath::Max(t3, t4));
-				tMax = FMath::Min(tMax, FMath::Max(t5, t6));
+					if (FMath::Abs(axisAlignedDir) > 1e-6f) {
+						float t1 = (axisAlignedOrigin + boundingBox.halfSize[i]) / axisAlignedDir;
+						float t2 = (axisAlignedOrigin - boundingBox.halfSize[i]) / axisAlignedDir;
 
-				float tMin = FMath::Max(FMath::Min(t1, t2), FMath::Min(t3, t4));
-				tMin = FMath::Max(tMin, FMath::Min(t5, t6));
-
-				if (tMax >= tMin && tMax > 0) {
-					float objDist = FVector::Distance(center, rayOrigin);
-					if (objDist < dist) {
-						if (component->GetOwner()->GetTypeName() != "Actor") {
-							PickedComponent = component;
+						if (t1 > t2) {
+							float temp = t1;
+							t1 = t2;
+							t2 = temp;
 						}
+
+						tMin = FMath::Max(tMin, t1);
+						tMax = FMath::Min(tMax, t2);
+
+						if (tMin > tMax || tMax < 0)
+							break;
+					}
+					else if (-axisAlignedOrigin - boundingBox.halfSize[i] > 0 || -axisAlignedOrigin + boundingBox.halfSize[i] < 0)
+					{
+						break;
+					}
+				}
+				if (tMin <= tMax && tMin >= 0 && component->GetOwner()->GetTypeName() != "Actor") {
+					float objDist = (component->GetComponentTransform().GetPosition() - rayOrigin).Length();
+					if (objDist < dist) {
+						PickedComponent = component;
 					}
 				}
 			}

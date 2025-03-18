@@ -30,6 +30,7 @@ void UPrimitiveComponent::Tick(float DeltaTime)
 	if (TryGetVertexData(&VertexData))
 	{
 		aabb.UpdateAABB(VertexData);
+		obb.UpdateOBB(GetComponentTransform());
 	}
 }
 
@@ -93,6 +94,11 @@ void UPrimitiveComponent::Render()
 // 	Renderer.UpdateConstantDepth(Depth);
 // }
 
+void UPrimitiveComponent::OnTransformation()
+{
+	if (GetRenderMode() == Batch)
+		SetDirty(true);
+}
 
 void UPrimitiveComponent::UpdateConstantUV(const URenderer& Renderer, const char c)const {
 	Renderer.UpdateConstantUV(c);
@@ -111,7 +117,7 @@ bool UPrimitiveComponent::TryGetVertexData(TArray<FVertexSimple>* VertexData)
 
 	for (const FVertexSimple& Vertex : *OriginVertexData)
 	{
-		FVertexSimple NewVertexSimple;
+		FVertexSimple NewVertexSimple = Vertex;
 		FVector Pos = FVector(Vertex.X, Vertex.Y, Vertex.Z) * GetComponentTransform().GetMatrix();
 		NewVertexSimple.X = Pos.X;
 		NewVertexSimple.Y = Pos.Y;

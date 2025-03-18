@@ -61,27 +61,33 @@ void AEditorGizmos::Tick(float DeltaTime)
 			POINT pt;
 			GetCursorPos(&pt);
 			ScreenToClient(UEngine::Get().GetWindowHandle(), &pt);
-			
+
 			RECT Rect;
 			GetClientRect(UEngine::Get().GetWindowHandle(), &Rect);
 			int ScreenWidth = Rect.right - Rect.left;
 			int ScreenHeight = Rect.bottom - Rect.top;
-			
+
 			// 커서 위치를 NDC로 변경
 			float PosX = 2.0f * pt.x / ScreenWidth - 1.0f;
 			float PosY = -2.0f * pt.y / ScreenHeight + 1.0f;
 			
 			// Projection 공간으로 변환
 			FVector4 RayOrigin {PosX, PosY, 1.0f, 1.0f};
+			
 			// View 공간으로 변환
 			FMatrix InvProjMat = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
 			RayOrigin = RayOrigin * InvProjMat;
-			RayOrigin.W = 1;
+			if (RayOrigin.W != 0) {
+				RayOrigin.X /= RayOrigin.W;
+				RayOrigin.Y /= RayOrigin.W;
+				RayOrigin.Z /= RayOrigin.W;
+				RayOrigin.W = 1;
+			}
 			
 			// 마우스 포인터의 월드 위치와 방향
 			FMatrix InvViewMat = FEditorManager::Get().GetCamera()->GetViewMatrix().Inverse();
 			RayOrigin = RayOrigin * InvViewMat;
-			RayOrigin /= RayOrigin.W = 1;
+
 			FVector4 RayDir = (RayOrigin - prevMousePos);
 			
 			FTransform AT = Actor->GetActorTransform();
@@ -100,8 +106,8 @@ void AEditorGizmos::Tick(float DeltaTime)
 			default:
 				break;
 			}
-			UE_LOG("result: %f", Result);
 			
+			Result *= 0.005f;
 
 			DoTransform(AT, Result, Actor);
 		}
@@ -198,13 +204,13 @@ void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP.X + Result, AP.Y, AP.Z });
+			AT.SetPosition({ AP + actorXAxis * Result });
 			break;
 		case EGizmoType::Rotate:
-			AT.RotateRoll(Result * 2.0f);
+			AT.RotateRoll(Result * 15.0f);
 			break;
 		case EGizmoType::Scale:
-			AT.AddScale({ Result * .1f, 0, 0 });
+			AT.AddScale({ Result * 0.5f, 0, 0 });
 			break;
 		}
 	}
@@ -213,13 +219,13 @@ void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP.X, AP.Y + Result, AP.Z });
+			AT.SetPosition({ AP + actorYAxis * Result });
 			break;
 		case EGizmoType::Rotate:
-			AT.RotatePitch(Result * 2.0f);
+			AT.RotatePitch(Result * 15.0f);
 			break;
 		case EGizmoType::Scale:
-			AT.AddScale({ 0, Result * .1f, 0 });
+			AT.AddScale({ 0, Result * 0.5f, 0 });
 			break;
 		}
 	}
@@ -228,13 +234,13 @@ void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP.X, AP.Y, AP.Z + Result });
+			AT.SetPosition({ AP + actorZAxis * Result });
 			break;
 		case EGizmoType::Rotate:
-			AT.RotateYaw(-Result * 2.0f);
+			AT.RotateYaw(-Result * 15.0f);
 			break;
 		case EGizmoType::Scale:
-			AT.AddScale({0, 0, Result * .1f });
+			AT.AddScale({0, 0, Result * 0.5f });
 			break;
 		}
 	}

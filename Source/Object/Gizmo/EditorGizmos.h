@@ -23,10 +23,6 @@ class AEditorGizmos : public AActor
 {
     DECLARE_OBJECT(AEditorGizmos, AActor)
 public:
-	FVector4 actorXAxis;
-	FVector4 actorYAxis;
-	FVector4 actorZAxis;
-public:
 	AEditorGizmos();
 
 public:
@@ -43,6 +39,9 @@ public:
 	void SetActorYAxis(FVector4 axis);
 	void SetActorZAxis(FVector4 axis);
 
+	FVector4 GetXAxis() { return actorXAxis; }
+	FVector4 GetYAxis() { return actorYAxis; }
+	FVector4 GetZAxis() { return actorZAxis; }
 private:
 	ESelectedAxis SelectedAxis = ESelectedAxis::None;
 	EGizmoType GizmoType = EGizmoType::Translate;
@@ -50,6 +49,9 @@ private:
 	virtual const char* GetTypeName() override;
 
 private:
+	FVector4 actorXAxis;
+	FVector4 actorYAxis;
+	FVector4 actorZAxis;
 	FVector4 prevMousePos;
 	void DoTransform(FTransform& AT, float Result, AActor* Actor);
 };

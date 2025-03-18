@@ -101,7 +101,8 @@ public:
      *
      * @note 이 함수는 D3D11_USAGE_IMMUTABLE 사용법으로 버퍼를 생성합니다.
      */
-    ID3D11Buffer* CreateMeshBuffer(const void* Data, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage) const;
+	ID3D11Buffer* CreateVertexBuffer(const FVertexSimple* Data, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage) const;
+    ID3D11Buffer* CreateIndexBuffer(const uint32* Data, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage) const;
 
     /** Constant Data를 업데이트 합니다. */
     void UpdateConstantPrimitive(const ConstantUpdateInfo& UpdateInfo) const;
