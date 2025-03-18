@@ -12,12 +12,13 @@ using bUseIndexBufferFlag = bool;
 
 struct FBatchRenderContext
 {
+    FBatchRenderContext() = default;
     bool bIsDirty = true;
 
     // Vertex Data가 변했는지
     // Index Data가 변했는지 확인.
     
-    ID3D11ShaderResourceView* Texture;
+    ID3D11ShaderResourceView* Texture = nullptr;
     
     // UMaterial* Material;
     D3D11_PRIMITIVE_TOPOLOGY Topology;

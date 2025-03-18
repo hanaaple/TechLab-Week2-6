@@ -5,6 +5,52 @@
 #include "Object/USceneComponent.h"
 #include <Core/Engine.h>
 
+struct FOBB {
+	FVector OriginalCenter;
+	FVector Center;
+	FVector axis[3];
+	float OriginalHalfSize[3];
+	float halfSize[3];
+
+	void Initialize(const TArray<FVertexSimple>& vertices) {
+		FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+		FVector max = -min;
+		for (const FVertexSimple& vertex : vertices) {
+			min.X = FMath::Min(min.X, vertex.X);
+			min.Y = FMath::Min(min.Y, vertex.Y);
+			min.Z = FMath::Min(min.Z, vertex.Z);
+			max.X = FMath::Max(max.X, vertex.X);
+			max.Y = FMath::Max(max.Y, vertex.Y);
+			max.Z = FMath::Max(max.Z, vertex.Z);
+		}
+		OriginalCenter = (max + min) / 2.0f;
+		Center = OriginalCenter;
+		FVector half = (max - min) / 2.0f;
+		OriginalHalfSize[0] = half.X;
+		OriginalHalfSize[1] = half.Y;
+		OriginalHalfSize[2] = half.Z;
+		for (int i = 0; i < 3; i++) {
+			halfSize[i] = OriginalHalfSize[i];
+		}
+		axis[0] = FVector(1, 0, 0);
+		axis[1] = FVector(0, 1, 0);
+		axis[2] = FVector(0, 0, 1);
+	}
+
+	void UpdateOBB(FTransform transform) {
+		FQuat Rotation(transform.GetEulerRotation());
+		FMatrix rotation = FMatrix::GetRotateMatrix(FQuat(Rotation));
+		axis[0] = (FVector(1, 0, 0) * rotation).GetSafeNormal();
+		axis[1] = (FVector(0, 1, 0) * rotation).GetSafeNormal();
+		axis[2] = (FVector(0, 0, 1) * rotation).GetSafeNormal();
+		FVector scale = transform.GetScale();
+		halfSize[0] = OriginalHalfSize[0] * scale.X;
+		halfSize[1] = OriginalHalfSize[1] * scale.Y;
+		halfSize[2] = OriginalHalfSize[2] * scale.Z;
+		Center = OriginalCenter * rotation + transform.GetPosition();
+	}
+};
+
 struct FAABB {
 	FVector Min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
 	FVector Max = -Min;
@@ -28,6 +74,7 @@ struct FAABB {
 
 
 enum ERenderMode{
+	None,	// 이전 프레임에 렌더링 안된 경우 (새롭게 생성 시)
 	Batch,
 	Individual,
 	// Instancing
@@ -37,9 +84,8 @@ struct FRenderData
 {
 	ID3D11ShaderResourceView* Texture = nullptr;
 	D3D_PRIMITIVE_TOPOLOGY Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	bool bUseIndexBuffer = false;
 	EPrimitiveMeshType MeshType = EPrimitiveMeshType::EPT_None;
-	ERenderMode RenderMode = ERenderMode::Individual;
+	ERenderMode RenderMode = ERenderMode::None;
 };
 
 class UPrimitiveComponent : public USceneComponent
@@ -49,6 +95,7 @@ class UPrimitiveComponent : public USceneComponent
 
 public:
 	FAABB aabb;
+	FOBB obb;
 public:
 	UPrimitiveComponent():Super(), Depth(0){}
 	virtual ~UPrimitiveComponent() = default;
@@ -61,12 +108,9 @@ public:
 	virtual void Deactivate() override;
 
 	
-	void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
-	void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
+	//void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
+	//void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 	void UpdateConstantUV(const URenderer& Renderer, const char c)const;
-
-	// void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
-	// void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 
 	virtual bool TryGetVertexData(TArray<FVertexSimple>* VertexData);
 
@@ -98,12 +142,7 @@ public:
 			SetDirty(true);
 		CurrentRenderData.MeshType = NewMeshType;
 	}
-	void SetUseIndexBuffer(bUseIndexBufferFlag bUseIndexBuffer)
-	{
-		if (CurrentRenderData.bUseIndexBuffer != bUseIndexBuffer)
-			SetDirty(true);
-		CurrentRenderData.bUseIndexBuffer = bUseIndexBuffer;
-	}
+	
 	void SetTopology(D3D11_PRIMITIVE_TOPOLOGY NewTopologyType)
 	{
 		if (CurrentRenderData.Topology != NewTopologyType)
@@ -126,6 +165,9 @@ public:
 	D3D11_PRIMITIVE_TOPOLOGY GetTopology() const { return CurrentRenderData.Topology; }
 	ID3D11ShaderResourceView* GetTexture() const { return CurrentRenderData.Texture; }
 	
+
+private:
+	virtual void OnTransformation() override;
 	
 public:
 	bool IsUseVertexColor() const { return bUseVertexColor; }
@@ -149,7 +191,7 @@ protected:
 
 private:
 	FRenderData PrevFrameData = FRenderData();
-	FRenderData CurrentRenderData = FRenderData();
+	FRenderData CurrentRenderData = FRenderData(nullptr, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, EPrimitiveMeshType::EPT_None, ERenderMode::Individual);
 	uint32 Depth;
 	bool bIsDirty;
 };
@@ -162,8 +204,7 @@ public:
 	UCubeComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Cube);
-		/*UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
-		SetTexture(UTextureLoader::Get().m_texture);*/
+		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~UCubeComp() = default;
 };
@@ -176,6 +217,7 @@ public:
 	USphereComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Sphere);
+		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~USphereComp() = default;
 };
@@ -188,6 +230,7 @@ public:
 	UTriangleComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Triangle);
+		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~UTriangleComp() = default;
 };
@@ -215,6 +258,7 @@ public:
 	UCylinderComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Cylinder);
+		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~UCylinderComp() = default;
 };
@@ -227,6 +271,7 @@ public:
 	UConeComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Cone);
+		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~UConeComp() = default;
 };
@@ -239,6 +284,7 @@ public:
 	UTorusComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Torus);
+		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~UTorusComp() = default;
 };

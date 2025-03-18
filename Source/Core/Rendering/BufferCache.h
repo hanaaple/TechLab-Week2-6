@@ -29,13 +29,14 @@ private:
 
 
 // Vertex Buffer, Index Buffer Cache
-// Batch Rendering을 하지 않는 애들만 사용
 class FBufferCache
 {
 private:
+	// 개별 렌더링 버퍼 (기본 메시 버퍼)
 	std::unordered_map <EPrimitiveMeshType, BufferInfo> VertexBufferCache;
 	std::unordered_map <EPrimitiveMeshType, BufferInfo> IndexBufferCache;
 
+	// Batch 렌더링 버퍼 캐시
 	TMap<ID3D11ShaderResourceView*, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>> BatchIndexBufferCache;
 	TMap<ID3D11ShaderResourceView*, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>> BatchVertexBufferCache;
 public:
@@ -48,8 +49,8 @@ public:
 	BufferInfo& GetVertexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology);
 	BufferInfo& GetIndexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology);
 
-	void UpdateVertexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer);
-	void UpdateIndexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer);
+	void UpdateVertexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer, uint32 BufferSize);
+	void UpdateIndexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer, uint32 BufferSize);
 	
 	void Release();
 

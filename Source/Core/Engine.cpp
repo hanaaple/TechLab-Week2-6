@@ -240,7 +240,12 @@ void UEngine::InitWorld()
     
     /* 빌보드 테스트 코드*/
     //World->SpawnActor<ABillboardText>();
-    
+
+    // for (int i =0 ; i < 1000; i++)
+    // {
+    //     World->SpawnActor<ACube>();
+    // }
+  
     //World->SpawnActor<APicker>();
     /*auto* Actor = World->SpawnActor<ACylinder>();
     UConeComp* ConeComp = Actor->AddComponent<UConeComp>();

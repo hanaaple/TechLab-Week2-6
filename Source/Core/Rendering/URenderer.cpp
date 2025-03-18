@@ -270,12 +270,6 @@ void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
         TArray<FVertexSimple> VertexData;
         if (BatchContext.bUseIndexBuffer)
         {
-            // 그리드 변경 시 -> VertexData (Mesh) 변경
-            // 그리드를 여러개 소환 -> 각각 그리드 액터가 Mesh를 매번 변경시킴
-            // 그래서 -> World 행렬을 갖고 있고
-
-            // 매번 여기서 World 값 적용한거로 적용
-            // 아니면 
             uint32 VertexOffset = 0;
             TArray<uint32> IndexData;
             for (const auto& [MeshType, RenderComponents] : BatchContext.RenderComponentMap)
@@ -285,24 +279,24 @@ void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
                     TArray<FVertexSimple> Vertecies;
                     if (RenderComponent->TryGetVertexData(&Vertecies))
                     {
-                        uint32 VertexCount = VertexData.Num();
                         VertexData.Append(Vertecies);
 
                         TArray<uint32> Indecies = *MeshResourceCache::Get().GetIndexData(MeshType);
-
+                        
                         for (auto Index : Indecies)
                         {
                             IndexData.Add(Index + VertexOffset);
                         }
 
-                        VertexOffset += VertexCount;
+                        VertexOffset += Vertecies.Num();
                     }
                 }   
             }
             uint32 IndexDataSize = sizeof(uint32) * IndexData.Num();
             
-            ID3D11Buffer* IndexBuffer = CreateMeshBuffer(IndexData.GetData(), IndexDataSize, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-            BufferCache->UpdateIndexBuffer(BatchContext.Texture, BatchContext.Topology, IndexBuffer);
+            ID3D11Buffer* IndexBuffer = CreateIndexBuffer(IndexData.GetData(), IndexDataSize, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
+
+            BufferCache->UpdateIndexBuffer(BatchContext.Texture, BatchContext.Topology, IndexBuffer, IndexData.Num());
         }
         else
         {
@@ -314,7 +308,6 @@ void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
                     TArray<FVertexSimple> Vertecies;
                     if (RenderComponent->TryGetVertexData(&Vertecies))
                     {
-                        uint32 VertexCount = VertexData.Num();
                         VertexData.Append(Vertecies);
                     }
                 }
@@ -322,15 +315,13 @@ void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
         }
         uint32 VertexDataSize = sizeof(FVertexSimple) * VertexData.Num();
         
-        ID3D11Buffer* VertexBuffer = CreateMeshBuffer(VertexData.GetData(), VertexDataSize, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
-        BufferCache->UpdateVertexBuffer(BatchContext.Texture, BatchContext.Topology, VertexBuffer);
+        ID3D11Buffer* VertexBuffer = CreateVertexBuffer(VertexData.GetData(), VertexDataSize, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
+        BufferCache->UpdateVertexBuffer(BatchContext.Texture, BatchContext.Topology, VertexBuffer, VertexData.Num());
         BatchContext.bIsDirty = false;
-
-        UE_LOG("VertexData Size: %d", VertexDataSize);
     }
     
     BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(BatchContext.Texture, BatchContext.Topology);
-    BufferInfo IndexBuffer = BufferCache->GetIndexBufferInfo(BatchContext.Texture, BatchContext.Topology);
+    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(BatchContext.Texture, BatchContext.Topology);
 
     //TODOOOOOOOO if Depth > 0 Check
     
@@ -338,7 +329,7 @@ void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
 
     UpdateConstantBatch(BatchContext);    
     
-    RenderPrimitiveInternal(VertexBufferInfo, IndexBuffer);
+    RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
 }
 
 void URenderer::RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, const BufferInfo& IndexBufferInfo) const
@@ -360,7 +351,8 @@ void URenderer::RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, cons
     }
 }
 
-ID3D11Buffer* URenderer::CreateMeshBuffer(const void* Data, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage = D3D11_USAGE_DEFAULT) const
+ID3D11Buffer* URenderer::CreateVertexBuffer(const FVertexSimple* Data, UINT ByteWidth, D3D11_BIND_FLAG BindFlag,
+    D3D11_USAGE D3d11Usage) const
 {
     if (ByteWidth <= 0)
         return nullptr;
@@ -373,7 +365,30 @@ ID3D11Buffer* URenderer::CreateMeshBuffer(const void* Data, UINT ByteWidth, D3D1
     D3D11_SUBRESOURCE_DATA BufferSRD = {};
     BufferSRD.pSysMem = Data;
 
-    ID3D11Buffer* Buffer;
+    ID3D11Buffer* Buffer = nullptr;
+    const HRESULT Result = Device->CreateBuffer(&BufferDesc, &BufferSRD, &Buffer);
+    if (FAILED(Result))
+    {
+        return nullptr;
+    }
+    return Buffer;
+}
+
+ID3D11Buffer* URenderer::CreateIndexBuffer(const uint32* Data, UINT ByteWidth, D3D11_BIND_FLAG BindFlag,
+    D3D11_USAGE D3d11Usage) const
+{
+    if (ByteWidth <= 0)
+        return nullptr;
+    
+    D3D11_BUFFER_DESC BufferDesc = {};
+    BufferDesc.ByteWidth = ByteWidth;
+    BufferDesc.Usage = D3d11Usage;
+    BufferDesc.BindFlags = BindFlag;
+
+    D3D11_SUBRESOURCE_DATA BufferSRD = {};
+    BufferSRD.pSysMem = Data;
+
+    ID3D11Buffer* Buffer = nullptr;
     const HRESULT Result = Device->CreateBuffer(&BufferDesc, &BufferSRD, &Buffer);
     if (FAILED(Result))
     {
@@ -420,6 +435,9 @@ void URenderer::UpdateConstantBatch(const FBatchRenderContext& BatchRenderContex
         // 매핑된 메모리를 FConstants 구조체로 캐스팅
         FConstants* Constants = static_cast<FConstants*>(ConstantBufferMSR.pData);
         Constants->MVP = VP;
+        // Constants-> = ->GetCustomColor();
+        Constants->bUseVertexColor = 1;
+        // Constants->bUseUV = true;
     }
     DeviceContext->Unmap(ConstantBuffer, 0);
 }
