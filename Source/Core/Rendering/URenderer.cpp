@@ -66,81 +66,15 @@ void URenderer::CreateShader()
     
     // 정점 하나의 크기를 설정 (바이트 단위)
     VertexStride = sizeof(FVertexSimple);
-    /*
-    ID3DBlob* VertexShaderCSO;
-    ID3DBlob* PixelShaderCSO;
-
-    ID3DBlob* PickingShaderCSO;
-    
-	ID3DBlob* ErrorMsg = nullptr;
-    // 셰이더 컴파일 및 생성
-    D3DCompileFromFile(L"Shaders/ShaderW0.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0, &VertexShaderCSO, &ErrorMsg);
-    Device->CreateVertexShader(VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), nullptr, &SimpleVertexShader);
-
-    D3DCompileFromFile(L"Shaders/ShaderW0.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0, &PixelShaderCSO, &ErrorMsg);
-    Device->CreatePixelShader(PixelShaderCSO->GetBufferPointer(), PixelShaderCSO->GetBufferSize(), nullptr, &SimplePixelShader);
-
-    D3DCompileFromFile(L"Shaders/ShaderW0.hlsl", nullptr, nullptr, "PickingPS", "ps_5_0", 0, 0, &PickingShaderCSO, nullptr);
-    Device->CreatePixelShader(PickingShaderCSO->GetBufferPointer(), PickingShaderCSO->GetBufferSize(), nullptr, &PickingPixelShader);
-    
-	if (ErrorMsg)
-	{
-		std::cout << (char*)ErrorMsg->GetBufferPointer() << std::endl;
-		ErrorMsg->Release();
-	}
-
-    // 입력 레이아웃 정의 및 생성
-    D3D11_INPUT_ELEMENT_DESC Layout[] =
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-    };
-
-    Device->CreateInputLayout(Layout, ARRAYSIZE(Layout), VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), &SimpleInputLayout);
-
-    VertexShaderCSO->Release();
-    PixelShaderCSO->Release();
-    PickingShaderCSO->Release();
-
-    // 정점 하나의 크기를 설정 (바이트 단위)
-    VertexStride = sizeof(FVertexSimple);*/
 }
 
 void URenderer::ReleaseShader()
 {
     UShaderManager::Get().ReleaseAll();
-    /*
-    if (SimpleInputLayout)
-    {
-        SimpleInputLayout->Release();
-        SimpleInputLayout = nullptr;
-    }
-
-    if (SimplePixelShader)
-    {
-        SimplePixelShader->Release();
-        SimplePixelShader = nullptr;
-    }
-
-    if (SimpleVertexShader)
-    {
-        SimpleVertexShader->Release();
-        SimpleVertexShader = nullptr;
-    }*/
 }
 
 void URenderer::CreateConstantBuffer()
 {
-    /*
-    D3D11_BUFFER_DESC ConstantBufferDesc = {};
-    ConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;                        // 매 프레임 CPU에서 업데이트 하기 위해
-    ConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;             // 상수 버퍼로 설정
-    ConstantBufferDesc.ByteWidth = sizeof(FConstants) + 0xf & 0xfffffff0;  // 16byte의 배수로 올림
-    ConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;            // CPU에서 쓰기 접근이 가능하게 설정
-
-    Device->CreateBuffer(&ConstantBufferDesc, nullptr, &ConstantBuffer);
-*/
     D3D11_BUFFER_DESC ConstantBufferDescPicking = {};
     ConstantBufferDescPicking.Usage = D3D11_USAGE_DYNAMIC;                        // 매 프레임 CPU에서 업데이트 하기 위해
     ConstantBufferDescPicking.BindFlags = D3D11_BIND_CONSTANT_BUFFER;             // 상수 버퍼로 설정
@@ -168,13 +102,6 @@ void URenderer::CreateConstantBuffer()
 
 void URenderer::ReleaseConstantBuffer()
 {
-    /*
-    if (ConstantBuffer)
-    {
-        ConstantBuffer->Release();
-        ConstantBuffer = nullptr;
-    }
-*/
     if (ConstantPickingBuffer)
     {
         ConstantPickingBuffer->Release();
@@ -222,28 +149,7 @@ void URenderer::PrepareShader() const
     
     // DeviceContext에 적용
     DefaultShader->Apply(DeviceContext);
-    //DeviceContext->VSSetShader(DefaultShader->GetVertexShader(), nullptr, 0);
-    //DeviceContext->PSSetShader(DefaultShader->GetPixelShader(), nullptr, 0);
-    //DeviceContext->IASetInputLayout(DefaultShader->GetInputLayout());
-
-    /*
-    // 기본 셰이더랑 InputLayout을 설정
-    DeviceContext->VSSetShader(SimpleVertexShader, nullptr, 0);
-    DeviceContext->PSSetShader(SimplePixelShader, nullptr, 0);
-    DeviceContext->IASetInputLayout(SimpleInputLayout);
-
-    // 버텍스 쉐이더에 상수 버퍼를 설정
-    if (ConstantBuffer)
-    {
-        DeviceContext->VSSetConstantBuffers(0, 1, &ConstantBuffer);
-    }
-    if (ConstantsDepthBuffer)
-    {
-        DeviceContext->PSSetConstantBuffers(2, 1, &ConstantsDepthBuffer);
-    }
-    if (ConstantsUVBuffer) {
-        DeviceContext->PSSetConstantBuffers(3, 1, &ConstantsUVBuffer);
-    }*/
+    
     if (ConstantsDepthBuffer)
     {
         DeviceContext->PSSetConstantBuffers(2, 1, &ConstantsDepthBuffer);

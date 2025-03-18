@@ -40,6 +40,7 @@ struct FRenderData
 	bool bUseIndexBuffer = false;
 	EPrimitiveMeshType MeshType = EPrimitiveMeshType::EPT_None;
 	ERenderMode RenderMode = ERenderMode::Individual;
+	FName ShaderName = nullptr;
 };
 
 class UPrimitiveComponent : public USceneComponent
@@ -117,6 +118,16 @@ public:
 		
 		CurrentRenderData.RenderMode = NewMode;
 	}
+	void SetShaderName(FName NewShaderName)
+	{
+		if (CurrentRenderData.ShaderName != NewShaderName)
+			SetDirty(true);
+		
+		CurrentRenderData.ShaderName = NewShaderName;
+	}
+
+	FName GetShaderName() const { return CurrentRenderData.ShaderName; }
+	
 	EPrimitiveMeshType GetMeshType() const { return CurrentRenderData.MeshType; }
 
 	ERenderMode GetRenderMode() const { return CurrentRenderData.RenderMode; }
