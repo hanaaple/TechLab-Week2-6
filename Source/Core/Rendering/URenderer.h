@@ -235,6 +235,7 @@ public:
 
 	void RenderPickingTexture();
 	FMatrix GetProjectionMatrix() const { return ProjectionMatrix; }
+	FMatrix GetViewMatrix() const { return ViewMatrix; }
 
 public:
 	//View Mode 변경 함수

@@ -23,6 +23,8 @@ void URenderer::Create(HWND hWindow)
     CreatePickingTexture(hWindow);
     
     InitMatrix();
+
+    UShaderManager::Get().Initialize(*this);
     //UShaderManager::Get().LoadShader(Device, FName("DefaultShader"), L"Shaders/ShaderW0.hlsl", "mainVS", "mainPS");
 
 }
@@ -55,10 +57,9 @@ void URenderer::CreateShader()
          */
     // UShaderManager를 통해 셰이더 로드
     //UShaderManager::Get().LoadShader(Device, FName("DefaultShader"), L"Shaders/DefaultShader.hlsl", "mainVS", "mainPS");
-    UShaderManager::Get().LoadShader(Device, L"Shaders/DefaultShader.hlsl");
-    UShaderManager::Get().LoadShader(Device, FName("PickingShader"), L"Shaders/ShaderW0.hlsl", "mainVS", "PickingPS");
-
-    UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+    UShaderManager::Get().LoadAllShaders();
+    //UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+    UShader* DefaultShader = UShaderManager::Get().GetShader(EShaderType::DefaultShader);
     if (!DefaultShader)
     {
         std::cerr << "Failed to load DefaultShader." << std::endl;
@@ -147,7 +148,8 @@ void URenderer::Prepare() const
 void URenderer::PrepareShader() const
 {
     // UShaderManager에서 기본 셰이더 가져오기
-    UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+    //UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+    UShader* DefaultShader = UShaderManager::Get().GetShader(EShaderType::DefaultShader);
     if (!DefaultShader)
     {
         return;
@@ -180,27 +182,11 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
     }
 
     BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(PrimitiveComp->GetMeshType());
-
-    UpdateTopology(PrimitiveComp->GetTopology());
-
-
-    // TODO CurrentTexture null 여부에 따라 Constant Buffer에 넘겨주기
-    //일단 bUseUV는 안 넘어가는 중
-    ConstantUpdateInfo UpdateInfo{
-        PrimitiveComp->GetComponentTransform(),
-        PrimitiveComp->GetCustomColor(),
-        PrimitiveComp->IsUseVertexColor(),
-        PrimitiveComp->IsUseTexture()
-    };
-
-    
     //FIMXE : 쉐이더 구조 변경, 텍스처 저장 구조에 따라 추후 변경.
     if (PrimitiveComp->IsA<UCharComp>()) {
         UpdateConstantUV(dynamic_cast<UCharComp*>(PrimitiveComp)->c);
     }
-
-    UpdateConstantPrimitive(UpdateInfo);
-    
+    UpdateTopology(PrimitiveComp->GetTopology());
     RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
 }
 
@@ -348,12 +334,6 @@ void URenderer::UpdateConstantPrimitive(const ConstantUpdateInfo& UpdateInfo) co
     UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
     if (!DefaultShader)
     {
-        /*// 매핑된 메모리를 FConstants 구조체로 캐스팅
-        FConstants* Constants = static_cast<FConstants*>(ConstantBufferMSR.pData);
-        Constants->MVP = MVP;
-		Constants->Color = UpdateInfo.Color;
-		Constants->bUseVertexColor = UpdateInfo.bUseVertexColor ? 1 : 0;
-        Constants->bUseUV = UpdateInfo.bUseUV;*/
         std::cerr << "Failed to retrieve DefaultShader." << std::endl;
         return;
     }
