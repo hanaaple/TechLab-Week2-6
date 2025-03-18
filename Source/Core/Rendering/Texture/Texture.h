@@ -24,5 +24,5 @@ public:
 
 private:
     ID3D11ShaderResourceView* TextureSRV;
-    TMap<int32, CharacterInfo> AtlasInfoMap;
+    TMap<char, CharacterInfo> AtlasInfoMap;
 };

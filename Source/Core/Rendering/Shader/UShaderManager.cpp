@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "Core/Rendering/URenderer.h"
+#include "Object/PrimitiveComponent/CharComp.h"
 #include "Static/FEditorManager.h"
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 
@@ -10,7 +11,7 @@ void UShaderManager::Initialize(const URenderer& Renderer)
 {
     Device = Renderer.GetDevice();
     DeviceContext = Renderer.GetDeviceContext();
-    this->Renderer=&Renderer;
+    this->Renderer = &Renderer;
 }
 
 void UShaderManager::LoadAllShaders()
@@ -19,14 +20,36 @@ void UShaderManager::LoadAllShaders()
     //LoadShader(Device, FName("PickingShader"), L"Shaders/ShaderW0.hlsl", "mainVS", "PickingPS");
     LoadShader(Device, L"Shaders/PickingShader.hlsl");
     LoadShader(Device, L"Shaders/OutlineShader.hlsl");
-    LoadShader(Device, L"Shaders/TextShader.hlsl");
+    LoadShader(Device, L"Shaders/TextShader.hlsl", [](UPrimitiveComponent* PrimitiveComp)
+    {
+        ID3D11Device* Device = UShaderManager::Get().Device;
+        ID3D11DeviceContext* DeviceContext = UShaderManager::Get().DeviceContext;
+        const URenderer* Renderer = UShaderManager::Get().Renderer;
+        Texture* Texture = UTextureLoader::Get().GetTexture(Renderer->GetCurrentTextureType(), Device, DeviceContext);
+        FMatrix ViewMatrix = Renderer->GetViewMatrix();
+        FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
+
+        //MVP 행렬 계산
+        FMatrix MVP = FMatrix::Transpose(
+            PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
+        UShader* Shader = UShaderManager::Get().GetShader(EShaderType::DefaultShader);
+        if (Shader)
+        {
+            if (PrimitiveComp->IsA<UCharComp>())
+            {
+                UCharComp* comp = static_cast<UCharComp*>(PrimitiveComp);
+                auto info = Texture->GetCharInfoMap(comp->c);
+                Shader->UpdateConstantBuffer(DeviceContext, 1, &info, sizeof(info));
+            }
+            Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+        }
+    });
     // LoadShader(Device, L"Shaders/TextureAtlasShader.hlsl", "mainVS", "mainPS", []()
     // {
     //     
     // });
-    LoadShader(Device, L"Shaders/CustomShader.hlsl",[](UPrimitiveComponent* PrimitiveComp)
+    LoadShader(Device, L"Shaders/CustomShader.hlsl", [](UPrimitiveComponent* PrimitiveComp)
     {
-        
     });
 }
 
@@ -61,7 +84,7 @@ UShader* UShaderManager::LoadShader(ID3D11Device* Device, const FName& Name, con
         UpdateConstantBufferFunction = [](UPrimitiveComponent* PrimitiveComp)
         {
             ID3D11DeviceContext* DeviceContext = UShaderManager::Get().DeviceContext;
-            const URenderer *Renderer = UShaderManager::Get().Renderer;
+            const URenderer* Renderer = UShaderManager::Get().Renderer;
             FMatrix ViewMatrix = Renderer->GetViewMatrix();
             FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
 

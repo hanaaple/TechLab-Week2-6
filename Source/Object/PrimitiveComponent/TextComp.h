@@ -3,20 +3,20 @@
 #include "CharComp.h"
 #pragma once
 
-class UTextComp: public UPrimitiveComponent {
-	using Super = UPrimitiveComponent;
+class UTextComp: public USceneComponent {
+	using Super = USceneComponent;
 	DECLARE_OBJECT(UTextComp, Super)
 
 public:
 	UTextComp() : Super() {
-		bUseUV = true;
+		
 	}
 	virtual ~UTextComp() = default;
 
 	void SetText(FName NewText);
 
 	void SetTextSpace(float NewTextSpace);
-	
+	void Activate() override;
 private:
 	void UpdateCharacterChildren();
 

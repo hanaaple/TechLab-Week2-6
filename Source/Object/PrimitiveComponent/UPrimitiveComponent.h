@@ -162,7 +162,7 @@ public:
 		
 		CurrentRenderData.RenderMode = NewMode;
 	}
-	void SetShaderName(EShaderType NewShaderType)
+	void SetShaderType(EShaderType NewShaderType)
 	{
 		if (CurrentRenderData.ShaderType != NewShaderType)
 			SetDirty(true);

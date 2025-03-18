@@ -57,3 +57,7 @@ void UTextComp::UpdateCharacterChildren()
 	}
 }
 
+
+void UTextComp::Activate()
+{
+}

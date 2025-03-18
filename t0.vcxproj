@@ -282,7 +282,6 @@
     <ClCompile Include="Source\Core\Math\Vector.cpp" />
     <ClCompile Include="Source\JsonSaveHelper.cpp" />
     <ClCompile Include="Source\Object\Gizmo\RotationGizmo.cpp" />
-    <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp" />
     <ClCompile Include="Source\Primitive\MeshVertexData.cpp" />
     <ClCompile Include="Source\Primitive\VertexDataCreator.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui.cpp" />
@@ -350,8 +349,6 @@
     <ClInclude Include="Source\Object\Actor\Cylinder.h" />
     <ClInclude Include="Source\Object\Gizmo\RotationGizmo.h" />
     <ClInclude Include="Source\Object\ObjectFactory.h" />
-    <ClInclude Include="Source\Object\PrimitiveComponent\CharComp.h" />
-    <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
     <ClInclude Include="Source\Primitive\MeshVertexData.h" />
     <ClInclude Include="Source\Primitive\VertexDataCreator.h" />
     <ClInclude Include="Source\ThirdParty\DirectXTK\Audio.h" />
@@ -415,6 +412,9 @@
     <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\1234.png" />
+    <Content Include="Resources\2313214124.png" />
+    <Content Include="Resources\tempTexture.png" />
     <Content Include="Shaders\CustomShader.hlsl" />
     <Content Include="Shaders\DefaultShader.hlsl" />
     <Content Include="Shaders\OutlineShader.hlsl" />

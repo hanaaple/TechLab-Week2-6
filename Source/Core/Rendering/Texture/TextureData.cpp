@@ -11,7 +11,7 @@ FTextureStaticData* TextureData::GetTexture(ETextureType TextureType)
             return nullptr;
             break;
         case ETextureType::TextureA:
-            TextureStaticData.FileDirectory = FName("경로");
+            TextureStaticData.FileDirectory = FName("Resources/tempTexture.png");
             TextureStaticData.TextureName = FName("Texture 명");
             TextureStaticData.BitmapWidth = 512.0f;
             TextureStaticData.BitmapHeight = 512.0f;
@@ -21,7 +21,7 @@ FTextureStaticData* TextureData::GetTexture(ETextureType TextureType)
             Textures.Add(TextureType, TextureStaticData);
             break;
         case ETextureType::FontTexture:
-            TextureStaticData.FileDirectory = FName("경로");
+            TextureStaticData.FileDirectory = FName("Resources/tempTexture.png");
             TextureStaticData.TextureName = FName("Texture 명");
             TextureStaticData.BitmapWidth = 512.0f;
             TextureStaticData.BitmapHeight = 512.0f;
@@ -31,7 +31,7 @@ FTextureStaticData* TextureData::GetTexture(ETextureType TextureType)
             Textures.Add(TextureType, TextureStaticData);
             break;
         case ETextureType::TextureC:
-            TextureStaticData.FileDirectory = FName("경로");
+            TextureStaticData.FileDirectory = FName("Resources/tempTexture.png");
             TextureStaticData.TextureName = FName("Texture 명");
             TextureStaticData.BitmapWidth = 512.0f;
             TextureStaticData.BitmapHeight = 512.0f;

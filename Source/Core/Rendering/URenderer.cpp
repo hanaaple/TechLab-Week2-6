@@ -772,13 +772,20 @@ void URenderer::PrepareTexture(ETextureType TextureType)
 
     CurrentTextureType = TextureType;
 
-    Texture* Texture = TextureLoader.GetTexture(TextureType, Device, DeviceContext);
-    ID3D11ShaderResourceView* TextureSRV = Texture->GetTextureSRV();
-    
-    if (TextureSRV != nullptr)
+    Texture* Texture = UTextureLoader::Get().GetTexture(TextureType, Device, DeviceContext);
+
+    if (Texture != nullptr)
     {
-        //DeviceContext->PSSetShaderResources(0, 1, &TextureSRV);
-        //DeviceContext->PSSetSamplers(0, 1, &SamplerState);   
+        ID3D11ShaderResourceView* TextureSRV = Texture->GetTextureSRV();
+        if (TextureSRV != nullptr)
+        {
+            DeviceContext->PSSetShaderResources(0, 1, &TextureSRV);
+            DeviceContext->PSSetSamplers(0, 1, &SamplerState);   
+        }else
+        {
+            //DeviceContext->PSSetShaderResources(0, 1, nullptr);
+            //DeviceContext->PSSetSamplers(0, 1, nullptr);
+        }
     }
     else
     {
