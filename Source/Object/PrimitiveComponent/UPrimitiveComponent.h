@@ -86,7 +86,7 @@ struct FRenderData
 	D3D_PRIMITIVE_TOPOLOGY Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	EPrimitiveMeshType MeshType = EPrimitiveMeshType::EPT_None;
 	ERenderMode RenderMode = ERenderMode::None;
-	FName ShaderName = nullptr;
+	FName ShaderName=FName();
 };
 
 class UPrimitiveComponent : public USceneComponent
