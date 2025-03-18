@@ -274,7 +274,7 @@
     <ClCompile Include="Source\Core\Math\Matrix.cpp" />
     <ClCompile Include="Source\Core\Math\Vector.cpp" />
     <ClCompile Include="Source\JsonSaveHelper.cpp" />
-    <ClCompile Include="Source\Object\Gizmo\WorldGrid.cpp" />
+    <ClCompile Include="Source\Object\Gizmo\RotationGizmo.cpp" />
     <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp" />
     <ClCompile Include="Source\Primitive\MeshVertexData.cpp" />
     <ClCompile Include="Source\Primitive\UShader.cpp" />
@@ -338,7 +338,7 @@
     <ClInclude Include="Source\JsonSaveHelper.h" />
     <ClInclude Include="Source\Core\Math\Transform.h" />
     <ClInclude Include="Source\Object\Actor\Cylinder.h" />
-    <ClInclude Include="Source\Object\Gizmo\WorldGrid.h" />
+    <ClInclude Include="Source\Object\Gizmo\RotationGizmo.h" />
     <ClInclude Include="Source\Object\ObjectFactory.h" />
     <ClInclude Include="Source\Object\PrimitiveComponent\CharComp.h" />
     <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
@@ -402,7 +402,26 @@
     <ClInclude Include="Source\Object\Actor\Sphere.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Shaders\CustomShader.hlsl" />
     <Content Include="Shaders\DefaultShader.hlsl" />
+    <Content Include="Shaders\OutlineShader.hlsl" />
+    <Content Include="Shaders\PickingShader.hlsl" />
+    <Content Include="Shaders\TextShader.hlsl" />
+    <ClCompile Include="Source\Core\Container\Map.cpp" />
+    <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp" />
+    <ClCompile Include="Source\Primitive\UShader.cpp" />
+    <ClCompile Include="Source\Primitive\UShaderManager.cpp" />
+    <ClInclude Include="Source\Object\PrimitiveComponent\CharComp.h" />
+    <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
+    <ClInclude Include="Source\Primitive\UShader.h" />
+    <ClInclude Include="Source\Primitive\UShaderManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Shaders\CustomShader.hlsl" />
+    <Content Include="Shaders\DefaultShader.hlsl" />
+    <Content Include="Shaders\OutlineShader.hlsl" />
+    <Content Include="Shaders\PickingShader.hlsl" />
+    <Content Include="Shaders\TextShader.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

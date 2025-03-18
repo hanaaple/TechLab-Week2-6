@@ -7,6 +7,16 @@ class AEditorGizmos;
 
 class ABoundingBoxActor;
 
+class ARotationGizmo;
+
+enum class EGizmoType : uint8
+{
+    Translate,
+    Rotate,
+    Scale,
+    Max
+};
+
 class FEditorManager : public TSingleton<FEditorManager>
 {
 public:
@@ -22,6 +32,12 @@ public:
     
     ABoundingBoxActor* GetAABB() const { return AABB; }
 
+    void SetGizmoType(EGizmoType newType);
+
+    ARotationGizmo* GetRotationGizmo() const { return RotationGizmo; }
+
+    EGizmoType GetGizmoType() { return GizmoType; }
+
     void SetWorldGrid(AWorldGrid* grid);
 
     AWorldGrid* GetWorldGrid() const { return WorldGrid; }
@@ -29,7 +45,9 @@ private:
     ACamera* Camera = nullptr;
     AActor* SelectedActor = nullptr;
     AEditorGizmos* GizmoHandle = nullptr;
+    ARotationGizmo* RotationGizmo = nullptr;
     ABoundingBoxActor* AABB = nullptr;
     AEditorGizmos* ControlGizmo = nullptr;
+    EGizmoType GizmoType = EGizmoType::Translate;
     AWorldGrid* WorldGrid = nullptr;
 };

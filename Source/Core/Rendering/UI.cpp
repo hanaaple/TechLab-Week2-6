@@ -432,10 +432,9 @@ void UI::RenderPropertyWindow()
 
         if (FEditorManager::Get().GetGizmoHandle() != nullptr)
         {
-            AEditorGizmos* Gizmo = FEditorManager::Get().GetGizmoHandle();
-            const char* GizmoTypeStr = (Gizmo->GetGizmoType() == EGizmoType::Translate)
+            const char* GizmoTypeStr = (FEditorManager::Get().GetGizmoType() == EGizmoType::Translate)
                                            ? "Translate"
-                                           : (Gizmo->GetGizmoType() == EGizmoType::Rotate)
+                                           : (FEditorManager::Get().GetGizmoType() == EGizmoType::Rotate)
                                            ? "Rotate"
                                            : "Scale";
             ImGui::Text("GizmoType: %s", GizmoTypeStr);

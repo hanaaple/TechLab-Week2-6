@@ -14,6 +14,8 @@
 #include "Static/FEditorManager.h"
 #include <Object/Actor/BillBoardText.h>
 
+#include "Primitive/UShaderManager.h"
+
 
 void UWorld::BeginPlay()
 {
@@ -47,6 +49,13 @@ void UWorld::Tick(float DeltaTime)
 		{
 			Actor->Tick(DeltaTime);
 		}
+	}
+
+	if (APlayerInput::Get().GetKeyDown(EKeyCode::Space))
+	{
+		int type = static_cast<int>(FEditorManager::Get().GetGizmoType());
+		type = (type + 1) % static_cast<int>(EGizmoType::Max);
+		FEditorManager::Get().SetGizmoType(static_cast<EGizmoType>(type));
 	}
 }
 
@@ -200,6 +209,9 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 				ZIgnoreRenderComponents.Add(RenderTarget);
 				continue;
 			}
+			auto CurrentShader = UShaderManager::Get().GetShader(RenderTarget->GetShaderName());
+			if (CurrentShader != nullptr)
+				CurrentShader->UpdateConstantBuffer(RenderTarget);
 			RenderTarget->Render();
 		}
 	}
@@ -209,6 +221,9 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 	for (auto& RenderTarget: ZIgnoreRenderComponents)
 	{
 		Renderer.PrepareTexture(RenderTarget->GetTexture());
+		auto CurrentShader = UShaderManager::Get().GetShader(RenderTarget->GetShaderName());
+		if (CurrentShader != nullptr)
+			CurrentShader->UpdateConstantBuffer(RenderTarget);
 		RenderTarget->Render();
 	}
 	// 1. 같은 메쉬여도 배치 여부가 다를수 있다.
