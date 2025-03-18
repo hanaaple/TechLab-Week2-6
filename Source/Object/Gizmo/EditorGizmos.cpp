@@ -15,6 +15,12 @@ AEditorGizmos::AEditorGizmos()
 	ZArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	ZArrow->SetCustomColor(FVector4(0.0f, 0.0f, 1.0f, 1.0f));
 	axisComponents.Add(ZArrow);
+
+	UConeComp* ZCone = AddComponent<UConeComp>();
+	ZCone->SetupAttachment(ZArrow);
+	ZCone->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.5f), FVector(0, 0, 0), FVector(0.1f, 0.1f, 0.1f)));
+	ZCone->SetCustomColor(FVector4(0.0f, 0.0f, 1.0f, 1.0f));
+	axisComponents.Add(ZCone);
 	
 	UCylinderComp* XArrow = AddComponent<UCylinderComp>();
 	XArrow->SetupAttachment(ZArrow);
@@ -22,17 +28,32 @@ AEditorGizmos::AEditorGizmos()
 	XArrow->SetCustomColor(FVector4(1.0f, 0.0f, 0.0f, 1.0f));
 	axisComponents.Add(XArrow);
 
+	UConeComp* XCone = AddComponent<UConeComp>();
+	XCone->SetupAttachment(ZArrow);
+	XCone->SetRelativeTransform(FTransform(FVector(0.5f, 0.0f, 0.0f), FVector(0, -90.0f, 0), FVector(0.1f, 0.1f, 0.1f)));
+	XCone->SetCustomColor(FVector4(1.0f, 0.0f, 0.0f, 1.0f));
+	axisComponents.Add(XCone);
+
 	UCylinderComp* YArrow = AddComponent<UCylinderComp>();
 	YArrow->SetupAttachment(ZArrow);
 	YArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(90.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
 	YArrow->SetCustomColor(FVector4(0.0f, 1.0f, 0.0f, 1.0f));
 	axisComponents.Add(YArrow);
 
+	UConeComp* YCone = AddComponent<UConeComp>();
+	YCone->SetupAttachment(ZArrow);
+	YCone->SetRelativeTransform(FTransform(FVector(0.0f, 0.5f, 0.0f), FVector(90.0f, 0.0f, 0.0f), FVector(0.1f, 0.1f, 0.1f)));
+	YCone->SetCustomColor(FVector4(0.0f, 1.0f, 0.0f, 1.0f));
+	axisComponents.Add(YCone);
+
 	RootComponent = ZArrow;
 
 	ZArrow->SetDepth(1001);
 	YArrow->SetDepth(1001);
 	XArrow->SetDepth(1001);
+	ZCone->SetDepth(1001);
+	XCone->SetDepth(1001);
+	YCone->SetDepth(1001);
 	
 	SetActorVisibility(false);
 }
@@ -147,15 +168,15 @@ void AEditorGizmos::SetActorVisibility(bool bNewActive)
 		RootComponent->SetVisibility(bNewActive);
 }
 
-ESelectedAxis AEditorGizmos::IsAxis(UCylinderComp* axis)
+ESelectedAxis AEditorGizmos::IsAxis(UPrimitiveComponent* axis)
 {
-	if (axis == axisComponents[0]) {
+	if (axis == axisComponents[0] || axis==axisComponents[1]) {
 		SelectedAxis = ESelectedAxis::Z;
 	}
-	else if (axis == axisComponents[1]) {
+	else if (axis == axisComponents[2] || axis == axisComponents[3]) {
 		SelectedAxis = ESelectedAxis::X;
 	}
-	else if (axis == axisComponents[2]) {
+	else if (axis == axisComponents[4] || axis == axisComponents[5]) {
 		SelectedAxis = ESelectedAxis::Y;
 	}
 	else {

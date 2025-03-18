@@ -22,8 +22,8 @@ public:
 	void SetScaleByDistance();
 	void SetActorVisibility(bool bNewActive);
 	void SetSelectedAxis(ESelectedAxis NewAxis) { SelectedAxis = NewAxis; }
-	TArray<UCylinderComp*> GetAxis() { return axisComponents; }
-	ESelectedAxis IsAxis(UCylinderComp* axis);
+	TArray<UPrimitiveComponent*> GetAxis() { return axisComponents; }
+	ESelectedAxis IsAxis(UPrimitiveComponent* axis);
 	ESelectedAxis GetSelectedAxis() const { return SelectedAxis; }
 	void SetPrevMousePos(FVector4 mouse);
 	void SetActorXAxis(FVector4 axis);
@@ -35,7 +35,7 @@ public:
 	FVector4 GetZAxis() { return actorZAxis; }
 private:
 	ESelectedAxis SelectedAxis = ESelectedAxis::None;
-	TArray<UCylinderComp*> axisComponents;
+	TArray<UPrimitiveComponent*> axisComponents;
 	virtual const char* GetTypeName() override;
 
 private:

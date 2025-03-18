@@ -56,7 +56,7 @@ void AAABBPicker::LateTick(float DeltaTime)
 				ACamera* camera = FEditorManager::Get().GetCamera();
 				FVector rayOrigin = camera->GetActorTransform().GetPosition();
 				FVector rayDir = RayCast(mousePos, camera);
-				UCylinderComp* pickedAxis = CheckGizmo(rayOrigin, rayDir);
+				UPrimitiveComponent* pickedAxis = CheckGizmo(rayOrigin, rayDir);
 				if (pickedAxis != nullptr) {
 					if (FEditorManager::Get().GetGizmoHandle() != nullptr && FEditorManager::Get().GetSelectedActor() != nullptr) {
 						AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
@@ -186,11 +186,11 @@ AActor* AAABBPicker::CheckCollision(FVector rayOrigin, FVector rayDir)
 	}
 }
 
-UCylinderComp* AAABBPicker::CheckGizmo(FVector rayOrigin, FVector rayDir)
+UPrimitiveComponent* AAABBPicker::CheckGizmo(FVector rayOrigin, FVector rayDir)
 {
-	UCylinderComp* PickedComponent = nullptr;
+	UPrimitiveComponent* PickedComponent = nullptr;
 	AEditorGizmos* gizmos = FEditorManager::Get().GetGizmoHandle();
-	TArray<UCylinderComp*> components = gizmos->GetAxis();
+	TArray<UPrimitiveComponent*> components = gizmos->GetAxis();
 	float dist = 10000;
 	for (auto component : components) {
 		if (component != nullptr) {
