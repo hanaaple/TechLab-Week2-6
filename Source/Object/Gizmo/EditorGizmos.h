@@ -19,6 +19,12 @@ enum class EGizmoType : uint8
 	Max
 };
 
+enum class EGizmoReference : uint8
+{
+	World,
+	Local
+};
+
 class AEditorGizmos : public AActor
 {
     DECLARE_OBJECT(AEditorGizmos, AActor)
@@ -38,6 +44,8 @@ public:
 	void SetActorXAxis(FVector4 axis);
 	void SetActorYAxis(FVector4 axis);
 	void SetActorZAxis(FVector4 axis);
+	EGizmoReference GetGizmoReference() const { return GizmoReference; }
+	void SetGizmoReference(EGizmoReference reference);
 
 	FVector4 GetXAxis() { return actorXAxis; }
 	FVector4 GetYAxis() { return actorYAxis; }
@@ -45,6 +53,7 @@ public:
 private:
 	ESelectedAxis SelectedAxis = ESelectedAxis::None;
 	EGizmoType GizmoType = EGizmoType::Translate;
+	EGizmoReference GizmoReference = EGizmoReference::World;
 	TArray<UCylinderComp*> axisComponents;
 	virtual const char* GetTypeName() override;
 

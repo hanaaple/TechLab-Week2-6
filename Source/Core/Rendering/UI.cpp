@@ -295,9 +295,18 @@ void UI::RenderSettingsPanel()
     static const char* ViewModeNames[] = {"Lit", "Unlit", "Wireframe"};
     static int CurrentViewMode = static_cast<int>(UEngine::Get().GetViewMode());
 
+    AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
+    static const char* gizmoReferences[] = { "World", "Local" };
+    static int CurrentGizmoReference = static_cast<int>(gizmo->GetGizmoReference());
+
     if (ImGui::Combo("##ViewMode", &CurrentViewMode, ViewModeNames, IM_ARRAYSIZE(ViewModeNames)))
     {
         UEngine::Get().SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
+    }
+    ImGui::Text("Gizmo Reference");
+    if (ImGui::Combo("##GizmoReference", &CurrentGizmoReference, gizmoReferences, IM_ARRAYSIZE(gizmoReferences)))
+    {
+        gizmo->SetGizmoReference(static_cast<EGizmoReference>(CurrentGizmoReference));
     }
     ImGui::PopItemWidth();
     ImGui::NextColumn();
@@ -355,6 +364,25 @@ void UI::RenderPropertyWindow()
     {
         FTransform selectedTransform = selectedActor->GetActorTransform();
  
+        AEditorGizmos* gizmo = FEditorManager::Get().GetGizmoHandle();
+        float xAxis[] = {
+            gizmo->GetXAxis().X,
+            gizmo->GetXAxis().Y,
+            gizmo->GetXAxis().Z
+        };
+        float yAxis[] = {
+            gizmo->GetYAxis().X,
+            gizmo->GetYAxis().Y,
+            gizmo->GetYAxis().Z
+        };
+        float zAxis[] = {
+            gizmo->GetZAxis().X,
+            gizmo->GetZAxis().Y,
+            gizmo->GetZAxis().Z
+        };
+        ImGui::InputFloat3("x axis", xAxis, "%.3f");
+        ImGui::InputFloat3("y axis", yAxis, "%.3f");
+        ImGui::InputFloat3("z axis", zAxis, "%.3f");
         /*UPrimitiveComponent* component = dynamic_cast<UPrimitiveComponent*>(selectedActor->GetRootComponent());
         float xAxis[] = {
             component->obb.axis[0].X,

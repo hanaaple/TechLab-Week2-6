@@ -45,7 +45,12 @@ void AEditorGizmos::Tick(float DeltaTime)
 	{
 		FTransform GizmoTransform = RootComponent->GetComponentTransform();
 		GizmoTransform.SetPosition(SelectedActor->GetActorTransform().GetPosition());
-		GizmoTransform.SetRotation(SelectedActor->GetActorTransform().GetEulerRotation());
+		if (GizmoReference == EGizmoReference::Local) {
+			GizmoTransform.SetRotation(SelectedActor->GetActorTransform().GetEulerRotation());
+		}
+		else {
+			GizmoTransform.SetRotation(FVector(0, 0, 0));
+		}
 		SetActorTransform(GizmoTransform);
 	}
 
@@ -190,6 +195,11 @@ void AEditorGizmos::SetActorZAxis(FVector4 axis)
 	actorZAxis = axis;
 }
 
+void AEditorGizmos::SetGizmoReference(EGizmoReference reference)
+{
+	GizmoReference = reference;
+}
+
 const char* AEditorGizmos::GetTypeName()
 {
 	return "GizmoHandle";
@@ -198,16 +208,27 @@ const char* AEditorGizmos::GetTypeName()
 void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 {
 	const FVector& AP = AT.GetPosition();
-
+	FQuat rotation;
 	if (SelectedAxis == ESelectedAxis::X)
 	{
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP + actorXAxis * Result });
+			if (GizmoReference == EGizmoReference::World) {
+				AT.SetPosition({ AP.X + Result, AP.Y, AP.Z });
+			}
+			else {
+				AT.SetPosition({ AP + actorXAxis * Result });
+			}
 			break;
 		case EGizmoType::Rotate:
-			AT.RotateRoll(Result * 15.0f);
+			if (GizmoReference == EGizmoReference::World) {
+				AT.RotateRoll(Result * 15.0f);
+			}
+			else {
+				rotation = FQuat::AxisAngleToQuaternion(actorXAxis, Result * 15.0f);
+				AT.Rotate(rotation.GetEuler());
+			}
 			break;
 		case EGizmoType::Scale:
 			AT.AddScale({ Result * 0.5f, 0, 0 });
@@ -219,10 +240,21 @@ void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP + actorYAxis * Result });
+			if (GizmoReference == EGizmoReference::World) {
+				AT.SetPosition({ AP.X, AP.Y + Result, AP.Z });
+			}
+			else {
+				AT.SetPosition({ AP + actorYAxis * Result });
+			}
 			break;
 		case EGizmoType::Rotate:
-			AT.RotatePitch(Result * 15.0f);
+			if (GizmoReference == EGizmoReference::World) {
+				AT.RotateRoll(Result * 15.0f);
+			}
+			else {
+				rotation = FQuat::AxisAngleToQuaternion(actorYAxis, Result * 15.0f);
+				AT.Rotate(rotation.GetEuler());
+			}
 			break;
 		case EGizmoType::Scale:
 			AT.AddScale({ 0, Result * 0.5f, 0 });
@@ -234,10 +266,21 @@ void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP + actorZAxis * Result });
+			if (GizmoReference == EGizmoReference::World) {
+				AT.SetPosition({ AP.X, AP.Y, AP.Z + Result });
+			}
+			else {
+				AT.SetPosition({ AP + actorZAxis * Result });
+			}
 			break;
 		case EGizmoType::Rotate:
-			AT.RotateYaw(-Result * 15.0f);
+			if (GizmoReference == EGizmoReference::World) {
+				AT.RotateYaw(-Result * 15.0f);
+			}
+			else {
+				rotation = FQuat::AxisAngleToQuaternion(actorZAxis, Result * 15.0f);
+				AT.Rotate(rotation.GetEuler());
+			}
 			break;
 		case EGizmoType::Scale:
 			AT.AddScale({0, 0, Result * 0.5f });
