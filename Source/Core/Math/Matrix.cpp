@@ -383,6 +383,42 @@ FVector FMatrix::GetEulerRotation() const
 	return EulerAngles;
 }
 
+FMatrix FMatrix::GetVisualRotationMatrix(const FQuat& Q)
+{
+	// 쿼터니언 요소 추출
+	const float x = Q.X, y = Q.Y, z = Q.Z, w = Q.W;
+
+	// 중간 계산값
+	const float xx = x * x, yy = y * y, zz = z * z;
+	const float xy = x * y, xz = x * z, yz = y * z;
+	const float wx = w * x, wy = w * y, wz = w * z;
+
+	// 언리얼 좌표계 기준으로 Forward/Right/Up이 올바르게 정렬된 행렬
+	FMatrix Result;
+
+	Result.M[0][0] = 1.0f - 2.0f * (yy + zz);  // Forward.X
+	Result.M[0][1] = 2.0f * (xy + wz);         // Right.X
+	Result.M[0][2] = 2.0f * (xz - wy);         // Up.X
+	Result.M[0][3] = 0.0f;
+
+	Result.M[1][0] = 2.0f * (xy - wz);         // Forward.Y
+	Result.M[1][1] = 1.0f - 2.0f * (xx + zz);  // Right.Y
+	Result.M[1][2] = 2.0f * (yz + wx);         // Up.Y
+	Result.M[1][3] = 0.0f;
+
+	Result.M[2][0] = 2.0f * (xz + wy);         // Forward.Z
+	Result.M[2][1] = 2.0f * (yz - wx);         // Right.Z
+	Result.M[2][2] = 1.0f - 2.0f * (xx + yy);  // Up.Z
+	Result.M[2][3] = 0.0f;
+
+	Result.M[3][0] = 0.0f;
+	Result.M[3][1] = 0.0f;
+	Result.M[3][2] = 0.0f;
+	Result.M[3][3] = 1.0f;
+
+	return Result;
+}
+
 // FQuat FMatrix::GetRotation() const
 // {
 // 	FQuat Q = FQuat::MakeFromRotationMatrix(*this);

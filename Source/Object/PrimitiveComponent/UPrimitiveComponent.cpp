@@ -30,6 +30,7 @@ void UPrimitiveComponent::Tick(float DeltaTime)
 	if (TryGetVertexData(&VertexData))
 	{
 		aabb.UpdateAABB(VertexData);
+		obb.UpdateOBB(GetComponentTransform());
 	}
 }
 

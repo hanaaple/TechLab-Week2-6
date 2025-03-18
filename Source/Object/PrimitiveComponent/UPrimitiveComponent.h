@@ -5,6 +5,52 @@
 #include "Object/USceneComponent.h"
 #include <Core/Engine.h>
 
+struct FOBB {
+	FVector OriginalCenter;
+	FVector Center;
+	FVector axis[3];
+	float OriginalHalfSize[3];
+	float halfSize[3];
+
+	void Initialize(const TArray<FVertexSimple>& vertices) {
+		FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+		FVector max = -min;
+		for (const FVertexSimple& vertex : vertices) {
+			min.X = FMath::Min(min.X, vertex.X);
+			min.Y = FMath::Min(min.Y, vertex.Y);
+			min.Z = FMath::Min(min.Z, vertex.Z);
+			max.X = FMath::Max(max.X, vertex.X);
+			max.Y = FMath::Max(max.Y, vertex.Y);
+			max.Z = FMath::Max(max.Z, vertex.Z);
+		}
+		OriginalCenter = (max + min) / 2.0f;
+		Center = OriginalCenter;
+		FVector half = (max - min) / 2.0f;
+		OriginalHalfSize[0] = half.X;
+		OriginalHalfSize[1] = half.Y;
+		OriginalHalfSize[2] = half.Z;
+		for (int i = 0; i < 3; i++) {
+			halfSize[i] = OriginalHalfSize[i];
+		}
+		axis[0] = FVector(1, 0, 0);
+		axis[1] = FVector(0, 1, 0);
+		axis[2] = FVector(0, 0, 1);
+	}
+
+	void UpdateOBB(FTransform transform) {
+		FQuat Rotation(transform.GetEulerRotation());
+		FMatrix rotation = FMatrix::GetRotateMatrix(FQuat(Rotation));
+		axis[0] = (FVector(1, 0, 0) * rotation).GetSafeNormal();
+		axis[1] = (FVector(0, 1, 0) * rotation).GetSafeNormal();
+		axis[2] = (FVector(0, 0, 1) * rotation).GetSafeNormal();
+		FVector scale = transform.GetScale();
+		halfSize[0] = OriginalHalfSize[0] * scale.X;
+		halfSize[1] = OriginalHalfSize[1] * scale.Y;
+		halfSize[2] = OriginalHalfSize[2] * scale.Z;
+		Center = OriginalCenter * rotation + transform.GetPosition();
+	}
+};
+
 struct FAABB {
 	FVector Min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
 	FVector Max = -Min;
@@ -49,6 +95,7 @@ class UPrimitiveComponent : public USceneComponent
 
 public:
 	FAABB aabb;
+	FOBB obb;
 public:
 	UPrimitiveComponent():Super(), Depth(0){}
 	virtual ~UPrimitiveComponent() = default;
@@ -164,6 +211,7 @@ public:
 		SetMesh(EPrimitiveMeshType::EPT_Cube);
 		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
 		SetTexture(UTextureLoader::Get().m_texture);
+		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~UCubeComp() = default;
 };
@@ -176,6 +224,7 @@ public:
 	USphereComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Sphere);
+		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~USphereComp() = default;
 };
@@ -188,6 +237,7 @@ public:
 	UTriangleComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Triangle);
+		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~UTriangleComp() = default;
 };
@@ -215,6 +265,7 @@ public:
 	UCylinderComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Cylinder);
+		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~UCylinderComp() = default;
 };
@@ -227,6 +278,7 @@ public:
 	UConeComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Cone);
+		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~UConeComp() = default;
 };
@@ -239,6 +291,7 @@ public:
 	UTorusComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Torus);
+		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~UTorusComp() = default;
 };
