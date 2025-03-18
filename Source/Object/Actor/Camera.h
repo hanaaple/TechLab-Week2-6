@@ -27,6 +27,7 @@ private:
     // 화면각
     float FieldOfView;
     bool bIsMoving = false;
+    FVector originalRotation;
 public:
     const float MaxYDegree = 89.8f;
     //카메라 스피드 IMGui용 나중에 Velocity로 관리하면 없어질애라 편하게 public에서 관리
@@ -46,6 +47,9 @@ public:
 
     bool GetIsMoving() { return bIsMoving; }
     void SetIsMoving(bool value);
+
+    FVector GetOriginalRotation() { return originalRotation; }
+    void SetOriginalRotation();
         
     FVector GetForward() const
     {

@@ -55,6 +55,7 @@ void UWorld::Tick(float DeltaTime)
 		ACamera* cam = FEditorManager::Get().GetCamera();
 		if (!cam->GetIsMoving() && APlayerInput::Get().GetKeyDown(EKeyCode::F))
 		{
+			cam->SetOriginalRotation();
 			cam->SetIsMoving(true);
 		}
 		if (cam->GetIsMoving()) {
@@ -66,7 +67,9 @@ void UWorld::Tick(float DeltaTime)
 			Direction = Direction.GetSafeNormal();
 			if (actorPos.X - camPos.X > 5.01f) {
 				camTransform.SetPosition(camPos + Direction * (distance/10.0f));
-				camTransform.SetRotation(0, 0, 0);
+				if (camTransform.GetEulerRotation().Length() > 0.1f) {
+					camTransform.SetRotation(camTransform.GetEulerRotation() - cam->GetOriginalRotation() * 0.02f);
+				}
 				cam->SetActorTransform(camTransform);
 			}
 			else {

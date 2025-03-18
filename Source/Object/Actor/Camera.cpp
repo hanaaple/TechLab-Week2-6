@@ -53,3 +53,9 @@ void ACamera::SetIsMoving(bool value)
 {
     bIsMoving = value;
 }
+
+void ACamera::SetOriginalRotation()
+{
+    FTransform transform = GetActorTransform();
+    originalRotation = transform.GetEulerRotation();
+}
