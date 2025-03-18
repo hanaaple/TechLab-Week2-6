@@ -9,6 +9,7 @@
 //#include "Primitive/UShaderManager.h"
 #include "Primitive/UShaderManager.h"
 #include "Static/FEditorManager.h"
+#include <Object/PrimitiveComponent/CharComp.h>
 
 void URenderer::Create(HWND hWindow)
 {
@@ -113,6 +114,11 @@ void URenderer::ReleaseConstantBuffer()
         ConstantsDepthBuffer->Release();
         ConstantsDepthBuffer = nullptr;
     }
+
+    if (ConstantsUVBuffer) {
+        ConstantsUVBuffer->Release();
+        ConstantsUVBuffer = nullptr;
+    }
 }
 
 void URenderer::SwapBuffer() const
@@ -187,8 +193,11 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
         PrimitiveComp->IsUseTexture()
     };
 
-    //FIMXE : 텍스처 저장 구조에 따라 추후 변경.
-    //UpdateInfo.bUseUV = (PrimitiveComp->Texture != nullptr) ? 1 : 0;
+    
+    //FIMXE : 쉐이더 구조 변경, 텍스처 저장 구조에 따라 추후 변경.
+    if (PrimitiveComp->IsA<UCharComp>()) {
+        UpdateConstantUV(dynamic_cast<UCharComp*>(PrimitiveComp)->c);
+    }
 
     UpdateConstantPrimitive(UpdateInfo);
     
@@ -339,6 +348,12 @@ void URenderer::UpdateConstantPrimitive(const ConstantUpdateInfo& UpdateInfo) co
     UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
     if (!DefaultShader)
     {
+        /*// 매핑된 메모리를 FConstants 구조체로 캐스팅
+        FConstants* Constants = static_cast<FConstants*>(ConstantBufferMSR.pData);
+        Constants->MVP = MVP;
+		Constants->Color = UpdateInfo.Color;
+		Constants->bUseVertexColor = UpdateInfo.bUseVertexColor ? 1 : 0;
+        Constants->bUseUV = UpdateInfo.bUseUV;*/
         std::cerr << "Failed to retrieve DefaultShader." << std::endl;
         return;
     }

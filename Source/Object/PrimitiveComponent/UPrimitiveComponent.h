@@ -215,8 +215,6 @@ public:
 	UCubeComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Cube);
-		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
-		SetTexture(UTextureLoader::Get().m_texture);
 		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~UCubeComp() = default;
