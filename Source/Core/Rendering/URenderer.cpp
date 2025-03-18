@@ -6,6 +6,8 @@
 
 #include "DataTypes/Structs.h"
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
+//#include "Primitive/UShaderManager.h"
+#include "Primitive/UShaderManager.h"
 #include "Static/FEditorManager.h"
 #include <Object/PrimitiveComponent/CharComp.h>
 
@@ -21,6 +23,8 @@ void URenderer::Create(HWND hWindow)
     CreatePickingTexture(hWindow);
     
     InitMatrix();
+    //UShaderManager::Get().LoadShader(Device, FName("DefaultShader"), L"Shaders/ShaderW0.hlsl", "mainVS", "mainPS");
+
 }
 
 void URenderer::Release()
@@ -49,77 +53,29 @@ void URenderer::CreateShader()
          *   - SIZE_T GetBufferSize
          *     - 버퍼의 크기(바이트 갯수)를 돌려준다
          */
-    ID3DBlob* VertexShaderCSO;
-    ID3DBlob* PixelShaderCSO;
+    // UShaderManager를 통해 셰이더 로드
+    //UShaderManager::Get().LoadShader(Device, FName("DefaultShader"), L"Shaders/DefaultShader.hlsl", "mainVS", "mainPS");
+    UShaderManager::Get().LoadShader(Device, L"Shaders/DefaultShader.hlsl");
+    UShaderManager::Get().LoadShader(Device, FName("PickingShader"), L"Shaders/ShaderW0.hlsl", "mainVS", "PickingPS");
 
-    ID3DBlob* PickingShaderCSO;
-    
-	ID3DBlob* ErrorMsg = nullptr;
-    // 셰이더 컴파일 및 생성
-    D3DCompileFromFile(L"Shaders/ShaderW0.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0, &VertexShaderCSO, &ErrorMsg);
-    Device->CreateVertexShader(VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), nullptr, &SimpleVertexShader);
-
-    D3DCompileFromFile(L"Shaders/ShaderW0.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0, &PixelShaderCSO, &ErrorMsg);
-    Device->CreatePixelShader(PixelShaderCSO->GetBufferPointer(), PixelShaderCSO->GetBufferSize(), nullptr, &SimplePixelShader);
-
-    D3DCompileFromFile(L"Shaders/ShaderW0.hlsl", nullptr, nullptr, "PickingPS", "ps_5_0", 0, 0, &PickingShaderCSO, nullptr);
-    Device->CreatePixelShader(PickingShaderCSO->GetBufferPointer(), PickingShaderCSO->GetBufferSize(), nullptr, &PickingPixelShader);
-    
-	if (ErrorMsg)
-	{
-		std::cout << (char*)ErrorMsg->GetBufferPointer() << std::endl;
-		ErrorMsg->Release();
-	}
-
-    // 입력 레이아웃 정의 및 생성
-    D3D11_INPUT_ELEMENT_DESC Layout[] =
+    UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+    if (!DefaultShader)
     {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-    };
-
-    Device->CreateInputLayout(Layout, ARRAYSIZE(Layout), VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), &SimpleInputLayout);
-
-    VertexShaderCSO->Release();
-    PixelShaderCSO->Release();
-    PickingShaderCSO->Release();
-
+        std::cerr << "Failed to load DefaultShader." << std::endl;
+        return;
+    }
+    
     // 정점 하나의 크기를 설정 (바이트 단위)
     VertexStride = sizeof(FVertexSimple);
 }
 
 void URenderer::ReleaseShader()
 {
-    if (SimpleInputLayout)
-    {
-        SimpleInputLayout->Release();
-        SimpleInputLayout = nullptr;
-    }
-
-    if (SimplePixelShader)
-    {
-        SimplePixelShader->Release();
-        SimplePixelShader = nullptr;
-    }
-
-    if (SimpleVertexShader)
-    {
-        SimpleVertexShader->Release();
-        SimpleVertexShader = nullptr;
-    }
+    UShaderManager::Get().ReleaseAll();
 }
 
 void URenderer::CreateConstantBuffer()
 {
-    D3D11_BUFFER_DESC ConstantBufferDesc = {};
-    ConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;                        // 매 프레임 CPU에서 업데이트 하기 위해
-    ConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;             // 상수 버퍼로 설정
-    ConstantBufferDesc.ByteWidth = sizeof(FConstants) + 0xf & 0xfffffff0;  // 16byte의 배수로 올림
-    ConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;            // CPU에서 쓰기 접근이 가능하게 설정
-
-    Device->CreateBuffer(&ConstantBufferDesc, nullptr, &ConstantBuffer);
-
     D3D11_BUFFER_DESC ConstantBufferDescPicking = {};
     ConstantBufferDescPicking.Usage = D3D11_USAGE_DYNAMIC;                        // 매 프레임 CPU에서 업데이트 하기 위해
     ConstantBufferDescPicking.BindFlags = D3D11_BIND_CONSTANT_BUFFER;             // 상수 버퍼로 설정
@@ -147,12 +103,6 @@ void URenderer::CreateConstantBuffer()
 
 void URenderer::ReleaseConstantBuffer()
 {
-    if (ConstantBuffer)
-    {
-        ConstantBuffer->Release();
-        ConstantBuffer = nullptr;
-    }
-
     if (ConstantPickingBuffer)
     {
         ConstantPickingBuffer->Release();
@@ -196,16 +146,16 @@ void URenderer::Prepare() const
 
 void URenderer::PrepareShader() const
 {
-    // 기본 셰이더랑 InputLayout을 설정
-    DeviceContext->VSSetShader(SimpleVertexShader, nullptr, 0);
-    DeviceContext->PSSetShader(SimplePixelShader, nullptr, 0);
-    DeviceContext->IASetInputLayout(SimpleInputLayout);
-
-    // 버텍스 쉐이더에 상수 버퍼를 설정
-    if (ConstantBuffer)
+    // UShaderManager에서 기본 셰이더 가져오기
+    UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+    if (!DefaultShader)
     {
-        DeviceContext->VSSetConstantBuffers(0, 1, &ConstantBuffer);
+        return;
     }
+    
+    // DeviceContext에 적용
+    DefaultShader->Apply(DeviceContext);
+    
     if (ConstantsDepthBuffer)
     {
         DeviceContext->PSSetConstantBuffers(2, 1, &ConstantsDepthBuffer);
@@ -235,7 +185,7 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
 
 
     // TODO CurrentTexture null 여부에 따라 Constant Buffer에 넘겨주기
-    
+    //일단 bUseUV는 안 넘어가는 중
     ConstantUpdateInfo UpdateInfo{
         PrimitiveComp->GetComponentTransform(),
         PrimitiveComp->GetCustomColor(),
@@ -395,47 +345,38 @@ ID3D11Buffer* URenderer::CreateIndexBuffer(const uint32* Data, UINT ByteWidth, D
 
 void URenderer::UpdateConstantPrimitive(const ConstantUpdateInfo& UpdateInfo) const
 {
-    if (!ConstantBuffer) return;
-
-    D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR;
-
-    // 상수 버퍼를 CPU 메모리에 매핑
-    FMatrix MVP = FMatrix::Transpose(UpdateInfo.Transform.GetMatrix() * ViewMatrix * ProjectionMatrix);
-
-    // D3D11_MAP_WRITE_DISCARD는 이전 내용을 무시하고 새로운 데이터로 덮어쓰기 위해 사용
-    DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
+    UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+    if (!DefaultShader)
     {
-        // 매핑된 메모리를 FConstants 구조체로 캐스팅
+        /*// 매핑된 메모리를 FConstants 구조체로 캐스팅
         FConstants* Constants = static_cast<FConstants*>(ConstantBufferMSR.pData);
         Constants->MVP = MVP;
 		Constants->Color = UpdateInfo.Color;
 		Constants->bUseVertexColor = UpdateInfo.bUseVertexColor ? 1 : 0;
-        Constants->bUseUV = UpdateInfo.bUseUV;
+        Constants->bUseUV = UpdateInfo.bUseUV;*/
+        std::cerr << "Failed to retrieve DefaultShader." << std::endl;
+        return;
     }
-    DeviceContext->Unmap(ConstantBuffer, 0);
+    FMatrix MVP = FMatrix::Transpose(UpdateInfo.Transform.GetMatrix() * ViewMatrix * ProjectionMatrix);
+    DefaultShader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+    struct PSConstants { FVector4 Color; uint32 bUseVertexColor; };
+    PSConstants PSData = { UpdateInfo.Color, UpdateInfo.bUseVertexColor };
+    DefaultShader->UpdateConstantBuffer(DeviceContext, 1, &PSData, sizeof(PSData));
 }
+
 
 // TODOOOOOOOO
 void URenderer::UpdateConstantBatch(const FBatchRenderContext& BatchRenderContext) const
 {    
-    if (!ConstantBuffer) return;
-
-    D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR;
-    
-    // 상수 버퍼를 CPU 메모리에 매핑
-    FMatrix VP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);
-
-    // D3D11_MAP_WRITE_DISCARD는 이전 내용을 무시하고 새로운 데이터로 덮어쓰기 위해 사용
-    DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
+    UShader* DefaultShader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+    if (!DefaultShader)
     {
-        // 매핑된 메모리를 FConstants 구조체로 캐스팅
-        FConstants* Constants = static_cast<FConstants*>(ConstantBufferMSR.pData);
-        Constants->MVP = VP;
-        // Constants-> = ->GetCustomColor();
-        Constants->bUseVertexColor = 1;
-        // Constants->bUseUV = true;
+        std::cerr << "Failed to retrieve DefaultShader." << std::endl;
+        return;
     }
-    DeviceContext->Unmap(ConstantBuffer, 0);
+    DefaultShader->UpdateConstantBuffer(DeviceContext, 0, &BatchRenderContext, sizeof(BatchRenderContext));
+    //DefaultShader->VertexConstants.MVP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);
+    //DefaultShader->UpdateVertexConstantBuffer(DeviceContext);
 }
 
 
@@ -844,8 +785,8 @@ void URenderer::PrepareMain()
 
 void URenderer::PrepareMainShader()
 {
-    DeviceContext->PSSetShader(SimplePixelShader, nullptr, 0);
-
+    //DeviceContext->PSSetShader(SimplePixelShader, nullptr, 0);
+    UShaderManager::Get().GetShader(FName("DefaultShader"))->Apply(DeviceContext);
 
     // shader 파일에 샘플러 바인딩
     //DeviceContext->PSSetSamplers()
