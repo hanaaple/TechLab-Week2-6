@@ -65,7 +65,7 @@ void UShader::Apply(ID3D11DeviceContext* DeviceContext) const
 {
     DeviceContext->VSSetShader(VertexShader, nullptr, 0);
     DeviceContext->PSSetShader(PixelShader, nullptr, 0);
-    DeviceContext->IASetInputLayout(GetInputLayout());
+    
     // InputLayout이 존재할 경우에만 적용
     if (InputLayout)
         DeviceContext->IASetInputLayout(InputLayout);

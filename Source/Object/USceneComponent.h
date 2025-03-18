@@ -57,7 +57,7 @@ private:
 	/* Component's Relative Transform */
 	FTransform RelativeTransform = FTransform();
 	/* Component's World Transform */
-	FTransform ComponentToWorld;
+	FTransform ComponentToWorld = FTransform();
 	
 private:
 	bool bVisible = true;

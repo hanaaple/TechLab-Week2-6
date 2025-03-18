@@ -100,9 +100,9 @@ void UPrimitiveComponent::OnTransformation()
 		SetDirty(true);
 }
 
-void UPrimitiveComponent::UpdateConstantUV(const URenderer& Renderer, const char c)const {
-	Renderer.UpdateConstantUV(c);
-}
+//void UPrimitiveComponent::UpdateConstantUV(const URenderer& Renderer, const char c)const {
+	//Renderer.UpdateConstantFontUV(c);
+//}
 
 // 배치 렌더링용 버텍스를 가져와서 
 bool UPrimitiveComponent::TryGetVertexData(TArray<FVertexSimple>* VertexData)

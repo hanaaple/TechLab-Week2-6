@@ -7,19 +7,15 @@ ABillboardText::ABillboardText()
 
 	UTextComp* TextComponent = AddComponent<UTextComp>();
 	RootComponent = TextComponent;
-	TextComponent->SetRelativeTransform(FTransform());
 
-	TextComponent->SetText("Hello World!");
-	
-	//FIXME : testcode
-	//text = "W";
-	UTextureLoader::Get().DrawText("");
-	//UTextureLoader::Get().DrawTextW(text); 
+	TextComp = TextComponent;
 }
 
 void ABillboardText::BeginPlay()
 {
 	Super::BeginPlay();
+	TextComp->SetText("Hello World!");
+	TextComp->SetText("Bye World!");
 }
 
 void ABillboardText::Tick(float DeltaTime)

@@ -40,8 +40,18 @@ int32 FName::Compare(const FName& Other) const
 FString FName::ToString() const
 {
     return FNameTable::Get().GetName(DisplayIndex);
-
 }
+
+std::string FName::ToStdString() const
+{
+    return ToString().ToStdString();
+}
+
+const char* FName::ToCharString() const
+{
+    return ToStdString().c_str();
+}
+
 const FString& FName::ToStringRef() const
 {
     return FNameTable::Get().GetName(DisplayIndex); // ✅ 참조 반환

@@ -5,6 +5,8 @@
 #include "Object/USceneComponent.h"
 #include <Core/Engine.h>
 
+#include "DataTypes/ShdaerType.h"
+
 struct FOBB {
 	FVector OriginalCenter;
 	FVector Center;
@@ -82,11 +84,15 @@ enum ERenderMode{
 
 struct FRenderData
 {
-	ID3D11ShaderResourceView* Texture = nullptr;
+	FRenderData() = default;
+	FRenderData(D3D_PRIMITIVE_TOPOLOGY Topology, EPrimitiveMeshType MeshType, ERenderMode RenderMode, ETextureType TextureType, EShaderType ShdaerType) : Topology(Topology), MeshType(MeshType),RenderMode(RenderMode), TextureType(TextureType), ShaderType(ShdaerType)  
+	{
+	}
 	D3D_PRIMITIVE_TOPOLOGY Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	EPrimitiveMeshType MeshType = EPrimitiveMeshType::EPT_None;
 	ERenderMode RenderMode = ERenderMode::None;
-	FName ShaderName=FName("DefaultShader");
+	ETextureType TextureType = ETextureType::None;
+	EShaderType ShaderType = EShaderType::DefaultShader;
 };
 
 class UPrimitiveComponent : public USceneComponent
@@ -111,9 +117,8 @@ public:
 	
 	//void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
 	//void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
-	void UpdateConstantUV(const URenderer& Renderer, const char c)const;
+	//void UpdateConstantUV(const URenderer& Renderer, const char c)const;
 
-	virtual bool TryGetVertexData(TArray<FVertexSimple>* VertexData);
 
 public:
 	void SetDepth(int InDepth) { Depth = InDepth; }
@@ -131,11 +136,11 @@ public:
 	const FRenderData& GetPrevFrameData() const { return PrevFrameData; }
 	const FRenderData& GetCurFrameData() const { return CurrentRenderData; }
 
-	void SetTexture(ID3D11ShaderResourceView* NewTexture)
+	void SetTexture(ETextureType NewTextureType)
 	{
-		if (CurrentRenderData.Texture != NewTexture)
+		if (CurrentRenderData.TextureType != NewTextureType)
 			SetDirty(true);
-		CurrentRenderData.Texture = NewTexture;		
+		CurrentRenderData.TextureType = NewTextureType;
 	}
 	void SetMesh(EPrimitiveMeshType NewMeshType)
 	{
@@ -157,26 +162,24 @@ public:
 		
 		CurrentRenderData.RenderMode = NewMode;
 	}
-	void SetShaderName(FName NewShaderName)
+	void SetShaderName(EShaderType NewShaderType)
 	{
-		if (CurrentRenderData.ShaderName != NewShaderName)
+		if (CurrentRenderData.ShaderType != NewShaderType)
 			SetDirty(true);
 		
-		CurrentRenderData.ShaderName = NewShaderName;
+		CurrentRenderData.ShaderType = NewShaderType;
 	}
 
-	FName GetShaderName() const { return CurrentRenderData.ShaderName; }
-	
+	EShaderType GetShaderType() const { return CurrentRenderData.ShaderType; }
 	EPrimitiveMeshType GetMeshType() const { return CurrentRenderData.MeshType; }
-
 	ERenderMode GetRenderMode() const { return CurrentRenderData.RenderMode; }
-
-	
-	
 	D3D11_PRIMITIVE_TOPOLOGY GetTopology() const { return CurrentRenderData.Topology; }
-	ID3D11ShaderResourceView* GetTexture() const { return CurrentRenderData.Texture; }
+	ETextureType GetTexture() const { return CurrentRenderData.TextureType; }
 	
 
+public:
+	virtual bool TryGetVertexData(TArray<FVertexSimple>* VertexData);
+	
 private:
 	virtual void OnTransformation() override;
 	
@@ -202,7 +205,9 @@ protected:
 
 private:
 	FRenderData PrevFrameData = FRenderData();
-	FRenderData CurrentRenderData = FRenderData(nullptr, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, EPrimitiveMeshType::EPT_None, ERenderMode::Individual);
+	FRenderData CurrentRenderData = FRenderData(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, EPrimitiveMeshType::EPT_None,
+	                                            ERenderMode::Individual, ETextureType::None,
+	                                            EShaderType::DefaultShader);
 	uint32 Depth;
 	bool bIsDirty;
 };

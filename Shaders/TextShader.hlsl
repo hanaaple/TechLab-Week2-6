@@ -11,13 +11,14 @@ struct VS_INPUT
 {
     float4 position : POSITION; // Input position from vertex buffer
     float4 color : COLOR;       // Input color from vertex buffer
+    float2 uv : TEXCOORD;
 };
 
 struct PS_INPUT
 {
     float4 position : SV_POSITION; // Transformed position to pass to the pixel shader
     float4 color : COLOR;          // Color to pass to the pixel shader
-    // float4 depthPosition : TEXCOORD0;
+    float2 uv : TEXCOORD;
 };
 
 struct PS_OUTPUT

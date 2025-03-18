@@ -20,6 +20,10 @@ void UShaderManager::LoadAllShaders()
     LoadShader(Device, L"Shaders/PickingShader.hlsl");
     LoadShader(Device, L"Shaders/OutlineShader.hlsl");
     LoadShader(Device, L"Shaders/TextShader.hlsl");
+    // LoadShader(Device, L"Shaders/TextureAtlasShader.hlsl", "mainVS", "mainPS", []()
+    // {
+    //     
+    // });
     LoadShader(Device, L"Shaders/CustomShader.hlsl",[](UPrimitiveComponent* PrimitiveComp)
     {
         
@@ -57,15 +61,15 @@ UShader* UShaderManager::LoadShader(ID3D11Device* Device, const FName& Name, con
         UpdateConstantBufferFunction = [](UPrimitiveComponent* PrimitiveComp)
         {
             ID3D11DeviceContext* DeviceContext = UShaderManager::Get().DeviceContext;
-            const URenderer *Renderer=UShaderManager::Get().Renderer;
+            const URenderer *Renderer = UShaderManager::Get().Renderer;
             FMatrix ViewMatrix = Renderer->GetViewMatrix();
-            FMatrix ProjectionMatrix=Renderer->GetProjectionMatrix();
+            FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
 
             //MVP 행렬 계산
             FMatrix MVP = FMatrix::Transpose(
                 PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
 
-            UShader* Shader = UShaderManager::Get().GetShader(FName("DefaultShader"));
+            UShader* Shader = UShaderManager::Get().GetShader(EShaderType::DefaultShader);
             if (Shader)
             {
                 Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
@@ -80,19 +84,18 @@ UShader* UShaderManager::LoadShader(ID3D11Device* Device, const FName& Name, con
         };
     }
     //  무명 함수 설정
-    NewShader->UpdateConstantBufferFunction = UpdateConstantBufferFunction;
+    NewShader->SetUpdateConstantBufferFunction(UpdateConstantBufferFunction);
     ShaderMap[Name.GetDisplayIndex()] = NewShader;
     return NewShader;
 }
 
-UShader* UShaderManager::GetShader(const FName& Name)
-{
-    auto it = ShaderMap.Find(Name.GetDisplayIndex());
-    return *it;
-}
 UShader* UShaderManager::GetShader(const EShaderType& Type)
 {
-    return GetShader(ShaderTypeToFName(Type));
+    FName ShaderName = ShaderTypeToFName(Type);
+    auto it = ShaderMap.Find(ShaderName.GetDisplayIndex());
+    if (it == nullptr)
+        return nullptr;
+    return *it;
 }
 
 

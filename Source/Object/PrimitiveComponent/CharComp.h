@@ -6,7 +6,7 @@ class UCharComp : public UPrimitiveComponent {
 public:
 	UCharComp() : Super() {
 		bUseUV = true;
-		SetTexture(UTextureLoader::Get().m_texture);
+		//SetTexture(ETextureType::FontTexture);
 		SetMesh(EPrimitiveMeshType::EPT_Quad);
 		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
