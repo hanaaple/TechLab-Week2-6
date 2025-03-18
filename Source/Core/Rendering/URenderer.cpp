@@ -9,6 +9,7 @@
 //#include "Primitive/UShaderManager.h"
 #include "Primitive/UShaderManager.h"
 #include "Static/FEditorManager.h"
+#include <Object/PrimitiveComponent/CharComp.h>
 
 void URenderer::Create(HWND hWindow)
 {
@@ -114,6 +115,11 @@ void URenderer::ReleaseConstantBuffer()
         ConstantsDepthBuffer->Release();
         ConstantsDepthBuffer = nullptr;
     }
+
+    if (ConstantsUVBuffer) {
+        ConstantsUVBuffer->Release();
+        ConstantsUVBuffer = nullptr;
+    }
 }
 
 void URenderer::SwapBuffer() const
@@ -163,7 +169,6 @@ void URenderer::PrepareShader() const
 
 void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
 {
-    /*
     if (BufferCache == nullptr)
     {
         return;
@@ -177,40 +182,10 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
     }
 
     BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(PrimitiveComp->GetMeshType());
-
-    UpdateTopology(PrimitiveComp->GetTopology());
-
-
-    // TODO CurrentTexture null 여부에 따라 Constant Buffer에 넘겨주기
-    //일단 bUseUV는 안 넘어가는 중
-    ConstantUpdateInfo UpdateInfo{
-        PrimitiveComp->GetComponentTransform(),
-        PrimitiveComp->GetCustomColor(),
-        PrimitiveComp->IsUseVertexColor(),
-        PrimitiveComp->IsUseTexture()
-    };
-
-    //FIMXE : 텍스처 저장 구조에 따라 추후 변경.
-    //UpdateInfo.bUseUV = (PrimitiveComp->Texture != nullptr) ? 1 : 0;
-
-    UpdateConstantPrimitive(UpdateInfo);
-    
-    RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
-    */
-    if (BufferCache == nullptr)
-    {
-        return;
+    //FIMXE : 쉐이더 구조 변경, 텍스처 저장 구조에 따라 추후 변경.
+    if (PrimitiveComp->IsA<UCharComp>()) {
+        UpdateConstantUV(dynamic_cast<UCharComp*>(PrimitiveComp)->c);
     }
-
-    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(PrimitiveComp->GetMeshType());
-    
-    if (VertexBufferInfo.GetBuffer() == nullptr)
-    {
-        return;
-    }
-
-    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(PrimitiveComp->GetMeshType());
-
     UpdateTopology(PrimitiveComp->GetTopology());
     RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
 }

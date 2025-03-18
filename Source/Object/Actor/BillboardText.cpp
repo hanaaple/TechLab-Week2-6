@@ -8,6 +8,8 @@ ABillboardText::ABillboardText()
 	UTextComp* TextComponent = AddComponent<UTextComp>();
 	RootComponent = TextComponent;
 	TextComponent->SetRelativeTransform(FTransform());
+
+	TextComponent->SetText("Hello World!");
 	
 	//FIXME : testcode
 	//text = "W";
