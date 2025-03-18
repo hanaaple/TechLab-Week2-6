@@ -19,6 +19,7 @@ public:
 
 private:
 	float Spacing = 0.2f;
-	TArray<ULineComp*> gridLines;
-	float maxGridDistance = 50;
+	TArray<ULineComp*> HorizontalGridLines;
+	TArray<ULineComp*> VerticalGridLines;
+	float maxGridDistance = 100;
 };
