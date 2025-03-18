@@ -18,7 +18,7 @@ public:
 	void UpdateGrid();
 
 private:
-	float Spacing = 0.2f;
+	float Spacing;
 	TArray<ULineComp*> HorizontalGridLines;
 	TArray<ULineComp*> VerticalGridLines;
 	float maxGridDistance = 100;

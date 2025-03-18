@@ -1,11 +1,12 @@
 ﻿#include "Object/Gizmo/WorldGrid.h"
+#include "Core/SettingManager.h"
 
 AWorldGrid::AWorldGrid()
 {
 	bIsGizmo = true;
-
+	Spacing = 0.2f;
 	ULineComp* line = AddComponent<ULineComp>();
-	line->SetRenderMode(ERenderMode::Batch);
+	//line->SetRenderMode(ERenderMode::Batch);
 	FTransform transform = line->GetRelativeTransform();
 	transform.SetScale(FVector(maxGridDistance, 1, 1));
 	line->SetRelativeTransform(transform);
@@ -16,8 +17,8 @@ AWorldGrid::AWorldGrid()
 		ULineComp* horizontalLine = AddComponent<ULineComp>();
 		VerticalGridLines.Add(verticalLine);
 		HorizontalGridLines.Add(horizontalLine);
-		verticalLine->SetRenderMode(ERenderMode::Batch);
-		horizontalLine->SetRenderMode(ERenderMode::Batch);
+		//verticalLine->SetRenderMode(ERenderMode::Batch);
+		//horizontalLine->SetRenderMode(ERenderMode::Batch);
 		FTransform vtransform = verticalLine->GetRelativeTransform();
 		vtransform.SetScale(FVector(maxGridDistance, 1, 1));
 		verticalLine->SetRelativeTransform(vtransform);
@@ -30,7 +31,6 @@ AWorldGrid::AWorldGrid()
 		horizontalLine->SetCustomColor(FVector4(1.0f, 1.0f, 1.0f, 1.0f));
 		HorizontalGridLines[i]->SetupAttachment(RootComponent);
 	}
-	UpdateGrid();
 }
 
 void AWorldGrid::BeginPlay()
@@ -59,6 +59,8 @@ void AWorldGrid::UpdateGrid()
 	int q2 = q1 * 2;
 
 	int num = HorizontalGridLines.Num();
+	if (num == 0)
+		num = 1;
 
 	if (q2 < num) {
 		for (int i = num - 1; i >= q2; i--) {
@@ -72,7 +74,7 @@ void AWorldGrid::UpdateGrid()
 		for (int i = num; i < q2; i++) {
 			ULineComp* VerticalLine = AddComponent<ULineComp>();
 			VerticalGridLines.Add(VerticalLine);
-			VerticalGridLines[i]->SetRenderMode(ERenderMode::Batch);
+			//VerticalGridLines[i]->SetRenderMode(ERenderMode::Batch);
 			FTransform vtransform = VerticalGridLines[i]->GetRelativeTransform();
 			vtransform.SetScale(FVector(maxGridDistance, 1, 1));
 			VerticalGridLines[i]->SetRelativeTransform(vtransform);
@@ -80,7 +82,7 @@ void AWorldGrid::UpdateGrid()
 			VerticalGridLines[i]->SetupAttachment(RootComponent);
 			ULineComp* HorizontalLine = AddComponent<ULineComp>();
 			HorizontalGridLines.Add(HorizontalLine);
-			HorizontalGridLines[i]->SetRenderMode(ERenderMode::Batch);
+			//HorizontalGridLines[i]->SetRenderMode(ERenderMode::Batch);
 			FTransform htransform = HorizontalGridLines[i]->GetRelativeTransform();
 			htransform.SetScale(FVector(maxGridDistance, 1, 1));
 			htransform.SetRotation(FVector(0, 0, 90));   

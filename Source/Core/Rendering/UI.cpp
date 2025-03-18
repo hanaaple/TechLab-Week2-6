@@ -339,18 +339,19 @@ void UI::RenderSettingsPanel()
     ImGui::Columns(1); // 컬럼 분할 해제 → 전체 너비 사용
 
     static float GridSpacing = SettingManager::Get().LoadGridSpacing(); // 임시 변수
-
-    ImGui::Text("Grid Spacing");
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(-1);
-    if (ImGui::SliderFloat("##GridSpacing", &GridSpacing, 1.0f, 100.0f, "%.1f")) {
-        SettingManager::Get().SaveGridSpacing(GridSpacing);
-    }
-    ImGui::SliderFloat("##GridSpacing", &GridSpacing, 0.1f, 50.0f, "%.2f");
-
     if (FEditorManager::Get().GetWorldGrid()->GetSpacing() != GridSpacing) {
         FEditorManager::Get().GetWorldGrid()->SetSpacing(GridSpacing);
         FEditorManager::Get().GetWorldGrid()->UpdateGrid();
+    }
+    ImGui::Text("Grid Spacing");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(-1);
+    if (ImGui::SliderFloat("##GridSpacing", &GridSpacing, 0.1f, 50.0f, "%.2f")) {
+        if (FEditorManager::Get().GetWorldGrid()->GetSpacing() != GridSpacing) {
+            SettingManager::Get().SaveGridSpacing(GridSpacing);
+            FEditorManager::Get().GetWorldGrid()->SetSpacing(GridSpacing);
+            FEditorManager::Get().GetWorldGrid()->UpdateGrid();
+        }
     }
 
     ImGui::End();
