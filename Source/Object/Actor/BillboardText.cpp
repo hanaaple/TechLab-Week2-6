@@ -3,6 +3,7 @@
 
 ABillboardText::ABillboardText()
 {
+	bIsGizmo = true;
 	bCanEverTick = true;
 
 	UTextComp* TextComponent = AddComponent<UTextComp>();
@@ -14,16 +15,26 @@ ABillboardText::ABillboardText()
 void ABillboardText::BeginPlay()
 {
 	Super::BeginPlay();
-	TextComp->SetText("Hello World!");
-	TextComp->SetText("Bye World!");
 }
 
 void ABillboardText::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (FollowComponent != nullptr)
+	{
+		FTransform Transform = GetActorTransform();
+		Transform.SetPosition(FollowComponent->GetComponentTransform().GetPosition() + Offset);
+		SetActorTransform(Transform);
+	}
 }
 
 const char* ABillboardText::GetTypeName()
 {
 	return "BillboardText";
+}
+
+void ABillboardText::SetText(FName NewText)
+{
+	TextComp->SetText(NewText);
 }

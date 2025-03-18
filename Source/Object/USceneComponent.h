@@ -43,6 +43,7 @@ public:
 	void SetupAttachment(USceneComponent* InParent, EAttachmentRule AttachmentRule = EAttachmentRule::KeepWorld);
 	void RemoveChild(USceneComponent* Child);
 	const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
+	USceneComponent* GetAttachParent() { return AttachParent; }
 	
 private:
 	void UpdateChildTransforms();

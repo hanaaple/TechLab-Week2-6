@@ -1,12 +1,23 @@
 ﻿#include "UPrimitiveComponent.h"
+
+#include <format>
+
 #include "Object/World/World.h"
 #include "DataTypes/Structs.h"
+#include "Object/Actor/BillBoardText.h"
 
 void UPrimitiveComponent::Activate()
 {
 	Super::Activate();
 
 	GetOwner()->GetWorld()->AddRenderComponent(this);
+
+	if (!GetOwner()->IsGizmoActor())
+	{
+		ABillboardText* Billboard = GetOwner()->GetWorld()->SpawnActor<ABillboardText>();
+		Billboard->SetText(FName(std::format("UUID: {}", GetUUID())));
+		Billboard->FollowComponent = this;
+	}
 }
 
 void UPrimitiveComponent::Deactivate()

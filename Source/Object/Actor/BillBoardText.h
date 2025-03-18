@@ -13,6 +13,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual const char* GetTypeName() override;
 
+	void SetText(FName NewText);
+
+public:
+	USceneComponent* FollowComponent;
+	FVector Offset = FVector(0, 0, 2);
 private:
 	UTextComp* TextComp;
 };

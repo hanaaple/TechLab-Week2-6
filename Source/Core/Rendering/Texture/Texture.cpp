@@ -6,28 +6,20 @@
 // cellWidthUV : 셀의 가로 너비(uv좌표계 기준) ex 0.06, CeillHeightUV : 셀의 세로 너비(uv 좌표계 기준)
 void Texture::Initialize(const FTextureStaticData& TextureData)
 {
-    float BitmapWidth = TextureData.BitmapWidth;
-    float BitmapHeight = TextureData.BitmapHeight;
     int RowCount = TextureData.RowCount;
     int ColCount = TextureData.ColCount;
     int AtlasTotalNum = TextureData.AtlasTotalCount;
     
-    float CellWidthUV = (float)ColCount / BitmapWidth;
-    float CellHeightUV = (float)RowCount / BitmapHeight;
+    float CellWidthUV = 1.f / ColCount;
+    float CellHeightUV = 1.f / RowCount;
 
     for (int idx = 0; idx < AtlasTotalNum; idx++)
     {
         int rowIndex = idx / ColCount;		// 현재 문자가 속한 행 인덱스
         int colIndex = idx % ColCount;		// 현재 문자가 속한 열 인덱스
 
-        // col * colSize : 한 칸 가로 길이 (픽셀 단위)
-        // row * rowSize : 한 칸 세로 길이 (픽셀 단위)
-        // bitmapWidth, bitmapHeight : 0 ~ 1로 정규화.
-        // directX는 좌표계까 좌측 상단부터(0, 0)이라서 방향 반전.
-        
-        float u = (colIndex * ColCount) / BitmapWidth;
-        //float v = ((row * rowSize) / bitmapHeight);
-        float v = 1.0f - ((rowIndex * RowCount) / BitmapHeight) - CellHeightUV;
+        float u = colIndex * CellWidthUV;
+        float v = (RowCount - rowIndex - 1) * CellHeightUV;
         
         AtlasInfoMap.Add(idx, { u, v, CellWidthUV, CellHeightUV });
     }
@@ -35,5 +27,5 @@ void Texture::Initialize(const FTextureStaticData& TextureData)
 
 CharacterInfo Texture::GetCharInfoMap(char character)
 {
-    return AtlasInfoMap[character];
+    return AtlasInfoMap[character - 32];
 }

@@ -29,16 +29,17 @@ void UWorld::BeginPlay()
 
 void UWorld::Tick(float DeltaTime)
 {
+	for (const auto& Actor : ActorsToSpawn)
+	{
+		Actor->BeginPlay();
+		Actors.Add(Actor);
+	}
+	ActorsToSpawn.Empty();
+	
 	for (const auto& Actor : Actors)
 	{
 		Actor->ActivateComponent();
 	}
-	
-	for (const auto& Actor : ActorsToSpawn)
-	{
-		Actor->BeginPlay();
-	}
-	ActorsToSpawn.Empty();
 
 	const auto CopyActors = Actors;
 	for (const auto& Actor : CopyActors)

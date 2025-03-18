@@ -136,8 +136,8 @@ void URenderer::Prepare() const
 
 void URenderer::PrepareShader(EShaderType ShaderType)
 {
-    //if (CurrentShaderType == ShaderType)
-         //return;
+    if (CurrentShaderType == ShaderType)
+         return;
     
     CurrentShaderType = ShaderType;
     
@@ -171,7 +171,7 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
     PrepareShader(PrimitiveComp->GetShaderType());
     PrepareTexture(PrimitiveComp->GetTexture());
     PrepareTopology(PrimitiveComp->GetTopology());
-
+    
 
     
     //FIMXE : 쉐이더 구조 변경, 텍스처 저장 구조에 따라 추후 변경.
@@ -183,8 +183,10 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
 
     auto* Shader = UShaderManager::Get().GetShader(CurrentShaderType);
     if (Shader != nullptr)
+    {
         Shader->UpdateConstantBuffer(PrimitiveComp);
-
+        
+    }
     
     RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
 }

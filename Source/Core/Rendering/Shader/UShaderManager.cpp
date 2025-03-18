@@ -22,26 +22,45 @@ void UShaderManager::LoadAllShaders()
     LoadShader(Device, L"Shaders/OutlineShader.hlsl");
     LoadShader(Device, L"Shaders/TextShader.hlsl", [](UPrimitiveComponent* PrimitiveComp)
     {
-        ID3D11Device* Device = UShaderManager::Get().Device;
-        ID3D11DeviceContext* DeviceContext = UShaderManager::Get().DeviceContext;
-        const URenderer* Renderer = UShaderManager::Get().Renderer;
+        UShaderManager& ShaderManager = UShaderManager::Get();
+        ID3D11Device* Device = ShaderManager.Device;
+        ID3D11DeviceContext* DeviceContext = ShaderManager.DeviceContext;
+        const URenderer* Renderer = ShaderManager.Renderer;
         Texture* Texture = UTextureLoader::Get().GetTexture(Renderer->GetCurrentTextureType(), Device, DeviceContext);
-        FMatrix ViewMatrix = Renderer->GetViewMatrix();
-        FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
 
-        //MVP 행렬 계산
-        FMatrix MVP = FMatrix::Transpose(
-            PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
-        UShader* Shader = UShaderManager::Get().GetShader(EShaderType::DefaultShader);
+        if (Texture == nullptr)
+        {
+            return;
+        }
+        
+        
+        UShader* Shader = ShaderManager.GetShader(PrimitiveComp->GetShaderType());
         if (Shader)
         {
+            
             if (PrimitiveComp->IsA<UCharComp>())
             {
-                UCharComp* comp = static_cast<UCharComp*>(PrimitiveComp);
-                auto info = Texture->GetCharInfoMap(comp->c);
+                UCharComp* CharComp = static_cast<UCharComp*>(PrimitiveComp);
+                auto info = Texture->GetCharInfoMap(CharComp->c);
                 Shader->UpdateConstantBuffer(DeviceContext, 1, &info, sizeof(info));
+
+                FMatrix ViewMatrix = Renderer->GetViewMatrix();
+                FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
+                
+                FMatrix BillboardMatrix = FMatrix::Transpose(CharComp->GetBillboardMatrix() * ViewMatrix * ProjectionMatrix);                                
+                Shader->UpdateConstantBuffer(DeviceContext, 0, &BillboardMatrix, sizeof(BillboardMatrix));
             }
-            Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+            else
+            {
+                FMatrix ViewMatrix = Renderer->GetViewMatrix();
+                FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
+
+                // 빌보딩 여부에 따라 자체적으로 하게
+                //MVP 행렬 계산
+                FMatrix MVP = FMatrix::Transpose(PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
+                
+                Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+            }
         }
     });
     // LoadShader(Device, L"Shaders/TextureAtlasShader.hlsl", "mainVS", "mainPS", []()

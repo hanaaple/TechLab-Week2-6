@@ -98,7 +98,6 @@ T* UWorld::SpawnActor()
 	{
 		T* Actor = FObjectFactory::ConstructObject<T>();
 		Actor->SetWorld(World);
-		Actors.Add(Actor);
 		ActorsToSpawn.Add(Actor);
 		return Actor;
 	}
