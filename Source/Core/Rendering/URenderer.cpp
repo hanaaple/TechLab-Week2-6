@@ -164,6 +164,11 @@ void URenderer::ReleaseConstantBuffer()
         ConstantsDepthBuffer->Release();
         ConstantsDepthBuffer = nullptr;
     }
+
+    if (ConstantsUVBuffer) {
+        ConstantsUVBuffer->Release();
+        ConstantsUVBuffer = nullptr;
+    }
 }
 
 void URenderer::SwapBuffer() const
