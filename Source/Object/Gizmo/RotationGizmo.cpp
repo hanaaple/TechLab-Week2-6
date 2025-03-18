@@ -1,57 +1,45 @@
-﻿#include "EditorGizmos.h"
-
-#include "Object/Actor/Camera.h"
-#include "Object/PrimitiveComponent/UPrimitiveComponent.h"
-#include "Object/World/World.h"
+﻿#include "RotationGizmo.h"
 #include "Static/FEditorManager.h"
-#include "Core/Input/PlayerInput.h"
-#include "Object/Actor/AABBPicker.h"
 
-AEditorGizmos::AEditorGizmos()
+ARotationGizmo::ARotationGizmo()
 {
 	bIsGizmo = true;
-	
-	UCylinderComp* ZArrow = AddComponent<UCylinderComp>();
-	ZArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
-	ZArrow->SetCustomColor(FVector4(0.0f, 0.0f, 1.0f, 1.0f));
-	axisComponents.Add(ZArrow);
-	
-	UCylinderComp* XArrow = AddComponent<UCylinderComp>();
-	XArrow->SetupAttachment(ZArrow);
-	XArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, -90.0f, 0.0f), FVector(1, 1, 1)));
-	XArrow->SetCustomColor(FVector4(1.0f, 0.0f, 0.0f, 1.0f));
-	axisComponents.Add(XArrow);
 
-	UCylinderComp* YArrow = AddComponent<UCylinderComp>();
-	YArrow->SetupAttachment(ZArrow);
-	YArrow->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(90.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
-	YArrow->SetCustomColor(FVector4(0.0f, 1.0f, 0.0f, 1.0f));
-	axisComponents.Add(YArrow);
+	UTorusComp* ZRotation = AddComponent<UTorusComp>();
+	ZRotation->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f), FVector(1.0f, 1.0f, 1.0f)));
+	ZRotation->SetCustomColor(FVector4(0.0f, 0.0f, 1.0f, 1.0f));
+	axisComponents.Add(ZRotation);
 
-	RootComponent = ZArrow;
+	UTorusComp* XRotation = AddComponent<UTorusComp>();
+	XRotation->SetupAttachment(ZRotation);
+	XRotation->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, -90.0f, 0.0f), FVector(1, 1, 1)));
+	XRotation->SetCustomColor(FVector4(1.0f, 0.0f, 0.0f, 1.0f));
+	axisComponents.Add(XRotation);
 
-	ZArrow->SetDepth(1001);
-	YArrow->SetDepth(1001);
-	XArrow->SetDepth(1001);
-	
+	UTorusComp* YRotation = AddComponent<UTorusComp>();
+	YRotation->SetupAttachment(ZRotation);
+	YRotation->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 0.0f), FVector(90.0f, 0.0f, 0.0f), FVector(1, 1, 1)));
+	YRotation->SetCustomColor(FVector4(0.0f, 1.0f, 0.0f, 1.0f));
+	axisComponents.Add(YRotation);
+
+	RootComponent = ZRotation;
+
+	ZRotation->SetDepth(1001);
+	XRotation->SetDepth(1001);
+	YRotation->SetDepth(1001);
+
 	SetActorVisibility(false);
 }
 
-void AEditorGizmos::Tick(float DeltaTime)
+void ARotationGizmo::Tick(float DeltaTime)
 {
-	AActor* SelectedActor  = FEditorManager::Get().GetSelectedActor();
-	if (SelectedActor != nullptr && RootComponent
-		//&& RootComponent->GetVisibleFlag()
-		)
+	AActor* SelectedActor = FEditorManager::Get().GetSelectedActor();
+	if (SelectedActor != nullptr && RootComponent)
 	{
 		FTransform GizmoTransform = RootComponent->GetComponentTransform();
 		GizmoTransform.SetPosition(SelectedActor->GetActorTransform().GetPosition());
-		GizmoTransform.SetRotation(SelectedActor->GetActorTransform().GetEulerRotation());
 		SetActorTransform(GizmoTransform);
 	}
-
-	//SetScaleByDistance();
-	
 	AActor::Tick(DeltaTime);
 
 	if (SelectedAxis != ESelectedAxis::None)
@@ -71,10 +59,10 @@ void AEditorGizmos::Tick(float DeltaTime)
 			// 커서 위치를 NDC로 변경
 			float PosX = 2.0f * pt.x / ScreenWidth - 1.0f;
 			float PosY = -2.0f * pt.y / ScreenHeight + 1.0f;
-			
+
 			// Projection 공간으로 변환
-			FVector4 RayOrigin {PosX, PosY, 1.0f, 1.0f};
-			
+			FVector4 RayOrigin{ PosX, PosY, 1.0f, 1.0f };
+
 			// View 공간으로 변환
 			FMatrix InvProjMat = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
 			RayOrigin = RayOrigin * InvProjMat;
@@ -84,54 +72,54 @@ void AEditorGizmos::Tick(float DeltaTime)
 				RayOrigin.Z /= RayOrigin.W;
 				RayOrigin.W = 1;
 			}
-			
+
 			// 마우스 포인터의 월드 위치와 방향
 			FMatrix InvViewMat = FEditorManager::Get().GetCamera()->GetViewMatrix().Inverse();
 			RayOrigin = RayOrigin * InvViewMat;
 
 			FVector4 RayDir = (RayOrigin - prevMousePos);
-			
+
 			FTransform AT = Actor->GetActorTransform();
 			float Result = 0;
 			switch (SelectedAxis)
 			{
+				//TODO: 회전 방식 구상
 			case ESelectedAxis::X:
-				Result = RayDir.Dot(actorXAxis);
+				Result = RayDir.Dot(FVector(0, 1, 0));
 				break;
 			case ESelectedAxis::Y:
-				Result = RayDir.Dot(actorYAxis);
+				Result = RayDir.Dot(FVector(0, 0, 1));
 				break;
 			case ESelectedAxis::Z:
-				Result = RayDir.Dot(actorZAxis);
+				Result = RayDir.Dot(FVector(0, 1, 0));
 				break;
 			default:
 				break;
 			}
-			
+
 			Result *= 0.005f;
 
 			DoTransform(AT, Result, Actor);
 		}
 	}
-
 }
 
-void AEditorGizmos::SetScaleByDistance()
+void ARotationGizmo::SetScaleByDistance()
 {
 	FTransform MyTransform = GetActorTransform();
-	
+
 	// 액터의 월드 위치
 	FVector actorWorldPos = MyTransform.GetPosition();
 
 	FTransform CameraTransform = FEditorManager::Get().GetCamera()->GetActorTransform();
-	
+
 	// 카메라의 월드 위치
 	FVector cameraWorldPos = CameraTransform.GetPosition();
 
 	// 거리 계산
 	float distance = (actorWorldPos - cameraWorldPos).Length();
 
-	float baseScale = 1.0f;    // 기본 스케일
+	float baseScale = 0.1f;    // 기본 스케일
 	float scaleFactor = distance * 0.1f; // 거리에 비례하여 스케일 증가
 
 	// float minScale = 1.0f;     // 최소 스케일
@@ -141,13 +129,13 @@ void AEditorGizmos::SetScaleByDistance()
 	MyTransform.SetScale(scaleFactor, scaleFactor, scaleFactor);
 }
 
-void AEditorGizmos::SetActorVisibility(bool bNewActive)
+void ARotationGizmo::SetActorVisibility(bool bNewActive)
 {
 	if (RootComponent != nullptr)
 		RootComponent->SetVisibility(bNewActive);
 }
 
-ESelectedAxis AEditorGizmos::IsAxis(UCylinderComp* axis)
+ESelectedAxis ARotationGizmo::IsAxis(UTorusComp* axis)
 {
 	if (axis == axisComponents[0]) {
 		SelectedAxis = ESelectedAxis::Z;
@@ -164,71 +152,30 @@ ESelectedAxis AEditorGizmos::IsAxis(UCylinderComp* axis)
 	return SelectedAxis;
 }
 
-void AEditorGizmos::SetPrevMousePos(FVector4 mouse)
+void ARotationGizmo::SetPrevMousePos(FVector4 mouse)
 {
 	prevMousePos = mouse;
 }
 
-void AEditorGizmos::SetActorXAxis(FVector4 axis)
+const char* ARotationGizmo::GetTypeName()
 {
-	actorXAxis = axis;
+	return "RotationGizmo";
 }
 
-void AEditorGizmos::SetActorYAxis(FVector4 axis)
-{
-	actorYAxis = axis;
-}
-
-void AEditorGizmos::SetActorZAxis(FVector4 axis)
-{
-	actorZAxis = axis;
-}
-
-const char* AEditorGizmos::GetTypeName()
-{
-	return "GizmoHandle";
-}
-
-void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
+void ARotationGizmo::DoTransform(FTransform& AT, float Result, AActor* Actor)
 {
 	const FVector& AP = AT.GetPosition();
-	EGizmoType GizmoType = FEditorManager::Get().GetGizmoType(); 
 	if (SelectedAxis == ESelectedAxis::X)
 	{
-		switch (GizmoType)
-		{
-		case EGizmoType::Translate:
-			AT.SetPosition({ AP + actorXAxis * Result });
-			break;
-		case EGizmoType::Scale:
-			AT.AddScale({ Result * 0.5f, 0, 0 });
-			break;
-		}
+		AT.RotateRoll(Result * 15.0f);
 	}
 	else if (SelectedAxis == ESelectedAxis::Y)
 	{
-		switch (GizmoType)
-		{
-		case EGizmoType::Translate:
-			AT.SetPosition({ AP + actorYAxis * Result });
-			break;
-		case EGizmoType::Scale:
-			AT.AddScale({ 0, Result * 0.5f, 0 });
-			break;
-		}
+		AT.RotatePitch(Result * 15.0f);
 	}
 	else if (SelectedAxis == ESelectedAxis::Z)
 	{
-		switch (GizmoType)
-		{
-		case EGizmoType::Translate:
-			AT.SetPosition({ AP + actorZAxis * Result });
-			break;
-		case EGizmoType::Scale:
-			AT.AddScale({0, 0, Result * 0.5f });
-			break;
-		}
+		AT.RotateYaw(-Result * 15.0f);
 	}
 	Actor->SetActorTransform(AT);
 }
-

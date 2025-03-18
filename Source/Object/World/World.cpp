@@ -48,6 +48,13 @@ void UWorld::Tick(float DeltaTime)
 			Actor->Tick(DeltaTime);
 		}
 	}
+
+	if (APlayerInput::Get().GetKeyDown(EKeyCode::Space))
+	{
+		int type = static_cast<int>(FEditorManager::Get().GetGizmoType());
+		type = (type + 1) % static_cast<int>(EGizmoType::Max);
+		FEditorManager::Get().SetGizmoType(static_cast<EGizmoType>(type));
+	}
 }
 
 void UWorld::LateTick(float DeltaTime)

@@ -18,6 +18,6 @@ private:
 private:
     static constexpr uint32 majorSegments = 32;
     static constexpr uint32 minorSegments = 16;
-    static constexpr float majorRadius = 5;
-    static constexpr float minorRadius = 1;		
+    static constexpr float majorRadius = 0.5f;
+    static constexpr float minorRadius = 0.03f;		
 };

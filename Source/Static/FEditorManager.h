@@ -6,6 +6,16 @@ class AEditorGizmos;
 
 class ABoundingBoxActor;
 
+class ARotationGizmo;
+
+enum class EGizmoType : uint8
+{
+    Translate,
+    Rotate,
+    Scale,
+    Max
+};
+
 class FEditorManager : public TSingleton<FEditorManager>
 {
 public:
@@ -20,10 +30,18 @@ public:
     AEditorGizmos* GetGizmoHandle() const {return ControlGizmo;}
     
     ABoundingBoxActor* GetAABB() const { return AABB; }
+
+    void SetGizmoType(EGizmoType newType);
+
+    ARotationGizmo* GetRotationGizmo() const { return RotationGizmo; }
+
+    EGizmoType GetGizmoType() { return GizmoType; }
 private:
     ACamera* Camera = nullptr;
     AActor* SelectedActor = nullptr;
     AEditorGizmos* GizmoHandle = nullptr;
+    ARotationGizmo* RotationGizmo = nullptr;
     ABoundingBoxActor* AABB = nullptr;
     AEditorGizmos* ControlGizmo = nullptr;
+    EGizmoType GizmoType = EGizmoType::Translate;
 };

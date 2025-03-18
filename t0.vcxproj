@@ -276,6 +276,7 @@
     <ClCompile Include="Source\Core\Math\Matrix.cpp" />
     <ClCompile Include="Source\Core\Math\Vector.cpp" />
     <ClCompile Include="Source\JsonSaveHelper.cpp" />
+    <ClCompile Include="Source\Object\Gizmo\RotationGizmo.cpp" />
     <ClCompile Include="Source\Primitive\MeshVertexData.cpp" />
     <ClCompile Include="Source\Primitive\VertexDataCreator.cpp" />
     <ClCompile Include="Source\Texture\TextComponent.cpp" />
@@ -337,6 +338,7 @@
     <ClInclude Include="Source\JsonSaveHelper.h" />
     <ClInclude Include="Source\Core\Math\Transform.h" />
     <ClInclude Include="Source\Object\Actor\Cylinder.h" />
+    <ClInclude Include="Source\Object\Gizmo\RotationGizmo.h" />
     <ClInclude Include="Source\Object\ObjectFactory.h" />
     <ClInclude Include="Source\Primitive\MeshVertexData.h" />
     <ClInclude Include="Source\Primitive\VertexDataCreator.h" />
