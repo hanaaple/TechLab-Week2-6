@@ -17,6 +17,12 @@ public:
 	 */
 	const TArray<uint32>* GetIndexData(EPrimitiveMeshType MeshType);
 
+	bool HasIndexData(EPrimitiveMeshType MeshType)
+	{
+		GetIndexData(MeshType);
+		return IndexDataMap.Contains(MeshType);
+	}
+
 private:
 	// 수정 불가능한 Base Vertex, Index Data
 	TMap<EPrimitiveMeshType, TArray<FVertexSimple>> VertexDataMap;

@@ -74,6 +74,7 @@ struct FAABB {
 
 
 enum ERenderMode{
+	None,	// 이전 프레임에 렌더링 안된 경우 (새롭게 생성 시)
 	Batch,
 	Individual,
 	// Instancing
@@ -83,9 +84,8 @@ struct FRenderData
 {
 	ID3D11ShaderResourceView* Texture = nullptr;
 	D3D_PRIMITIVE_TOPOLOGY Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	bool bUseIndexBuffer = false;
 	EPrimitiveMeshType MeshType = EPrimitiveMeshType::EPT_None;
-	ERenderMode RenderMode = ERenderMode::Individual;
+	ERenderMode RenderMode = ERenderMode::None;
 };
 
 class UPrimitiveComponent : public USceneComponent
@@ -108,12 +108,9 @@ public:
 	virtual void Deactivate() override;
 
 	
-	void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
-	void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
+	//void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
+	//void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 	void UpdateConstantUV(const URenderer& Renderer, const char c)const;
-
-	// void UpdateConstantPicking(const URenderer& Renderer, FVector4 UUIDColor) const;
-	// void UpdateConstantDepth(const URenderer& Renderer, int Depth) const;
 
 	virtual bool TryGetVertexData(TArray<FVertexSimple>* VertexData);
 
@@ -145,12 +142,7 @@ public:
 			SetDirty(true);
 		CurrentRenderData.MeshType = NewMeshType;
 	}
-	void SetUseIndexBuffer(bUseIndexBufferFlag bUseIndexBuffer)
-	{
-		if (CurrentRenderData.bUseIndexBuffer != bUseIndexBuffer)
-			SetDirty(true);
-		CurrentRenderData.bUseIndexBuffer = bUseIndexBuffer;
-	}
+	
 	void SetTopology(D3D11_PRIMITIVE_TOPOLOGY NewTopologyType)
 	{
 		if (CurrentRenderData.Topology != NewTopologyType)
@@ -173,6 +165,9 @@ public:
 	D3D11_PRIMITIVE_TOPOLOGY GetTopology() const { return CurrentRenderData.Topology; }
 	ID3D11ShaderResourceView* GetTexture() const { return CurrentRenderData.Texture; }
 	
+
+private:
+	virtual void OnTransformation() override;
 	
 public:
 	bool IsUseVertexColor() const { return bUseVertexColor; }
@@ -196,7 +191,7 @@ protected:
 
 private:
 	FRenderData PrevFrameData = FRenderData();
-	FRenderData CurrentRenderData = FRenderData();
+	FRenderData CurrentRenderData = FRenderData(nullptr, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, EPrimitiveMeshType::EPT_None, ERenderMode::Individual);
 	uint32 Depth;
 	bool bIsDirty;
 };
