@@ -59,7 +59,10 @@ void FName::SetIndex(const FName& Other)
     ComparisonIndex = Other.ComparisonIndex;
     DisplayIndex = Other.DisplayIndex;
 }
-
+int32 FName::GetDisplayIndex() const
+{
+    return DisplayIndex;
+}
 /*
 bool FName::EqualsIgnoreCase(const FName& Other) const
 {

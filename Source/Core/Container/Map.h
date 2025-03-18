@@ -7,9 +7,12 @@
 #include <functional> // std::hash 포함
 
 #include "String.h"
+
 /**FName에서 사용할 FString 해시화 함수*/
+// 해시 함수의 명시적 선언 추가
 namespace std
 {
+    // FString 해시 함수 정의
     template <>
     struct hash<FString>
     {
@@ -22,8 +25,8 @@ namespace std
 #endif
         }
     };
-    
 }
+
 
 template <typename KeyType, typename ValueType, typename Allocator = FDefaultAllocator<std::pair<const KeyType, ValueType>>>
 class TMap

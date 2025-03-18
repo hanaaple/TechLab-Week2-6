@@ -86,6 +86,7 @@ struct FRenderData
 	D3D_PRIMITIVE_TOPOLOGY Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	EPrimitiveMeshType MeshType = EPrimitiveMeshType::EPT_None;
 	ERenderMode RenderMode = ERenderMode::None;
+	FName ShaderName=FName();
 };
 
 class UPrimitiveComponent : public USceneComponent
@@ -156,6 +157,16 @@ public:
 		
 		CurrentRenderData.RenderMode = NewMode;
 	}
+	void SetShaderName(FName NewShaderName)
+	{
+		if (CurrentRenderData.ShaderName != NewShaderName)
+			SetDirty(true);
+		
+		CurrentRenderData.ShaderName = NewShaderName;
+	}
+
+	FName GetShaderName() const { return CurrentRenderData.ShaderName; }
+	
 	EPrimitiveMeshType GetMeshType() const { return CurrentRenderData.MeshType; }
 
 	ERenderMode GetRenderMode() const { return CurrentRenderData.RenderMode; }
@@ -204,8 +215,6 @@ public:
 	UCubeComp() : Super()
 	{
 		SetMesh(EPrimitiveMeshType::EPT_Cube);
-		UTextureLoader::Get().LoadTexture("Resources/tempTexture.png");
-		SetTexture(UTextureLoader::Get().m_texture);
 		obb.Initialize(*MeshResourceCache::Get().GetVertexData(GetMeshType()));
 	}
 	virtual ~UCubeComp() = default;

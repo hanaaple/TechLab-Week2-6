@@ -11,7 +11,6 @@ public:
     static TArray<uint32> CreateTorusIndecies();
 
 
-
 private:
     
     // Torus
