@@ -167,7 +167,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Core\Container\Map.cpp" />
     <ClCompile Include="Source\Core\Math\Plane.cpp" />
     <ClCompile Include="Source\Core\Name\FName.cpp" />
     <ClCompile Include="Source\Core\Name\FNameEntry.cpp" />
@@ -275,7 +274,7 @@
     <ClCompile Include="Source\Core\Math\Vector.cpp" />
     <ClCompile Include="Source\JsonSaveHelper.cpp" />
     <ClCompile Include="Source\Object\Gizmo\RotationGizmo.cpp" />
-    <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp" />
+    <ClCompile Include="Source\Object\Gizmo\WorldGrid.cpp" />
     <ClCompile Include="Source\Primitive\MeshVertexData.cpp" />
     <ClCompile Include="Source\Primitive\UShader.cpp" />
     <ClCompile Include="Source\Primitive\UShaderManager.cpp" />
@@ -339,12 +338,9 @@
     <ClInclude Include="Source\Core\Math\Transform.h" />
     <ClInclude Include="Source\Object\Actor\Cylinder.h" />
     <ClInclude Include="Source\Object\Gizmo\RotationGizmo.h" />
+    <ClInclude Include="Source\Object\Gizmo\WorldGrid.h" />
     <ClInclude Include="Source\Object\ObjectFactory.h" />
-    <ClInclude Include="Source\Object\PrimitiveComponent\CharComp.h" />
-    <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
     <ClInclude Include="Source\Primitive\MeshVertexData.h" />
-    <ClInclude Include="Source\Primitive\UShader.h" />
-    <ClInclude Include="Source\Primitive\UShaderManager.h" />
     <ClInclude Include="Source\Primitive\VertexDataCreator.h" />
     <ClInclude Include="Source\Texture\TextureLoader.h" />
     <ClInclude Include="Source\ThirdParty\DirectXTK\Audio.h" />
@@ -409,9 +405,6 @@
     <Content Include="Shaders\TextShader.hlsl" />
     <ClCompile Include="Source\Core\Container\Map.cpp" />
     <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp" />
-    <ClCompile Include="Source\Primitive\UShader.cpp" />
-    <ClCompile Include="Source\Primitive\UShaderManager.cpp" />
-    <ClInclude Include="Source\Object\PrimitiveComponent\CharComp.h" />
     <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
     <ClInclude Include="Source\Primitive\UShader.h" />
     <ClInclude Include="Source\Primitive\UShaderManager.h" />
