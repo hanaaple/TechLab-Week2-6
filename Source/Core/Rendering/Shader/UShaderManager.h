@@ -1,19 +1,9 @@
 #pragma once
-#define _TCHAR_DEFINED
 #include "Core/Container/Map.h"
 #include "UShader.h"
+#include "DataTypes/ShdaerType.h"
 
 class URenderer;
-
-enum class EShaderType : uint8
-{
-    DefaultShader,
-    PickingShader,
-    OutlineShader,
-    TextShader,
-    PrimitiveShader,
-    CustomShader, // 이후 추가될 사용자 정의 쉐이더
-};
 
 //EShaderType -> FName 변환 함수
 inline FName ShaderTypeToFName(EShaderType ShaderType)
@@ -29,22 +19,25 @@ inline FName ShaderTypeToFName(EShaderType ShaderType)
     default: return FName("UnknownShader");
     }
 }
-
 class UShaderManager : public TSingleton<UShaderManager>
 {
 public:
     void Initialize(const URenderer& Renderer);
 
     void LoadAllShaders();
+    
     //UShader* LoadShader(ID3D11Device* Device, const wchar_t* FileName);
     UShader* LoadShader(ID3D11Device* Device, const wchar_t* FileName,
                         std::function<void(UPrimitiveComponent*)> UpdateConstantBufferFunction = nullptr);
     UShader* LoadShader(ID3D11Device* Device, const FName& Name, const wchar_t* FileName,
                         const FString& VertexEntry, const FString& PixelEntry,
-                        std::function<void(UPrimitiveComponent*)> UpdateConstantBufferFunction = nullptr);
-    UShader* GetShader(const FName& Name);
+                        std::function<void(UPrimitiveComponent*)> UpdateConstantBufferFunction=nullptr);
+
     UShader* GetShader(const EShaderType& Type);
+
     void ReleaseAll();
+
+private:
     ID3D11Device* Device;
     ID3D11DeviceContext* DeviceContext;
     const URenderer* Renderer;
@@ -52,3 +45,4 @@ public:
 private:
     TMap<int32, UShader*> ShaderMap;
 };
+

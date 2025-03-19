@@ -21,7 +21,7 @@ public:
 	
 	virtual void Destroyed();
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
-	TSet<UActorComponent*>& GetComponents() { return Components; }
+	TArray<UActorComponent*>& GetComponents() { return Components; }
 
 	void ActivateComponent();
 
@@ -87,7 +87,7 @@ protected:
 
 private:
 	UWorld* World = nullptr;
-	TSet<UActorComponent*> Components;
+	TArray<UActorComponent*> Components;
 	TArray<UActorComponent*> ToActiveComponents;	// 컴포넌트 생성 시 일시적으로 넣어줌.
 };
 
