@@ -13,6 +13,8 @@
 #include <Object/Actor/Cube.h>
 #include <Object/Actor/BillBoardText.h>
 #include "Object/Actor/AABBPicker.h"
+#include "Object/Gizmo/WorldGrid.h"
+#include "Object/Actor/Sphere.h"
 
 // ImGui WndProc 정의
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -135,7 +137,6 @@ void UEngine::Run()
         }
 		// Renderer Update
         Renderer->Prepare();
-        Renderer->PrepareShader();
 
 		// World Update
 		if (World)
@@ -231,10 +232,10 @@ void UEngine::InitWorld()
 
     FEditorManager::Get().SetCamera(World->SpawnActor<ACamera>());
 
+    FEditorManager::Get().SetWorldGrid(World->SpawnActor<AWorldGrid>());
     //// Test
     //World->SpawnActor<AArrow>();
     //World->SpawnActor<ABillboardText>();
-
     World->SpawnActor<AAxis>();
     World->SpawnActor<AAABBPicker>();
     
@@ -245,7 +246,8 @@ void UEngine::InitWorld()
     // {
     //     World->SpawnActor<ACube>();
     // }
-  
+
+    World->SpawnActor<ASphere>();
     //World->SpawnActor<APicker>();
     /*auto* Actor = World->SpawnActor<ACylinder>();
     UConeComp* ConeComp = Actor->AddComponent<UConeComp>();
@@ -348,12 +350,14 @@ void UEngine::SetShowFlag(EEngineShowFlags Flag, bool bEnable)
 //  Show Flag 상태 확인
 bool UEngine::IsShowFlagEnabled(EEngineShowFlags Flag) const
 {
+    return ShowFlagStates[Flag];
+    /*
     if (Flag == EEngineShowFlags::SF_Primitives)
     {
         return ShowFlagStates[Flag];
         //return bShowPrimitives;
     }
-    return false;
+    return false;*/
 }
 
 const TMap<EEngineShowFlags, bool>& UEngine::GetShowFlagStates() const

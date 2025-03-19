@@ -5,6 +5,8 @@
 #include "Primitive/MeshResourceCache.h"
 #include "Core/Container/Array.h"
 #include "Core/Container/Map.h"
+#include "DataTypes/ShdaerType.h"
+#include "Texture/TextureData.h"
 
 class UPrimitiveComponent;
 
@@ -18,9 +20,8 @@ struct FBatchRenderContext
     // Vertex Data가 변했는지
     // Index Data가 변했는지 확인.
     
-    ID3D11ShaderResourceView* Texture = nullptr;
-    
-    // UMaterial* Material;
+    EShaderType ShaderType;
+    ETextureType TextureType;
     D3D11_PRIMITIVE_TOPOLOGY Topology;
     bUseIndexBufferFlag bUseIndexBuffer;
 

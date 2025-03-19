@@ -43,6 +43,7 @@ public:
 	void SetupAttachment(USceneComponent* InParent, EAttachmentRule AttachmentRule = EAttachmentRule::KeepWorld);
 	void RemoveChild(USceneComponent* Child);
 	const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
+	USceneComponent* GetAttachParent() { return AttachParent; }
 	
 private:
 	void UpdateChildTransforms();
@@ -57,7 +58,7 @@ private:
 	/* Component's Relative Transform */
 	FTransform RelativeTransform = FTransform();
 	/* Component's World Transform */
-	FTransform ComponentToWorld;
+	FTransform ComponentToWorld = FTransform();
 	
 private:
 	bool bVisible = true;

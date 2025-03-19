@@ -12,7 +12,7 @@ int32 FNameTable::FindOrAdd(const FString& Name)
     int32 NewIndex = static_cast<uint32>(NameEntries.Num());
     NameEntries.Emplace(FNameEntry(Name));
     NameMap[Name] = NewIndex;
-
+    
     return NewIndex;
 }
 int32 FNameTable::FindOrAddLower(const FString& Name)
@@ -37,7 +37,7 @@ FString FNameTable::GetName(int32 Index) const
     {
         return NameEntries[Index].GetName();
     }
-    return "None";
+    return "";
 }
 
 const FNameEntry& FNameTable::GetNameEntry(int32 Index) const

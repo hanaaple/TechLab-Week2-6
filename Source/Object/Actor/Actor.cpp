@@ -34,25 +34,44 @@ void AActor::Destroyed()
 
 void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	for (auto& Component : Components)
-	{		
-		Component->EndPlay(EndPlayReason);
-		if (FEditorManager::Get().GetSelectedActor() == this)
-		{
-			FEditorManager::Get().SelectActor(nullptr);
-		}
-		UEngine::Get().GObjects.Remove(Component->GetUUID());
+	TArray<UActorComponent*> DestroyComponents;
+	for (auto component : Components)
+	{
+		DestroyComponents.Add(component);
 	}
-	Components.Empty();
+	
+	while (DestroyComponents.Num() > 0)
+	{
+		UActorComponent* Component = DestroyComponents[0];
+		DestroyComponents.Remove(Component);
+		if (Component->GetOwner() != this)
+		{
+			Component->SetupAttachment(nullptr);
+			continue;
+		}
+				
+		if (Component->IsA<USceneComponent>())
+		{
+			USceneComponent* SceneComponent = dynamic_cast<USceneComponent*>(Component);
+			for (auto* Child : SceneComponent->GetAttachChildren())
+			{
+				DestroyComponents.Add(Child);
+			}
+		}
+
+		Component->EndPlay(EndPlayReason);
+		RemoveComponent(Component);
+	}
 }
 
 void AActor::ActivateComponent()
 {
-	for (auto* Component : ToActiveComponents)
+	while (ToActiveComponents.Num() > 0)
 	{
+		UActorComponent* Component = ToActiveComponents[0];
+		ToActiveComponents.Remove(Component);	
 		Component->Activate();
 	}
-	ToActiveComponents.Empty();
 }
 
 void AActor::Pick()

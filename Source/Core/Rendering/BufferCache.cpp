@@ -43,72 +43,72 @@ BufferInfo& FBufferCache::GetIndexBufferInfo(EPrimitiveMeshType Type)
 	return IndexBufferCache[Type];
 }
 
-BufferInfo& FBufferCache::GetVertexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology)
+BufferInfo& FBufferCache::GetVertexBufferInfo(ETextureType TextureType, D3D11_PRIMITIVE_TOPOLOGY Topology)
 {
-	if (BatchVertexBufferCache.Contains(Texture))
+	if (BatchVertexBufferCache.Contains(TextureType))
 	{
-		if (BatchVertexBufferCache[Texture].Contains(Topology))
+		if (BatchVertexBufferCache[TextureType].Contains(Topology))
 		{
-			return BatchVertexBufferCache[Texture][Topology];
+			return BatchVertexBufferCache[TextureType][Topology];
 		}
 	}
 	BufferInfo bufferInfo;
 	return bufferInfo;
 }
 
-BufferInfo& FBufferCache::GetIndexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology)
+BufferInfo& FBufferCache::GetIndexBufferInfo(ETextureType TextureType, D3D11_PRIMITIVE_TOPOLOGY Topology)
 {
-	if (BatchIndexBufferCache.Contains(Texture))
+	if (BatchIndexBufferCache.Contains(TextureType))
 	{
-		if (BatchIndexBufferCache[Texture].Contains(Topology))
+		if (BatchIndexBufferCache[TextureType].Contains(Topology))
 		{
-			return BatchIndexBufferCache[Texture][Topology];
+			return BatchIndexBufferCache[TextureType][Topology];
 		}
 	}
 	BufferInfo bufferInfo;
 	return bufferInfo;
 }
 
-void FBufferCache::UpdateVertexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer, uint32 BufferSize)
+void FBufferCache::UpdateVertexBuffer(ETextureType TextureType, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer, uint32 BufferSize)
 {	
-	if (!BatchVertexBufferCache.Contains(Texture))
+	if (!BatchVertexBufferCache.Contains(TextureType))
 	{
-		BatchVertexBufferCache.Add(Texture, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>());
+		BatchVertexBufferCache.Add(TextureType, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>());
 	}
 
-	if (BatchVertexBufferCache[Texture].Contains(Topology))
+	if (BatchVertexBufferCache[TextureType].Contains(Topology))
 	{
-		BatchVertexBufferCache[Texture][Topology].GetBuffer()->Release();
+		BatchVertexBufferCache[TextureType][Topology].GetBuffer()->Release();
 	}
 	else
 	{
-		BatchVertexBufferCache[Texture].Add(Topology, BufferInfo());
+		BatchVertexBufferCache[TextureType].Add(Topology, BufferInfo());
 	}
 	
-	BatchVertexBufferCache[Texture][Topology] = BufferInfo(Buffer, BufferSize);
+	BatchVertexBufferCache[TextureType][Topology] = BufferInfo(Buffer, BufferSize);
 }
 
 // 완전히 사라진 경우 Release를 시켜주는게 없는 거 같음.
 
-void FBufferCache::UpdateIndexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer, uint32 BufferSize)
+void FBufferCache::UpdateIndexBuffer(ETextureType TextureType, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer, uint32 BufferSize)
 {
-	if (!BatchIndexBufferCache.Contains(Texture))
+	if (!BatchIndexBufferCache.Contains(TextureType))
 	{
-		BatchIndexBufferCache.Add(Texture, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>());
+		BatchIndexBufferCache.Add(TextureType, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>());
 	}
 
-	if (BatchIndexBufferCache[Texture].Contains(Topology))
+	if (BatchIndexBufferCache[TextureType].Contains(Topology))
 	{
 		// 해야됨. -> 버퍼가 있는데 Release 중
-		if (BatchIndexBufferCache[Texture][Topology].GetBuffer() != nullptr)
-			BatchIndexBufferCache[Texture][Topology].GetBuffer()->Release();
+		if (BatchIndexBufferCache[TextureType][Topology].GetBuffer() != nullptr)
+			BatchIndexBufferCache[TextureType][Topology].GetBuffer()->Release();
 	}
 	else
 	{
-		BatchIndexBufferCache[Texture].Add(Topology, BufferInfo());
+		BatchIndexBufferCache[TextureType].Add(Topology, BufferInfo());
 	}
 	
-	BatchIndexBufferCache[Texture][Topology] = BufferInfo(Buffer, BufferSize);
+	BatchIndexBufferCache[TextureType][Topology] = BufferInfo(Buffer, BufferSize);
 }
 
 void FBufferCache::Release()
@@ -135,7 +135,7 @@ BufferInfo FBufferCache::CreateVertexBufferInfo(EPrimitiveMeshType MeshType)
 	if (VertexData != nullptr)
 	{
 		Size = VertexData->Num();
-		Buffer = UEngine::Get().GetRenderer()->CreateVertexBuffer(VertexData->GetData(), sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
+		Buffer = UEngine::Get().GetRenderer()->CreateBuffer(VertexData->GetData(), sizeof(FVertexSimple) * Size, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_IMMUTABLE);
 	}
 	
 	return BufferInfo(Buffer, Size);
@@ -150,7 +150,7 @@ BufferInfo FBufferCache::CreateIndexBufferInfo(EPrimitiveMeshType MeshType)
 	if (IndexData != nullptr)
 	{
 		Size = IndexData->Num();
-		Buffer = UEngine::Get().GetRenderer()->CreateIndexBuffer(IndexData->GetData(), sizeof(uint32) * Size, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
+		Buffer = UEngine::Get().GetRenderer()->CreateBuffer(IndexData->GetData(), sizeof(uint32) * Size, D3D11_BIND_INDEX_BUFFER, D3D11_USAGE_IMMUTABLE);
 	}
 	return BufferInfo(Buffer, Size);
 }
