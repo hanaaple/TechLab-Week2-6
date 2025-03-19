@@ -67,7 +67,7 @@ void AEditorGizmos::Tick(float DeltaTime)
 	{
 		FTransform GizmoTransform = RootComponent->GetComponentTransform();
 		GizmoTransform.SetPosition(SelectedActor->GetActorTransform().GetPosition());
-		GizmoTransform.SetRotation(SelectedActor->GetActorTransform().GetEulerRotation());
+		//GizmoTransform.SetRotation(SelectedActor->GetActorTransform().GetEulerRotation());
 		SetActorTransform(GizmoTransform);
 	}
 
@@ -117,13 +117,13 @@ void AEditorGizmos::Tick(float DeltaTime)
 			switch (SelectedAxis)
 			{
 			case ESelectedAxis::X:
-				Result = RayDir.Dot(FVector(1,0,0));
+				Result = RayDir.Dot(FVector(1, 0, 0));
 				break;
 			case ESelectedAxis::Y:
-				Result = RayDir.Dot(FVector(0,1,0));
+				Result = RayDir.Dot(FVector(0, 1, 0));
 				break;
 			case ESelectedAxis::Z:
-				Result = RayDir.Dot(FVector(0,0,1));
+				Result = RayDir.Dot(FVector(0, 0, 1));
 				break;
 			default:
 				break;

@@ -72,6 +72,17 @@ void FEditorManager::SetGizmoType(EGizmoType newType)
         else {
             ControlGizmo->SetActorVisibility(true);
             RotationGizmo->SetActorVisibility(false);
+            TArray<UPrimitiveComponent*> axis = ControlGizmo->GetAxis();
+            if (GizmoType == EGizmoType::Translate) {
+                axis[1]->SetMesh(EPrimitiveMeshType::EPT_Cone);
+                axis[3]->SetMesh(EPrimitiveMeshType::EPT_Cone);
+                axis[5]->SetMesh(EPrimitiveMeshType::EPT_Cone);
+            }
+            if (GizmoType == EGizmoType::Scale) {
+                axis[1]->SetMesh(EPrimitiveMeshType::EPT_Cube);
+                axis[3]->SetMesh(EPrimitiveMeshType::EPT_Cube);
+                axis[5]->SetMesh(EPrimitiveMeshType::EPT_Cube);
+            }
         }
     }
 }

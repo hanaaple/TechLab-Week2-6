@@ -16,8 +16,8 @@ public:
 	void SetText(FName NewText);
 
 public:
-	USceneComponent* FollowComponent;
+	USceneComponent* FollowComponent = nullptr;
 	FVector Offset = FVector(0, 0, 2);
 private:
-	UTextComp* TextComp;
+	UTextComp* TextComp = nullptr;
 };

@@ -50,7 +50,6 @@ void ARotationGizmo::Tick(float DeltaTime)
 			POINT pt;
 			GetCursorPos(&pt);
 			ScreenToClient(UEngine::Get().GetWindowHandle(), &pt);
-
 			RECT Rect;
 			GetClientRect(UEngine::Get().GetWindowHandle(), &Rect);
 			int ScreenWidth = Rect.right - Rect.left;
@@ -62,6 +61,12 @@ void ARotationGizmo::Tick(float DeltaTime)
 
 			// Projection 공간으로 변환
 			FVector4 RayOrigin{ PosX, PosY, 1.0f, 1.0f };
+
+			FVector4 ndcOrigin{ 1.0f, PosX, PosY, 1.0f };
+
+			FVector4 RayDir = (ndcOrigin - prevMousePos).GetSafeNormal();
+
+			prevMousePos = ndcOrigin;
 
 			// View 공간으로 변환
 			FMatrix InvProjMat = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
@@ -77,27 +82,49 @@ void ARotationGizmo::Tick(float DeltaTime)
 			FMatrix InvViewMat = FEditorManager::Get().GetCamera()->GetViewMatrix().Inverse();
 			RayOrigin = RayOrigin * InvViewMat;
 
-			FVector4 RayDir = (RayOrigin - prevMousePos);
-
 			FTransform AT = Actor->GetActorTransform();
+
+			ACamera* cam = FEditorManager::Get().GetCamera();
+			FVector GizmoCenter = Actor->GetActorTransform().GetPosition();
+			FVector camX = cam->GetForward();
+			FVector camY = cam->GetRight();
+			FVector camZ = cam->GetUp();
+
+			FVector RadialVector = (RayOrigin - GizmoCenter).GetSafeNormal();
+
+			FVector EffectiveMovement = FVector::CrossProduct(RadialVector, RayDir).GetSafeNormal();
+
 			float Result = 0;
+
 			switch (SelectedAxis)
 			{
-				//TODO: 회전 방식 구상
 			case ESelectedAxis::X:
-				Result = RayDir.Dot(FVector(0, 1, 0));
+				Result = -FVector::DotProduct(EffectiveMovement, camX);
 				break;
 			case ESelectedAxis::Y:
-				Result = RayDir.Dot(FVector(0, 0, 1));
+				Result = FVector::DotProduct(EffectiveMovement, camY);
 				break;
 			case ESelectedAxis::Z:
-				Result = RayDir.Dot(FVector(0, 1, 0));
+				Result = -FVector::DotProduct(EffectiveMovement, camZ);
 				break;
 			default:
 				break;
 			}
 
-			Result *= 0.005f;
+			FVector CameraToObject = (GizmoCenter - cam->GetActorTransform().GetPosition()).GetSafeNormal();
+
+			if (Result > 0.1f)
+				Result = 0.1f;
+			if (Result < -0.1f)
+				Result = -0.1f;
+			if (FMath::Abs(Result) < 0.005f) {
+				if (Result > 0) {
+					Result = 0.005f;
+				}
+				if (Result < 0) {
+					Result = -0.005f;
+				}
+			}
 
 			DoTransform(AT, Result, Actor);
 		}
