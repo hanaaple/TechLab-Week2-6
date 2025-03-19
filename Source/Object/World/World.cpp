@@ -50,6 +50,41 @@ void UWorld::Tick(float DeltaTime)
 		}
 	}
 
+	if (FEditorManager::Get().GetSelectedActor() != nullptr) {
+		ACamera* cam = FEditorManager::Get().GetCamera();
+		if (!cam->GetIsMoving() && APlayerInput::Get().GetKeyDown(EKeyCode::F))
+		{
+			cam->SetOriginalRotation();
+			cam->SetIsMoving(true);
+		}
+		if (cam->GetIsMoving()) {
+			FTransform camTransform = cam->GetActorTransform();
+			FVector actorPos = FEditorManager::Get().GetSelectedActor()->GetActorTransform().GetPosition();
+			FVector camPos = camTransform.GetPosition();
+			FVector Direction = ((actorPos - FVector(5, 0, 0)) - camPos);
+			float distance = Direction.Length();
+			Direction = Direction.GetSafeNormal();
+			if (actorPos.X - camPos.X > 5.01f) {
+				camTransform.SetPosition(camPos + Direction * (distance/10.0f));
+				if (camTransform.GetEulerRotation().Length() > 0.1f) {
+					camTransform.SetRotation(camTransform.GetEulerRotation() - cam->GetOriginalRotation() * 0.02f);
+				}
+				cam->SetActorTransform(camTransform);
+			}
+			else {
+				cam->SetIsMoving(false);
+			}
+		}
+		if (APlayerInput::Get().GetMouseDown(true)) {
+			cam->SetIsMoving(false);
+		}
+	}
+	else {
+		FEditorManager::Get().GetCamera()->SetIsMoving(false);
+	}
+	
+
+
 	if (APlayerInput::Get().GetKeyDown(EKeyCode::Space))
 	{
 		int type = static_cast<int>(FEditorManager::Get().GetGizmoType());
