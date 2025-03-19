@@ -88,6 +88,12 @@ void USceneComponent::RemoveChild(USceneComponent* Child)
 	AttachChildren.Remove(Child);
 }
 
+void USceneComponent::RemoveAllChildren()
+{
+	AttachChildren.Empty();
+}
+
+
 // void USceneComponent::ApplyParentWorldTransform()
 // {
 // 	FMatrix ParentWorld = AttachParent->GetComponentTransform().GetMatrix();

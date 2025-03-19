@@ -8,7 +8,8 @@ class USceneComponent : public UActorComponent
 	using Super = UActorComponent;
 	using EAttachmentRule = EEndPlayReason::EAttachmentRule;
 	friend class AActor;
-    DECLARE_OBJECT(USceneComponent,Super)
+	DECLARE_OBJECT(USceneComponent,Super)
+
 public:
 	USceneComponent() = default;
 
@@ -42,6 +43,7 @@ public:
 	/* SnapToTarget을 제외하여 KeepRelative, KeepWorld만 구현 */
 	void SetupAttachment(USceneComponent* InParent, EAttachmentRule AttachmentRule = EAttachmentRule::KeepWorld);
 	void RemoveChild(USceneComponent* Child);
+	void RemoveAllChildren();
 	const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
 	USceneComponent* GetAttachParent() { return AttachParent; }
 	
