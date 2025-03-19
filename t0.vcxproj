@@ -167,6 +167,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\Container\Map.cpp" />
     <ClCompile Include="Source\Core\Math\Plane.cpp" />
     <ClCompile Include="Source\Core\Name\FName.cpp" />
     <ClCompile Include="Source\Core\Name\FNameEntry.cpp" />
@@ -282,6 +283,7 @@
     <ClCompile Include="Source\Core\Math\Vector.cpp" />
     <ClCompile Include="Source\JsonSaveHelper.cpp" />
     <ClCompile Include="Source\Object\Gizmo\RotationGizmo.cpp" />
+    <ClCompile Include="Source\Object\Gizmo\WorldGrid.cpp" />
     <ClCompile Include="Source\Primitive\MeshVertexData.cpp" />
     <ClCompile Include="Source\Primitive\VertexDataCreator.cpp" />
     <ClCompile Include="Source\Static\FEditorManager.cpp" />

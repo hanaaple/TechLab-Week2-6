@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Object/Actor/Actor.h"
 #include "Object/Actor/Camera.h"
+#include "Object/Gizmo/WorldGrid.h"
 
 class AEditorGizmos;
 
@@ -36,6 +37,10 @@ public:
     ARotationGizmo* GetRotationGizmo() const { return RotationGizmo; }
 
     EGizmoType GetGizmoType() { return GizmoType; }
+
+    void SetWorldGrid(AWorldGrid* grid);
+
+    AWorldGrid* GetWorldGrid() const { return WorldGrid; }
 private:
     ACamera* Camera = nullptr;
     AActor* SelectedActor = nullptr;
@@ -44,4 +49,5 @@ private:
     ABoundingBoxActor* AABB = nullptr;
     AEditorGizmos* ControlGizmo = nullptr;
     EGizmoType GizmoType = EGizmoType::Translate;
+    AWorldGrid* WorldGrid = nullptr;
 };

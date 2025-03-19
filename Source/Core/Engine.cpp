@@ -13,6 +13,7 @@
 #include <Object/Actor/Cube.h>
 #include <Object/Actor/BillBoardText.h>
 #include "Object/Actor/AABBPicker.h"
+#include "Object/Gizmo/WorldGrid.h"
 #include "Object/Actor/Sphere.h"
 
 // ImGui WndProc 정의
@@ -231,10 +232,10 @@ void UEngine::InitWorld()
 
     FEditorManager::Get().SetCamera(World->SpawnActor<ACamera>());
 
+    FEditorManager::Get().SetWorldGrid(World->SpawnActor<AWorldGrid>());
     //// Test
     //World->SpawnActor<AArrow>();
     //World->SpawnActor<ABillboardText>();
-
     World->SpawnActor<AAxis>();
     World->SpawnActor<AAABBPicker>();
     
@@ -243,7 +244,7 @@ void UEngine::InitWorld()
 
     // for (int i =0 ; i < 1000; i++)
     // {
-         //World->SpawnActor<ACube>();
+    //     World->SpawnActor<ACube>();
     // }
 
     World->SpawnActor<ASphere>();
