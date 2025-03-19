@@ -16,7 +16,10 @@ public:
 	void SetSpacing(float value);
 	float GetSpacing() { return Spacing; }
 	void UpdateGrid();
-
+private:
+	void CreateLine(bool isVertical);
+	void RemoveLine(bool isVertical);
+	
 private:
 	float Spacing;
 	TArray<ULineComp*> HorizontalGridLines;
