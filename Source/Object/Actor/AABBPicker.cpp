@@ -236,6 +236,8 @@ UTorusComp* AAABBPicker::CheckRotationGizmo(FVector rayOrigin, FVector rayDir)
 	ARotationGizmo* gizmos = FEditorManager::Get().GetRotationGizmo();
 	TArray<UTorusComp*> components = gizmos->GetAxis();
 	float minT = FLT_MAX;
+	float minDist, maxDist;
+	FVector entry, exit;
 	for (auto component : components) {
 		if (component != nullptr) {
 			if (component->GetVisibleFlag()) {
@@ -258,9 +260,15 @@ UTorusComp* AAABBPicker::CheckRotationGizmo(FVector rayOrigin, FVector rayDir)
 				tMin = FMath::Max(tMin, FMath::Min(t5, t6));
 
 				if (tMax >= tMin && tMax > 0) {
-					if (tMin < minT) {
-						minT = tMin;
-						PickedComponent = component;
+					entry = rayOrigin + rayDir * tMin;
+					exit = rayOrigin + rayDir * tMax;
+					minDist = (entry - gizmos->GetActorTransform().GetPosition()).Length();
+					maxDist = (exit - gizmos->GetActorTransform().GetPosition()).Length();
+					if (minDist > 0.45f && maxDist > 0.45f) {
+						if (tMin < minT) {
+							minT = tMin;
+							PickedComponent = component;
+						}
 					}
 				}
 			}
