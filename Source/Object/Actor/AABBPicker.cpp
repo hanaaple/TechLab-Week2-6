@@ -80,7 +80,7 @@ void AAABBPicker::LateTick(float DeltaTime)
 				if (pickedAxis != nullptr) {
 					if (FEditorManager::Get().GetRotationGizmo() != nullptr && FEditorManager::Get().GetSelectedActor() != nullptr) {
 						ARotationGizmo* gizmo = FEditorManager::Get().GetRotationGizmo();
-						gizmo->SetPrevMousePos(clickedPosition);
+						gizmo->SetPrevMousePos(clickedNDC);
 					}
 					ESelectedAxis selectedAxis = FEditorManager::Get().GetRotationGizmo()->IsAxis(pickedAxis);
 				}
@@ -108,6 +108,7 @@ FVector AAABBPicker::RayCast(FVector mouse, ACamera* camera)
 {
 	FVector rayOrigin = camera->GetActorTransform().GetPosition();
 	FVector4 ndc(mouse.X, mouse.Y, 1.0f, 1.0f);
+	clickedNDC = FVector4(1.0f, ndc.X, ndc.Y, 1.0f);
 	FMatrix inverseView = camera->GetViewMatrix().Inverse();
 	UEngine::Get().GetRenderer()->UpdateProjectionMatrix(camera);
 	FMatrix inverseProjection = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();

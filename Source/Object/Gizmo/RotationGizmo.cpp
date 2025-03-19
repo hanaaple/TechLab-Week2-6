@@ -62,6 +62,12 @@ void ARotationGizmo::Tick(float DeltaTime)
 			// Projection 공간으로 변환
 			FVector4 RayOrigin{ PosX, PosY, 1.0f, 1.0f };
 
+			FVector4 ndcOrigin{ 1.0f, PosX, PosY, 1.0f };
+
+			FVector4 RayDir = (ndcOrigin - prevMousePos).GetSafeNormal();
+
+			prevMousePos = ndcOrigin;
+
 			// View 공간으로 변환
 			FMatrix InvProjMat = UEngine::Get().GetRenderer()->GetProjectionMatrix().Inverse();
 			RayOrigin = RayOrigin * InvProjMat;
@@ -76,7 +82,6 @@ void ARotationGizmo::Tick(float DeltaTime)
 			FMatrix InvViewMat = FEditorManager::Get().GetCamera()->GetViewMatrix().Inverse();
 			RayOrigin = RayOrigin * InvViewMat;
 
-			FVector4 RayDir = (RayOrigin - prevMousePos).GetSafeNormal();
 			FTransform AT = Actor->GetActorTransform();
 
 			ACamera* cam = FEditorManager::Get().GetCamera();
@@ -84,8 +89,6 @@ void ARotationGizmo::Tick(float DeltaTime)
 			FVector camX = cam->GetForward();
 			FVector camY = cam->GetRight();
 			FVector camZ = cam->GetUp();
-
-			prevMousePos = RayOrigin;
 
 			FVector RadialVector = (RayOrigin - GizmoCenter).GetSafeNormal();
 
@@ -96,12 +99,15 @@ void ARotationGizmo::Tick(float DeltaTime)
 			switch (SelectedAxis)
 			{
 			case ESelectedAxis::X:
+				UE_LOG("X Axis Selected");
 				Result = -FVector::DotProduct(EffectiveMovement, camX);
 				break;
 			case ESelectedAxis::Y:
+				UE_LOG("Y Axis Selected");
 				Result = FVector::DotProduct(EffectiveMovement, camY);
 				break;
 			case ESelectedAxis::Z:
+				UE_LOG("Z Axis Selected");
 				Result = -FVector::DotProduct(EffectiveMovement, camZ);
 				break;
 			default:
@@ -109,11 +115,6 @@ void ARotationGizmo::Tick(float DeltaTime)
 			}
 
 			FVector CameraToObject = (GizmoCenter - cam->GetActorTransform().GetPosition()).GetSafeNormal();
-
-			if (FVector4::DotProduct(RayDir, prevMouseDir) < -0.5f) {
-				Result = -Result;
-			}
-			prevMouseDir = RayDir;
 
 			if (Result > 0.1f)
 				Result = 0.1f;
