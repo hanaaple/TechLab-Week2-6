@@ -55,6 +55,7 @@ public:
 	{
 		Object->Deactivate();
 		Components.Remove(Object);
+		UEngine::Get().GObjects.Remove(GetUUID());
 	}
 
 	/** @return Actor's World Transform */

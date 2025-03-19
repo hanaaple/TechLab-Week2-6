@@ -34,16 +34,33 @@ void AActor::Destroyed()
 
 void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	while (Components.Num() > 0)
+	TArray<UActorComponent*> DestroyComponents;
+	for (auto component : Components)
 	{
-		UActorComponent* Component = Components[0];
-		Components.Remove(Component);
-		Component->EndPlay(EndPlayReason);
-		if (FEditorManager::Get().GetSelectedActor() == this)
+		DestroyComponents.Add(component);
+	}
+	
+	while (DestroyComponents.Num() > 0)
+	{
+		UActorComponent* Component = DestroyComponents[0];
+		DestroyComponents.Remove(Component);
+		if (Component->GetOwner() != this)
 		{
-			FEditorManager::Get().SelectActor(nullptr);
+			Component->SetupAttachment(nullptr);
+			continue;
 		}
-		UEngine::Get().GObjects.Remove(Component->GetUUID());
+				
+		if (Component->IsA<USceneComponent>())
+		{
+			USceneComponent* SceneComponent = dynamic_cast<USceneComponent*>(Component);
+			for (auto* Child : SceneComponent->GetAttachChildren())
+			{
+				DestroyComponents.Add(Child);
+			}
+		}
+
+		Component->EndPlay(EndPlayReason);
+		RemoveComponent(Component);
 	}
 }
 
