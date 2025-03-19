@@ -59,7 +59,7 @@ inline FMatrix UCharComp::GetBillboardMatrix()
     FVector RightVector = LookVector.Cross(WorldUp).GetSafeNormal();
     FVector UpVector = LookVector.Cross(RightVector).GetSafeNormal();
     
-    WorldUp = Camera->GetActorTransform().GetUp();
+   // WorldUp = Camera->GetActorTransform().GetUp();
     
     FVector PivotLookVector = (Camera->GetActorTransform().GetPosition() - Pivot);
     FVector PivotRightVector = PivotLookVector.Cross(WorldUp).GetSafeNormal();
