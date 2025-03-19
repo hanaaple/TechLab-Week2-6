@@ -67,7 +67,7 @@ void AEditorGizmos::Tick(float DeltaTime)
 	{
 		FTransform GizmoTransform = RootComponent->GetComponentTransform();
 		GizmoTransform.SetPosition(SelectedActor->GetActorTransform().GetPosition());
-		GizmoTransform.SetRotation(SelectedActor->GetActorTransform().GetEulerRotation());
+		//GizmoTransform.SetRotation(SelectedActor->GetActorTransform().GetEulerRotation());
 		SetActorTransform(GizmoTransform);
 	}
 
@@ -117,21 +117,22 @@ void AEditorGizmos::Tick(float DeltaTime)
 			switch (SelectedAxis)
 			{
 			case ESelectedAxis::X:
-				Result = RayDir.Dot(actorXAxis);
+				Result = RayDir.Dot(FVector(1, 0, 0));
 				break;
 			case ESelectedAxis::Y:
-				Result = RayDir.Dot(actorYAxis);
+				Result = RayDir.Dot(FVector(0, 1, 0));
 				break;
 			case ESelectedAxis::Z:
-				Result = RayDir.Dot(actorZAxis);
+				Result = RayDir.Dot(FVector(0, 0, 1));
 				break;
 			default:
 				break;
 			}
 			
-			Result *= 0.005f;
+			Result = Result * 0.05f;
 
 			DoTransform(AT, Result, Actor);
+			prevMousePos = RayOrigin;
 		}
 	}
 
@@ -214,12 +215,14 @@ void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 {
 	const FVector& AP = AT.GetPosition();
 	EGizmoType GizmoType = FEditorManager::Get().GetGizmoType(); 
+	FVector position;
 	if (SelectedAxis == ESelectedAxis::X)
 	{
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP + actorXAxis * Result });
+			position = { AP.X + Result, AP.Y, AP.Z };
+			AT.SetPosition(position);
 			break;
 		case EGizmoType::Scale:
 			AT.AddScale({ Result * 0.5f, 0, 0 });
@@ -231,7 +234,8 @@ void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP + actorYAxis * Result });
+			position = { AP.X, AP.Y + Result, AP.Z };
+			AT.SetPosition(position);
 			break;
 		case EGizmoType::Scale:
 			AT.AddScale({ 0, Result * 0.5f, 0 });
@@ -243,7 +247,8 @@ void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			AT.SetPosition({ AP + actorZAxis * Result });
+			position = { AP.X, AP.Y, AP.Z + Result };
+			AT.SetPosition(position);
 			break;
 		case EGizmoType::Scale:
 			AT.AddScale({0, 0, Result * 0.5f });

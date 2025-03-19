@@ -35,10 +35,9 @@ void AActor::Destroyed()
 void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	TArray<UActorComponent*> DestroyComponents;
-	for (auto component : Components)
-	{
-		DestroyComponents.Add(component);
-	}
+	if (RootComponent == nullptr)
+		return;
+	DestroyComponents.Add(RootComponent);
 	
 	while (DestroyComponents.Num() > 0)
 	{
@@ -61,6 +60,7 @@ void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 			{
 				DestroyComponents.Add(Child);
 			}
+			SceneComponent->RemoveAllChildren();
 		}
 
 		Component->EndPlay(EndPlayReason);

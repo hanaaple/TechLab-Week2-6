@@ -18,4 +18,5 @@ public:
 	UPrimitiveComponent* CheckGizmo(FVector rayOrigin, FVector rayDir);
 	UTorusComp* CheckRotationGizmo(FVector rayOrigin, FVector rayDir);
 	FVector4 clickedPosition;
+	FVector4 clickedNDC;
 };
