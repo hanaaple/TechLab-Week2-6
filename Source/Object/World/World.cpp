@@ -76,7 +76,14 @@ void UWorld::Tick(float DeltaTime)
 				cam->SetIsMoving(false);
 			}
 		}
+		if (APlayerInput::Get().GetMouseDown(true)) {
+			cam->SetIsMoving(false);
+		}
 	}
+	else {
+		FEditorManager::Get().GetCamera()->SetIsMoving(false);
+	}
+	
 
 
 	if (APlayerInput::Get().GetKeyDown(EKeyCode::Space))
