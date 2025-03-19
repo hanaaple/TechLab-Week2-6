@@ -6,6 +6,7 @@
 // cellWidthUV : 셀의 가로 너비(uv좌표계 기준) ex 0.06, CeillHeightUV : 셀의 세로 너비(uv 좌표계 기준)
 void Texture::Initialize(const FTextureStaticData& TextureData)
 {
+    this->TextureData = TextureData;
     int RowCount = TextureData.RowCount;
     int ColCount = TextureData.ColCount;
     int AtlasTotalNum = TextureData.AtlasTotalCount;
@@ -25,7 +26,7 @@ void Texture::Initialize(const FTextureStaticData& TextureData)
     }
 }
 
-CharacterInfo Texture::GetCharInfoMap(char character)
+TextureInfo Texture::GetCharInfoMap(char character)
 {
     return AtlasInfoMap[character - 32];
 }

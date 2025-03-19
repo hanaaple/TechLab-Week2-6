@@ -341,7 +341,10 @@ void UI::RenderSettingsPanel()
     ImGui::Text("Grid Spacing");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(-1);
-    ImGui::SliderFloat("##GridSpacing", &GridSpacing, 1.0f, 100.0f, "%.1f");
+    if (ImGui::SliderFloat("##GridSpacing", &GridSpacing, 1.0f, 100.0f, "%.1f"))
+    {
+        FEditorManager::Get().GetWorldGrid()->SetSpacing(GridSpacing);
+    }
 
     ImGui::End();
 }

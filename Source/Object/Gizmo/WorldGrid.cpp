@@ -53,6 +53,7 @@ const char* AWorldGrid::GetTypeName()
 void AWorldGrid::SetSpacing(float value)
 {
 	Spacing = value;
+	UpdateGrid();
 }
 
 void AWorldGrid::UpdateGrid()

@@ -16,6 +16,11 @@ cbuffer UV : register(b1)
     float height;
 }
 
+cbuffer UseUv : register(b2)
+{
+    int useUv;
+}
+
 struct VS_INPUT
 {
     float4 position : POSITION; // Input position from vertex buffer
@@ -60,13 +65,21 @@ PS_OUTPUT mainPS(PS_INPUT input) : SV_TARGET
 
     // 텍스처 샘플링
 
-    float correctedV = 1.0 - (v + height);
-    float4 texColor = sourceTex.Sample(samp, input.uv * float2(width, height) + float2(u, correctedV));
-    output.color = texColor;
-    //배경이 특정 색(예: 검은색)일 경우 픽셀 버리기
-    if (length(texColor.rgb - float3(0, 0, 0)) < 0.05)
+    if (useUv == 1)
     {
-        discard;
+        float correctedV = 1.0 - (v + height);
+        float4 texColor = sourceTex.Sample(samp, input.uv * float2(width, height) + float2(u, correctedV));
+        output.color = texColor;
+        //배경이 특정 색(예: 검은색)일 경우 픽셀 버리기
+        if (length(texColor.rgb - float3(0, 0, 0)) < 0.05)
+        {
+            discard;
+        }
     }
+    else
+    {
+        output.color = input.color;
+    }
+    
     return output;
 }
