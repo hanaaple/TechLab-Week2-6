@@ -53,17 +53,28 @@ void AWorldGrid::UpdateGrid()
 		}
 	}
 
-	float Offset = -maxGridDistance;
-	for (int i = 0; i < LineCount; i++)
+	float Offset = 0;
+	for (int i = 0; i < LineCount / 2; i++)
 	{
 		ULineComp* Line = VerticalGridLines[i];
 		FTransform Transform = Line->GetRelativeTransform();
 		Transform.SetPosition(0, Offset, 0);
 		Line->SetRelativeTransform(Transform);
 		Offset += Spacing;
+	}
+	Offset = -Spacing;
+	for (int i = LineCount / 2; i < LineCount; i++)
+	{
+		ULineComp* Line = VerticalGridLines[i];
+		FTransform Transform = Line->GetRelativeTransform();
+		Transform.SetPosition(0, Offset, 0);
+		Line->SetRelativeTransform(Transform);
+		Offset -= Spacing;
 	} 
-	Offset = -maxGridDistance;
-	for (int i = 0; i < LineCount; i++)
+
+	
+	Offset = 0;
+	for (int i = 0; i < LineCount / 2; i++)
 	{
 		ULineComp* Line = HorizontalGridLines[i];
 		FTransform Transform = Line->GetRelativeTransform();
@@ -71,7 +82,15 @@ void AWorldGrid::UpdateGrid()
 		Line->SetRelativeTransform(Transform);
 		Offset += Spacing;
 	}
-	
+	Offset = -Spacing;
+	for (int i = LineCount / 2; i < LineCount; i++)
+	{
+		ULineComp* Line = HorizontalGridLines[i];
+		FTransform Transform = Line->GetRelativeTransform();
+		Transform.SetPosition(Offset, 0, 0);
+		Line->SetRelativeTransform(Transform);
+		Offset -= Spacing;
+	} 
 }
 void AWorldGrid::CreateLine(bool isVertical)
 {
