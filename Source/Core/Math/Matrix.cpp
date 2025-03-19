@@ -429,3 +429,29 @@ FMatrix FMatrix::GetVisualRotationMatrix(const FQuat& Q)
 // {
 // 	return FTransform(GetTranslation(), GetEulerRotation(), GetScale());
 // }
+FVector FMatrix::ToEulerAngles() const
+{
+	FVector EulerAngles;
+
+	// Pitch (X축 회전)
+	float Pitch = FMath::Asin(-M[1][2]); // M[1][2] = -sin(Pitch)
+
+	if (FMath::Abs(Pitch) < (3.141592f / 2))
+	{
+		// 정상적인 경우
+		EulerAngles.Y = FMath::Atan2(M[0][2], M[2][2]); // Yaw (Y축 회전)
+		EulerAngles.Z = FMath::Atan2(M[1][0], M[1][1]); // Roll (Z축 회전)
+	}
+	else
+	{
+		// Gimbal Lock 발생 (Pitch가 ±90도)
+		EulerAngles.Y = FMath::Atan2(-M[2][0], M[0][0]); // Yaw
+		EulerAngles.Z = 0; // Roll은 0으로 설정
+	}
+
+	// Pitch 설정
+	EulerAngles.X = Pitch;
+
+	// 오일러 각도는 라디안 단위 → 필요하면 FMath::RadiansToDegrees 변환
+	return EulerAngles;
+}
