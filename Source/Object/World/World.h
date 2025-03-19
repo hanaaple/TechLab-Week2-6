@@ -65,8 +65,8 @@ public:
 	const TArray<UPrimitiveComponent*> GetRenderComponents() const { return RenderComponents; }
 private:
 	UWorldInfo GetWorldInfo() const;
-	bool HasBatchRendersKey(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer);
-	void CheckRemoveMap(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer, EPrimitiveMeshType MeshType);
+	bool HasBatchRendersKey(EShaderType ShaderType, ETextureType TextureType, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer);
+	void CheckRemoveMap(EShaderType ShaderType, ETextureType TextureType, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer, EPrimitiveMeshType MeshType);
 	void CheckInitMap(const FRenderData& FrameData);
 	void AddToBatch(UPrimitiveComponent* Component);
 	void RemoveFromBatch(UPrimitiveComponent* Component, const FRenderData& FrameData);
@@ -86,7 +86,7 @@ protected:
 	TArray<UPrimitiveComponent*> IndividualRenders;
 	//TArray<UPrimitiveComponent*> InstancingRenders;
 	//TMap<UMaterial*, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<uint8, FBatchRenderContext>>> BatchRenders;
-	TMap<ID3D11ShaderResourceView*, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<bUseIndexBufferFlag, FBatchRenderContext>>> BatchRenders;
+	TMap<EShaderType, TMap<ETextureType, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<bUseIndexBufferFlag, FBatchRenderContext>>>> BatchRenders;
 };
 
 template <typename T>
@@ -98,7 +98,6 @@ T* UWorld::SpawnActor()
 	{
 		T* Actor = FObjectFactory::ConstructObject<T>();
 		Actor->SetWorld(World);
-		Actors.Add(Actor);
 		ActorsToSpawn.Add(Actor);
 		return Actor;
 	}

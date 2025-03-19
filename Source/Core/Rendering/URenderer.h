@@ -7,10 +7,10 @@
 #include "BatchRenderContext.h"
 #include "Core/Math/Vector.h"
 
-#include "Core/Rendering/BufferCache.h"
 #include "Core/Math/Matrix.h"
 #include "Core/Math/Plane.h"
 #include "Core/Math/Transform.h"
+#include "Core/Rendering/BufferCache.h"
 #include "Texture/TextureLoader.h"
 
 class AActor;
@@ -66,8 +66,6 @@ public:
 
     void CreateShader();
 
-    void ReleaseShader();
-
     void CreateConstantBuffer();
 
     void ReleaseConstantBuffer();
@@ -79,7 +77,7 @@ public:
     void Prepare() const;
 
     /** 셰이더를 준비 합니다. */
-    void PrepareShader() const;
+	void PrepareShader(EShaderType ShaderType);
 
 	void RenderPrimitive(class UPrimitiveComponent* PrimitiveComp);
 	void RenderBatch(FBatchRenderContext& BatchContext);
@@ -101,15 +99,14 @@ public:
      *
      * @note 이 함수는 D3D11_USAGE_IMMUTABLE 사용법으로 버퍼를 생성합니다.
      */
-	ID3D11Buffer* CreateVertexBuffer(const FVertexSimple* Data, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage) const;
-    ID3D11Buffer* CreateIndexBuffer(const uint32* Data, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage) const;
+	ID3D11Buffer* CreateBuffer(const void* Data, UINT ByteWidth, D3D11_BIND_FLAG BindFlag, D3D11_USAGE D3d11Usage) const;
 
     /** Constant Data를 업데이트 합니다. */
-    void UpdateConstantPrimitive(const ConstantUpdateInfo& UpdateInfo) const;
-    void UpdateConstantBatch(const FBatchRenderContext& BatchRenderContext) const;
+    //void UpdateConstantPrimitive(const ConstantUpdateInfo& UpdateInfo) const;
+    //void UpdateConstantBatch(const FBatchRenderContext& BatchRenderContext) const;
 
-    ID3D11Device* GetDevice() const;
-    ID3D11DeviceContext* GetDeviceContext() const;
+    ID3D11Device* GetDevice() const { return Device; }
+    ID3D11DeviceContext* GetDeviceContext() const { return DeviceContext; }
 
     /** View 변환 Matrix를 업데이트 합니다. */
     void UpdateViewMatrix(const FTransform& CameraTransform);
@@ -118,7 +115,7 @@ public:
     void UpdateProjectionMatrix(ACamera* Camera);
 
 	void OnUpdateWindowSize(int Width, int Height);
-    void PrepareTexture(ID3D11ShaderResourceView* Texture);
+    void PrepareTexture(ETextureType TextureType);
     FBufferCache* GetBufferCache() const { return BufferCache.get(); }
 
 protected:
@@ -161,8 +158,7 @@ protected:
 	
 	void ReleaseTextureSRVs();
 	
-    void InitMatrix();
-    void UpdateTopology(D3D_PRIMITIVE_TOPOLOGY Topology);
+    void PrepareTopology(D3D_PRIMITIVE_TOPOLOGY Topology);
 
 protected:
     // Direct3D 11 장치(Device)와 장치 컨텍스트(Device Context) 및 스왑 체인(Swap Chain)을 관리하기 위한 포인터들
@@ -194,24 +190,25 @@ protected:
 	
 	// Buffer Cache
 	std::unique_ptr<FBufferCache> BufferCache;
+	//UTextureLoader TextureLoader;
 
 	ID3D11SamplerState* SamplerState = nullptr;
-	ID3D11ShaderResourceView* CurrentTexture;
+	ETextureType CurrentTextureType = ETextureType::None;
+	EShaderType CurrentShaderType = EShaderType::None;
 	
-    FMatrix ViewMatrix;
-	FMatrix ProjectionMatrix;
+    FMatrix ViewMatrix = FMatrix::Identity();
+	FMatrix ProjectionMatrix = FMatrix::Identity();
 
 	D3D_PRIMITIVE_TOPOLOGY CurrentTopology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 
 	
-#pragma region picking
 protected:
 	// 피킹용 버퍼들
-	ID3D11Texture2D* PickingFrameBuffer = nullptr;                 // 화면 출력용 텍스처
-	ID3D11RenderTargetView* PickingFrameBufferRTV = nullptr;       // 텍스처를 렌더 타겟으로 사용하는 뷰
-	ID3D11Buffer* ConstantPickingBuffer = nullptr;                 // 뷰 상수 버퍼
-	FLOAT PickingClearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; //
-	ID3D11PixelShader* PickingPixelShader = nullptr;         // Pixel의 색상을 결정하는 Pixel 셰이더
+	//ID3D11Texture2D* PickingFrameBuffer = nullptr;                 // 화면 출력용 텍스처
+	//ID3D11RenderTargetView* PickingFrameBufferRTV = nullptr;       // 텍스처를 렌더 타겟으로 사용하는 뷰
+	//ID3D11Buffer* ConstantPickingBuffer = nullptr;                 // 뷰 상수 버퍼
+	//FLOAT PickingClearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; //
+	//ID3D11PixelShader* PickingPixelShader = nullptr;         // Pixel의 색상을 결정하는 Pixel 셰이더
 	ID3D11Buffer* ConstantsDepthBuffer = nullptr;
     
     ID3D11Buffer* ConstantsUVBuffer = nullptr;           // UV 상수 버퍼
@@ -220,25 +217,20 @@ protected:
 
 public:
 	//피킹용 함수들	
-    void ReleasePickingFrameBuffer();
-    void CreatePickingTexture(HWND hWnd);
+    //void ReleasePickingFrameBuffer();
     void PrepareZIgnore();
-    void PreparePicking();
-	void PreparePickingShader() const;
-	void UpdateConstantPicking(FVector4 UUIDColor) const;
-    void UpdateConstantDepth(int Depth) const;
-    void UpdateConstantUV(char c) const;
+    //void PreparePicking();
+	//void PreparePickingShader() const;
+    //void UpdateConstantDepth(int Depth) const;
+    //void UpdateConstantFontUV(char c) const;
     void PrepareMain();
-	void PrepareMainShader();
 
-	FVector4 GetPixel(FVector MPos);
-
-	void RenderPickingTexture();
 	FMatrix GetProjectionMatrix() const { return ProjectionMatrix; }
 	FMatrix GetViewMatrix() const { return ViewMatrix; }
-
+	ETextureType GetCurrentTextureType() const { return CurrentTextureType; }
 public:
 	//View Mode 변경 함수
+	void SetFillMode(D3D11_FILL_MODE FillMode);
 	void EnableWireframeMode();
 	void EnableLitMode();
 	void EnableUnlitMode();
@@ -250,6 +242,5 @@ public:
 private:
 	ID3D11RasterizerState* WireframeRasterizerState = nullptr;
 	ID3D11RasterizerState* SolidRasterizerState = nullptr;
-#pragma endregion picking
 
 };

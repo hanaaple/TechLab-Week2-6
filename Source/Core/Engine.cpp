@@ -14,6 +14,7 @@
 #include <Object/Actor/BillBoardText.h>
 #include "Object/Actor/AABBPicker.h"
 #include "Object/Gizmo/WorldGrid.h"
+#include "Object/Actor/Sphere.h"
 
 // ImGui WndProc 정의
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -136,7 +137,6 @@ void UEngine::Run()
         }
 		// Renderer Update
         Renderer->Prepare();
-        Renderer->PrepareShader();
 
 		// World Update
 		if (World)
@@ -244,9 +244,10 @@ void UEngine::InitWorld()
 
     // for (int i =0 ; i < 1000; i++)
     // {
-    //      World->SpawnActor<ACube>();
+    //     World->SpawnActor<ACube>();
     // }
-  
+
+    World->SpawnActor<ASphere>();
     //World->SpawnActor<APicker>();
     /*auto* Actor = World->SpawnActor<ACylinder>();
     UConeComp* ConeComp = Actor->AddComponent<UConeComp>();
