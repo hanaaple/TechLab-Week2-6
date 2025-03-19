@@ -348,12 +348,14 @@ void UEngine::SetShowFlag(EEngineShowFlags Flag, bool bEnable)
 //  Show Flag 상태 확인
 bool UEngine::IsShowFlagEnabled(EEngineShowFlags Flag) const
 {
+    return ShowFlagStates[Flag];
+    /*
     if (Flag == EEngineShowFlags::SF_Primitives)
     {
         return ShowFlagStates[Flag];
         //return bShowPrimitives;
     }
-    return false;
+    return false;*/
 }
 
 const TMap<EEngineShowFlags, bool>& UEngine::GetShowFlagStates() const

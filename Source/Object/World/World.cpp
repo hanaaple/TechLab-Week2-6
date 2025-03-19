@@ -201,6 +201,7 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 	TArray<UPrimitiveComponent*> ZIgnoreRenderComponents;
 	for (auto* RenderTarget : IndividualRenders)
 	{
+		if (!Renderer.ShouldRenderActor(RenderTarget->GetOwner()))continue;
 		if (RenderTarget != nullptr) {
 			Renderer.PrepareTexture(RenderTarget->GetTexture());
 			// Texture 변경
@@ -220,6 +221,7 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 	Renderer.PrepareZIgnore();
 	for (auto& RenderTarget: ZIgnoreRenderComponents)
 	{
+		if (!Renderer.ShouldRenderActor(RenderTarget->GetOwner()))continue;
 		Renderer.PrepareTexture(RenderTarget->GetTexture());
 		auto CurrentShader = UShaderManager::Get().GetShader(RenderTarget->GetShaderName());
 		if (CurrentShader != nullptr)
