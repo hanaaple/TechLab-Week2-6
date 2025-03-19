@@ -15,11 +15,35 @@ public:
 		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		SetShaderType(EShaderType::TextShader);
 	}
+	bool TryGetVertexData(TArray<FVertexSimple>* VertexData) override;
 public:
 	FMatrix GetBillboardMatrix();
 	
 	char c;
 };
+
+inline bool UCharComp::TryGetVertexData(TArray<FVertexSimple>* VertexData)
+{
+	const TArray<FVertexSimple>* OriginVertexData = MeshResourceCache::Get().GetVertexData(GetMeshType());
+
+	VertexData->Empty();
+	if (OriginVertexData == nullptr)
+	{
+		return false;
+	}
+
+	for (const FVertexSimple& Vertex : *OriginVertexData)
+	{
+		FVertexSimple NewVertexSimple = Vertex;
+		FVector Pos = FVector(Vertex.X, Vertex.Y, Vertex.Z) * GetBillboardMatrix();
+		NewVertexSimple.X = Pos.X;
+		NewVertexSimple.Y = Pos.Y;
+		NewVertexSimple.Z = Pos.Z;
+		VertexData->Add(NewVertexSimple);
+	}
+
+	return true;
+}
 
 inline FMatrix UCharComp::GetBillboardMatrix()
 {

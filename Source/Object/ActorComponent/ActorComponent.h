@@ -22,6 +22,6 @@ public:
 protected:
 	bool bCanEverTick = true;
 	bool bIsActive;
-	class AActor* Owner = nullptr;
+	AActor* Owner = nullptr;
 };
 

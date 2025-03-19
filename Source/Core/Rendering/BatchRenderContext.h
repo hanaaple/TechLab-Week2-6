@@ -15,10 +15,15 @@ using bUseIndexBufferFlag = bool;
 struct FBatchRenderContext
 {
     FBatchRenderContext() = default;
+
+    // 아래 데이터들이 변한 경우 Dirty
     bool bIsDirty = true;
 
-    // Vertex Data가 변했는지
-    // Index Data가 변했는지 확인.
+    
+    //TODOOOOOOOO if Depth > 0 Check
+
+    // Depth 무시 여부에 따라 배치 추가 군집화?
+    
     
     EShaderType ShaderType;
     ETextureType TextureType;
