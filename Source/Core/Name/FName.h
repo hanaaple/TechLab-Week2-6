@@ -17,7 +17,8 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const FName& Name)
     {
         return os << Name.ToString().ToStdString();
-    }       
+    }
+
     // 정렬용 비교 함수
     int32 Compare(const FName& Other) const;
     //대소문자 고려 비교(해시값으로 비교).. 하지만 FMap에서 비교 시에 == 연산자를 사용해서 사용 불가
@@ -43,4 +44,9 @@ private:
 
     //동일한 이름이 여러 개 존재할 경우 이를 구분하기 위한 숫자
     uint32 Number;
+
+    //디버깅용. 실사용X
+#ifdef _DEBUG
+    FString DebugString;
+#endif
 };

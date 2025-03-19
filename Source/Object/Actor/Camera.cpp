@@ -11,6 +11,7 @@ ACamera::ACamera()
     Far = 100.f;
     FieldOfView = 45.f;
     ProjectionMode = ECameraProjectionMode::Perspective;
+    CameraSpeed = SettingManager::Get().LoadCamSensitivty();
 
     RootComponent = AddComponent<USceneComponent>();
     

@@ -10,12 +10,13 @@ inline FName ShaderTypeToFName(EShaderType ShaderType)
 {
     switch (ShaderType)
     {
-    case EShaderType::DefaultShader:  return FName("DefaultShader");
-    case EShaderType::PickingShader:  return FName("PickingShader");
-    case EShaderType::OutlineShader:  return FName("OutlineShader");
-    case EShaderType::TextShader:     return FName("TextShader");
-    case EShaderType::CustomShader:   return FName("CustomShader");
-    default:                          return FName("UnknownShader");
+    case EShaderType::DefaultShader: return FName("DefaultShader");
+    case EShaderType::PickingShader: return FName("PickingShader");
+    case EShaderType::OutlineShader: return FName("OutlineShader");
+    case EShaderType::TextShader: return FName("TextShader");
+    case EShaderType::PrimitiveShader: return FName("PrimitiveShader");
+    case EShaderType::CustomShader: return FName("CustomShader");
+    default: return FName("UnknownShader");
     }
 }
 class UShaderManager : public TSingleton<UShaderManager>
@@ -27,7 +28,7 @@ public:
     
     //UShader* LoadShader(ID3D11Device* Device, const wchar_t* FileName);
     UShader* LoadShader(ID3D11Device* Device, const wchar_t* FileName,
-                        std::function<void(UPrimitiveComponent*)> UpdateConstantBufferFunction=nullptr);
+                        std::function<void(UPrimitiveComponent*)> UpdateConstantBufferFunction = nullptr);
     UShader* LoadShader(ID3D11Device* Device, const FName& Name, const wchar_t* FileName,
                         const FString& VertexEntry, const FString& PixelEntry,
                         std::function<void(UPrimitiveComponent*)> UpdateConstantBufferFunction=nullptr);

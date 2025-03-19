@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Object/Actor/Actor.h"
+#include "Core/SettingManager.h"
 
 namespace ECameraProjectionMode
 {
