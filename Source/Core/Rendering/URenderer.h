@@ -227,7 +227,6 @@ public:
 
 	FMatrix GetProjectionMatrix() const { return ProjectionMatrix; }
 	FMatrix GetViewMatrix() const { return ViewMatrix; }
-	ETextureType GetCurrentTextureType() const { return CurrentTextureType; }
 public:
 	//View Mode 변경 함수
 	void SetFillMode(D3D11_FILL_MODE FillMode);
