@@ -270,6 +270,7 @@ void UWorld::ClearWorld()
 	{
 		if (!Actor->IsGizmoActor())
 		{
+			
 			DestroyActor(Actor);
 		}
 	}
