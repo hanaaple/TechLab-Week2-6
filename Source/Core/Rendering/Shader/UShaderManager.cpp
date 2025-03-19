@@ -1,4 +1,4 @@
-#include "UShaderManager.h"
+﻿#include "UShaderManager.h"
 
 #include <filesystem>
 
@@ -162,31 +162,30 @@ void UShaderManager::LoadAllShaders()
     });
     LoadShader(Device,L"Shaders/PrimitiveShader.hlsl",[](FConstantBufferContext* ConstantContext)
     {
-        UShaderManager& ShaderManager = UShaderManager::Get();
+            UShaderManager& ShaderManager = UShaderManager::Get();
 
-        UShader* Shader = ShaderManager.GetShader(EShaderType::PrimitiveShader);
-        if (Shader == nullptr)
-        {
-            return;
-        }
-        
-        ID3D11DeviceContext* DeviceContext = ShaderManager.DeviceContext;
-        const URenderer *Renderer = ShaderManager.Renderer;
-        UPrimitiveComponent* PrimitiveComp = ConstantContext->PrimitiveComponent;
-        
-        FMatrix ViewMatrix = Renderer->GetViewMatrix();
-        FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
-        
-        FMatrix MVP;
-        if (PrimitiveComp != nullptr)
-        {
-            MVP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);
-        }
-        else
-        {
-            MVP = FMatrix::Transpose(PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
-        }
-        Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+            UShader* Shader = ShaderManager.GetShader(EShaderType::DefaultShader);
+            if (Shader == nullptr)
+            {
+                return;
+            }
+            ID3D11DeviceContext* DeviceContext = ShaderManager.DeviceContext;
+            const URenderer* Renderer = ShaderManager.Renderer;
+            FMatrix ViewMatrix = Renderer->GetViewMatrix();
+            FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
+
+            UPrimitiveComponent* PrimitiveComp = ConstantContext->PrimitiveComponent;
+            FMatrix MVP;
+            if (PrimitiveComp != nullptr)
+            {
+                MVP = FMatrix::Transpose(PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
+            }
+            else
+            {
+                MVP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);
+            }
+
+            Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
 
         struct PSConstants
         {
