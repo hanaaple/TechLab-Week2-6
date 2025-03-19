@@ -260,18 +260,13 @@ UTorusComp* AAABBPicker::CheckRotationGizmo(FVector rayOrigin, FVector rayDir)
 
 				float tMin = FMath::Max(FMath::Min(t1, t2), FMath::Min(t3, t4));
 				tMin = FMath::Max(tMin, FMath::Min(t5, t6));
-				UE_LOG("%d", num);
 				if (tMax >= tMin && tMax > 0) {
 					entry = rayOrigin + rayDir * tMin;
 					exit = rayOrigin + rayDir * tMax;
 					minDist = (entry - gizmos->GetActorTransform().GetPosition()).Length();
 					maxDist = (exit - gizmos->GetActorTransform().GetPosition()).Length();
-					UE_LOG("before ring detection from %d", num);
-					UE_LOG("minDist: %f, maxDist: %f", minDist, maxDist);
 					if (minDist > 0.25f && maxDist > 0.4f) {
 						if (tMin < minT) {
-							UE_LOG("ring detected from %d", num);
-							UE_LOG("minDist: %f, maxDist: %f", minDist, maxDist);
 							minT = tMin;
 							PickedComponent = component;
 						}
