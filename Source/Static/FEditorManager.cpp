@@ -75,3 +75,8 @@ void FEditorManager::SetGizmoType(EGizmoType newType)
         }
     }
 }
+
+void FEditorManager::SetWorldGrid(AWorldGrid* grid)
+{
+    WorldGrid = grid;
+}

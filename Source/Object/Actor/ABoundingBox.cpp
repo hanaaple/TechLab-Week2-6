@@ -35,17 +35,19 @@ void ABoundingBoxActor::SetActorVisibility(bool bNewActive)
 void ABoundingBoxActor::UpdateTransform()
 {
 	AActor* parentActor = FEditorManager::Get().GetSelectedActor();
-	FVector position;
 	if (parentActor != nullptr && !parentActor->IsGizmoActor()) {
 		USceneComponent* rootComp = parentActor->GetRootComponent();
-		UPrimitiveComponent* component = dynamic_cast<UPrimitiveComponent*>(rootComp);
-		Min = component->aabb.Min;
-		Max = component->aabb.Max;
-		FTransform transform = RootComponent->GetComponentTransform();
-		transform.SetPosition((Min + Max) / 2);
-		transform.SetScale(FVector(Max.X - Min.X, Max.Y - Min.Y, Max.Z - Min.Z));
-		transform.SetRotation(FVector(0, 0, 0));
-		SetActorTransform(transform);
+		if (rootComp->IsA<UPrimitiveComponent>())
+		{
+			UPrimitiveComponent* component = dynamic_cast<UPrimitiveComponent*>(rootComp);
+			Min = component->aabb.Min;
+			Max = component->aabb.Max;
+			FTransform transform = RootComponent->GetComponentTransform();
+			transform.SetPosition((Min + Max) / 2);
+			transform.SetScale(FVector(Max.X - Min.X, Max.Y - Min.Y, Max.Z - Min.Z));
+			transform.SetRotation(FVector(0, 0, 0));
+			SetActorTransform(transform);
+		}
 	}
 }
 

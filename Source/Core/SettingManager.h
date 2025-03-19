@@ -11,8 +11,8 @@
 
 class SettingManager : public TSingleton<SettingManager>{
 public:
-	float initCamSensitivity = 1.0f;			// 초기 감도
-	float initGridSpacing = 1.0f;				// 초기 그리드 스페이싱.
+	float initCamSensitivity = 100.0f;			// 초기 감도
+	float initGridSpacing = 20.0f;				// 초기 그리드 스페이싱.
 
 public:
 	float LoadCamSensitivty();
