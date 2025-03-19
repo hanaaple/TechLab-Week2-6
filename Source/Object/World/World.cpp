@@ -236,6 +236,8 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 	TArray<UPrimitiveComponent*> ZIgnoreRenderComponents;
 	for (auto* RenderTarget : IndividualRenders)
 	{
+		if (!Renderer.ShouldRenderActor(RenderTarget->GetOwner()))
+			continue;
 		if (RenderTarget != nullptr) {
 			// Texture 변경
 			if (RenderTarget->GetDepth() > 0)
@@ -250,6 +252,8 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 	Renderer.PrepareZIgnore();
 	for (auto& RenderTarget: ZIgnoreRenderComponents)
 	{
+		if (!Renderer.ShouldRenderActor(RenderTarget->GetOwner()))
+			continue;
 		RenderTarget->Render();
 	}
 }

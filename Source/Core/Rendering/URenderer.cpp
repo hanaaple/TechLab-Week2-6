@@ -10,6 +10,8 @@
 
 #include "Shader/UShaderManager.h"
 
+#include "Object/Actor/BillBoardText.h"
+
 void URenderer::Create(HWND hWindow)
 {
     CreateDeviceAndSwapChain(hWindow);
@@ -864,11 +866,11 @@ bool URenderer::ShouldRenderActor(const AActor* OwnerActor)
     //Gizmo 비활성화 + Gizmo인 경우 렌더링 X
     if (!ShowFlags[EEngineShowFlags::SF_Gizmo] && OwnerActor->IsGizmoActor()) 
         return false;
-    /*
+    
     //BillboardText 비활성화 + BillboardText인 경우 렌더링 X
-    if (!ShowFlags[EEngineShowFlags::SF_BillboardText] && OwnerActor->IsBillboardTextActor()) 
+    if (!ShowFlags[EEngineShowFlags::SF_BillboardText] && OwnerActor->IsA<ABillboardText>()) 
         return false;
-    */
+    
 
     return true;
 }
