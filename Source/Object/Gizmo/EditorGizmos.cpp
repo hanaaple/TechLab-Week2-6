@@ -129,9 +129,10 @@ void AEditorGizmos::Tick(float DeltaTime)
 				break;
 			}
 			
-			Result *= 0.005f;
+			Result = Result * 0.05f;
 
 			DoTransform(AT, Result, Actor);
+			prevMousePos = RayOrigin;
 		}
 	}
 
@@ -214,13 +215,14 @@ void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 {
 	const FVector& AP = AT.GetPosition();
 	EGizmoType GizmoType = FEditorManager::Get().GetGizmoType(); 
+	FVector position;
 	if (SelectedAxis == ESelectedAxis::X)
 	{
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			//AT.SetPosition({ AP + actorXAxis * Result });
-			AT.SetPosition(AP + FVector(Result, 0, 0));
+			position = { AP.X + Result, AP.Y, AP.Z };
+			AT.SetPosition(position);
 			break;
 		case EGizmoType::Scale:
 			AT.AddScale({ Result * 0.5f, 0, 0 });
@@ -232,8 +234,8 @@ void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			//AT.SetPosition({ AP + actorYAxis * Result });
-			AT.SetPosition(AP + FVector(0, Result, 0));
+			position = { AP.X, AP.Y + Result, AP.Z };
+			AT.SetPosition(position);
 			break;
 		case EGizmoType::Scale:
 			AT.AddScale({ 0, Result * 0.5f, 0 });
@@ -245,8 +247,8 @@ void AEditorGizmos::DoTransform(FTransform& AT, float Result, AActor* Actor )
 		switch (GizmoType)
 		{
 		case EGizmoType::Translate:
-			//AT.SetPosition({ AP + actorZAxis * Result });
-			AT.SetPosition(AP + FVector(0, 0, Result));
+			position = { AP.X, AP.Y, AP.Z + Result };
+			AT.SetPosition(position);
 			break;
 		case EGizmoType::Scale:
 			AT.AddScale({0, 0, Result * 0.5f });
