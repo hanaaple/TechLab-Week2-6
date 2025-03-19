@@ -25,8 +25,14 @@ public:
 
 	void ActivateComponent();
 
-	UWorld* GetWorld() const { return World; }
-	void SetWorld(UWorld* InWorld) { World = InWorld; }
+	inline UWorld* GetWorld() const
+	{
+		return World;
+	}
+	inline void SetWorld(UWorld* InWorld)
+	{
+		World = InWorld;
+	}
 	
 	// Clear, 세이브 X, 
 	bool IsGizmoActor() const { return bIsGizmo; }
@@ -55,7 +61,7 @@ public:
 	{
 		Object->Deactivate();
 		Components.Remove(Object);
-		UEngine::Get().GObjects.Remove(GetUUID());
+		UEngine::Get().GObjects.Remove(Object->GetUUID());
 	}
 
 	/** @return Actor's World Transform */
