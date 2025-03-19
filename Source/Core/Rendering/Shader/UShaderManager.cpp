@@ -20,86 +20,147 @@ void UShaderManager::LoadAllShaders()
     //LoadShader(Device, FName("PickingShader"), L"Shaders/ShaderW0.hlsl", "mainVS", "PickingPS");
     LoadShader(Device, L"Shaders/PickingShader.hlsl");
     LoadShader(Device, L"Shaders/OutlineShader.hlsl");
-    LoadShader(Device, L"Shaders/TextShader.hlsl", [](UPrimitiveComponent* PrimitiveComp)
+    LoadShader(Device, L"Shaders/TextShader.hlsl", [](FConstantBufferContext* ConstantContext)
     {
+        // 특정 쉐이더는 
         UShaderManager& ShaderManager = UShaderManager::Get();
+        
+        UShader* Shader = ShaderManager.GetShader(EShaderType::TextShader);        
+
+        if (Shader == nullptr)
+        {
+            return;
+        }
+
         ID3D11Device* Device = ShaderManager.Device;
         ID3D11DeviceContext* DeviceContext = ShaderManager.DeviceContext;
         const URenderer* Renderer = ShaderManager.Renderer;
-        Texture* Texture = UTextureLoader::Get().GetTexture(Renderer->GetCurrentTextureType(), Device, DeviceContext);
+        UPrimitiveComponent* PrimitiveComp = ConstantContext->PrimitiveComponent;
 
-        if (Texture == nullptr)
+        FMatrix ViewMatrix = Renderer->GetViewMatrix();
+        FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
+        
+        FMatrix MVP;
+
+        struct FUseUV
+        {
+            int bUseUV;
+        };
+        FUseUV UseUV;
+        UseUV.bUseUV = 1;
+        
+        if (PrimitiveComp != nullptr)
+        {
+            Texture* Texture = UTextureLoader::Get().GetTexture(PrimitiveComp->GetTexture(), Device, DeviceContext);    
+            // MVP 빌보드 여부
+            if (PrimitiveComp->IsA<UCharComp>())
+            {
+                UCharComp* CharComp = static_cast<UCharComp*>(PrimitiveComp);
+                MVP = FMatrix::Transpose(CharComp->GetBillboardMatrix() * ViewMatrix * ProjectionMatrix);
+            }
+            else
+            {
+                MVP = FMatrix::Transpose(PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
+            }
+
+            // Texture 사용여부
+            if (Texture != nullptr)
+            {
+                if (PrimitiveComp->IsA<UCharComp>())
+                {
+                    UCharComp* CharComp = static_cast<UCharComp*>(PrimitiveComp);
+                    auto info = Texture->GetCharInfoMap(CharComp->c);
+                    Shader->UpdateConstantBuffer(DeviceContext, 1, &info, sizeof(info));
+                }
+                else
+                {
+                    TextureInfo info;
+                    info.u = 0;
+                    info.v = 0;
+                    info.width = Texture->TextureData.BitmapWidth;
+                    info.height = Texture->TextureData.BitmapHeight;
+                    // 전체 텍스처 출력
+                    Shader->UpdateConstantBuffer(DeviceContext, 1, &info, sizeof(info));
+                }
+            }
+            else
+            {
+                // 기본 Vertex Color로 실행
+                UseUV.bUseUV = 0;
+            }
+        }
+        else
+        {
+            MVP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);
+
+            Texture* Texture = UTextureLoader::Get().GetTexture(ConstantContext->BatchContext->TextureType, Device, DeviceContext);
+            // Texture 사용여부
+            if (Texture != nullptr)
+            {
+                // 전체 보여주는거로
+                TextureInfo info;
+                info.u = 0;
+                info.v = 0;
+                info.width = Texture->TextureData.BitmapWidth;
+                info.height = Texture->TextureData.BitmapHeight;
+                // 전체 텍스처 출력
+                Shader->UpdateConstantBuffer(DeviceContext, 1, &info, sizeof(info));
+            }
+            else
+            {
+                // 기본 Vertex Color로 실행
+                UseUV.bUseUV = 0;
+            }
+        }
+
+        Shader->UpdateConstantBuffer(DeviceContext, 2, &UseUV, sizeof(UseUV));
+        Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+    });
+    LoadShader(Device, L"Shaders/CustomShader.hlsl", [](FConstantBufferContext* ConstantContext)
+    {
+    });
+    LoadShader(Device,L"Shaders/PrimitiveShader.hlsl",[](FConstantBufferContext* ConstantContext)
+    {
+        UShaderManager& ShaderManager = UShaderManager::Get();
+
+        UShader* Shader = ShaderManager.GetShader(EShaderType::PrimitiveShader);
+        if (Shader == nullptr)
         {
             return;
         }
         
+        ID3D11DeviceContext* DeviceContext = ShaderManager.DeviceContext;
+        const URenderer *Renderer = ShaderManager.Renderer;
+        UPrimitiveComponent* PrimitiveComp = ConstantContext->PrimitiveComponent;
         
-        UShader* Shader = ShaderManager.GetShader(PrimitiveComp->GetShaderType());
-        if (Shader)
-        {
-            
-            if (PrimitiveComp->IsA<UCharComp>())
-            {
-                UCharComp* CharComp = static_cast<UCharComp*>(PrimitiveComp);
-                auto info = Texture->GetCharInfoMap(CharComp->c);
-                Shader->UpdateConstantBuffer(DeviceContext, 1, &info, sizeof(info));
-
-                FMatrix ViewMatrix = Renderer->GetViewMatrix();
-                FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
-                
-                FMatrix BillboardMatrix = FMatrix::Transpose(CharComp->GetBillboardMatrix() * ViewMatrix * ProjectionMatrix);                                
-                Shader->UpdateConstantBuffer(DeviceContext, 0, &BillboardMatrix, sizeof(BillboardMatrix));
-            }
-            else
-            {
-                FMatrix ViewMatrix = Renderer->GetViewMatrix();
-                FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
-
-                // 빌보딩 여부에 따라 자체적으로 하게
-                //MVP 행렬 계산
-                FMatrix MVP = FMatrix::Transpose(PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
-                
-                Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
-            }
-        }
-    });
-    // LoadShader(Device, L"Shaders/TextureAtlasShader.hlsl", "mainVS", "mainPS", []()
-    // {
-    //     
-    // });
-    LoadShader(Device, L"Shaders/CustomShader.hlsl", [](UPrimitiveComponent* PrimitiveComp)
-    {
-    });
-    LoadShader(Device,L"Shaders/PrimitiveShader.hlsl",[](UPrimitiveComponent* PrimitiveComp)
-    {
-        ID3D11DeviceContext* DeviceContext = UShaderManager::Get().DeviceContext;
-        const URenderer *Renderer=UShaderManager::Get().Renderer;
         FMatrix ViewMatrix = Renderer->GetViewMatrix();
-        FMatrix ProjectionMatrix=Renderer->GetProjectionMatrix();
+        FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
         
-        //MVP 행렬 계산
-        FMatrix MVP = FMatrix::Transpose(
-            PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
-
-        if (PrimitiveComp->GetShaderType() != EShaderType::PrimitiveShader)
+        FMatrix MVP;
+        if (PrimitiveComp != nullptr)
         {
-            UE_LOG("Shader Binding - Error!");
+            MVP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);
         }
-        UShader* Shader = UShaderManager::Get().GetShader(PrimitiveComp->GetShaderType());
-        if (Shader)
+        else
         {
-            Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
-            struct PSConstants
-            {
-                FVector4 Color;
-                uint32 bUseVertexColor;
-                float brightness;
-            };
+            MVP = FMatrix::Transpose(PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
+        }
+        Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+        struct PSConstants
+        {
+            FVector4 Color;
+            uint32 bUseVertexColor;
+            float brightness;
+        };
+
+        if (PrimitiveComp != nullptr)
+        {
             float brightness=1.0f;
             if (FEditorManager::Get().GetSelectedActor())
             {
                 //std::cout<<FEditorManager::Get().GetSelectedActor()->GetUUID()<<" "<<PrimitiveComp->GetUUID()<<" "<<PrimitiveComp->GetOwner()->GetUUID()<<std::endl;
-                if (FEditorManager::Get().GetSelectedActor()->GetUUID()==PrimitiveComp->GetOwner()->GetUUID())brightness=2.0f;
+                if (FEditorManager::Get().GetSelectedActor()->GetUUID()==PrimitiveComp->GetOwner()->GetUUID())
+                    brightness=2.0f;
                 //brightness=2.0f;
             }
             PSConstants PSData = {PrimitiveComp->GetCustomColor(), PrimitiveComp->IsUseVertexColor(),brightness};
@@ -109,7 +170,7 @@ void UShaderManager::LoadAllShaders()
 }
 
 UShader* UShaderManager::LoadShader(ID3D11Device* Device, const wchar_t* FileName,
-                                    std::function<void(UPrimitiveComponent*)> UpdateConstantBufferFunction)
+                                    std::function<void(FConstantBufferContext*)> UpdateConstantBufferFunction)
 {
     //파일 경로에서 파일명만 추출
     std::filesystem::path FilePath(FileName);
@@ -121,7 +182,7 @@ UShader* UShaderManager::LoadShader(ID3D11Device* Device, const wchar_t* FileNam
 
 UShader* UShaderManager::LoadShader(ID3D11Device* Device, const FName& Name, const wchar_t* FileName,
                                     const FString& VertexEntry, const FString& PixelEntry,
-                                    std::function<void(UPrimitiveComponent*)> UpdateConstantBufferFunction)
+                                    std::function<void(FConstantBufferContext*)> UpdateConstantBufferFunction)
 {
     if (ShaderMap.Find(Name.GetDisplayIndex()) != nullptr)
         return ShaderMap[Name.GetDisplayIndex()];
@@ -136,21 +197,35 @@ UShader* UShaderManager::LoadShader(ID3D11Device* Device, const FName& Name, con
     //사용자가 무명 함수를 넘기지 않았을 경우, 기본 무명 함수를 적용
     if (!UpdateConstantBufferFunction)
     {
-        UpdateConstantBufferFunction = [](UPrimitiveComponent* PrimitiveComp)
+        UpdateConstantBufferFunction = [](FConstantBufferContext* ConstantContext)
         {
-            ID3D11DeviceContext* DeviceContext = UShaderManager::Get().DeviceContext;
-            const URenderer* Renderer = UShaderManager::Get().Renderer;
+            UShaderManager& ShaderManager = UShaderManager::Get();
+            
+            UShader* Shader = ShaderManager.GetShader(EShaderType::DefaultShader);
+            if (Shader == nullptr)
+            {
+                return;
+            }
+            ID3D11DeviceContext* DeviceContext = ShaderManager.DeviceContext;
+            const URenderer* Renderer = ShaderManager.Renderer;
             FMatrix ViewMatrix = Renderer->GetViewMatrix();
             FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
 
-            //MVP 행렬 계산
-            FMatrix MVP = FMatrix::Transpose(
-                PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
-
-            UShader* Shader = UShaderManager::Get().GetShader(EShaderType::DefaultShader);
-            if (Shader)
+            UPrimitiveComponent* PrimitiveComp = ConstantContext->PrimitiveComponent;
+            FMatrix MVP;
+            if (PrimitiveComp != nullptr)
             {
-                Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+                MVP = FMatrix::Transpose(PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
+            }
+            else
+            {
+                MVP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);   
+            }
+            
+            Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+            
+            if (PrimitiveComp != nullptr)
+            {
                 struct PSConstants
                 {
                     FVector4 Color;

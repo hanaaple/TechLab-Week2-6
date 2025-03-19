@@ -5,7 +5,7 @@
 #include "TextureData.h"
 
 
-struct CharacterInfo {
+struct TextureInfo {
     float u;		// u 좌표 ( 텍스처 내 위치 )
     float v;		// v 좌표 ( 텍스처 내 위치 )
     float width;	// 문자의 너비 ( 픽셀 또는 uv 스케일)
@@ -20,9 +20,11 @@ public:
     
     ID3D11ShaderResourceView* GetTextureSRV() { return TextureSRV; }
     void SetTexture(ID3D11ShaderResourceView* Texture) { TextureSRV = Texture; }
-    CharacterInfo GetCharInfoMap(char character);
+    TextureInfo GetCharInfoMap(char character);
+
+    FTextureStaticData TextureData;
 
 private:
     ID3D11ShaderResourceView* TextureSRV;
-    TMap<char, CharacterInfo> AtlasInfoMap;
+    TMap<char, TextureInfo> AtlasInfoMap;
 };

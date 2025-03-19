@@ -3,10 +3,10 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <unordered_map>
+
+#include "ConstantBufferContext.h"
 #include "Core/Math/Vector4.h"
 #include "Core/Name/FName.h"
-
-class UPrimitiveComponent;
 
 class UShader
 {
@@ -24,7 +24,7 @@ public:
 
     //Data에 FMatrix를 바로 넣어도 되고 자료가 여러개라면 struct 형태로 삽입
     //만약 해당 버퍼 슬롯에 버퍼가 없다면 자동으로 생성
-    void UpdateConstantBuffer(UPrimitiveComponent* PrimitiveComp);
+    void UpdateConstantBuffer(FConstantBufferContext* ConstantBufferContext);
     void UpdateConstantBuffer(ID3D11DeviceContext* DeviceContext, uint32 BufferSlot, const void* Data, size_t DataSize);
 
     ID3D11VertexShader* GetVertexShader() const { return VertexShader; }
@@ -36,11 +36,11 @@ public:
                            ID3DBlob* VertexShaderBlob);
     void CreateConstantBuffer(ID3D11Device* Device, uint32 BufferSlot, size_t BufferSize);
 
-    void SetUpdateConstantBufferFunction(const std::function<void(UPrimitiveComponent*)>& function) { UpdateConstantBufferFunction = function; }
+    void SetUpdateConstantBufferFunction(const std::function<void(FConstantBufferContext*)>& function) { UpdateConstantBufferFunction = function; }
 
 private:
     //람다 함수로 개별적인 ConstantBuffer 업데이트 가능
-    std::function<void(UPrimitiveComponent*)> UpdateConstantBufferFunction;
+    std::function<void(FConstantBufferContext*)> UpdateConstantBufferFunction;
 
 private:
     FName ShaderName;

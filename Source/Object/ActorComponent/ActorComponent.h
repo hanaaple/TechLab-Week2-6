@@ -13,7 +13,8 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type Reason);
 	virtual void Activate(){ bIsActive = true;}
 	virtual void Deactivate(){ bIsActive = false;}
-	
+
+	bool GetIsActive() const { return bIsActive;}	
 	bool CanEverTick() const { return bCanEverTick; }
 
 	virtual class AActor* GetOwner() const;
@@ -22,6 +23,6 @@ public:
 protected:
 	bool bCanEverTick = true;
 	bool bIsActive;
-	class AActor* Owner = nullptr;
+	AActor* Owner = nullptr;
 };
 

@@ -76,11 +76,11 @@ void UShader::Apply(ID3D11DeviceContext* DeviceContext) const
         DeviceContext->PSSetConstantBuffers(Buffer.first, 1, &Buffer.second);
     }
 }
-void UShader::UpdateConstantBuffer(UPrimitiveComponent* PrimitiveComp)
+void UShader::UpdateConstantBuffer(FConstantBufferContext* ConstantBufferContext)
 {
     if (UpdateConstantBufferFunction)
     {
-        UpdateConstantBufferFunction(PrimitiveComp);
+        UpdateConstantBufferFunction(ConstantBufferContext);
     }
 }
 void UShader::UpdateConstantBuffer(ID3D11DeviceContext* DeviceContext, uint32 BufferSlot, const void* Data, size_t DataSize)

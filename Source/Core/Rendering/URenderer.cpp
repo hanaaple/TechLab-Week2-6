@@ -146,14 +146,16 @@ void URenderer::PrepareShader(EShaderType ShaderType)
     UShader* Shader = UShaderManager::Get().GetShader(CurrentShaderType);
     if (Shader == nullptr)
     {
-        return;
+        // DeviceContext->VSSetShader(nullptr, nullptr, 0);
+        // DeviceContext->PSSetShader(nullptr, nullptr, 0);
     }
-    
-    // DeviceContext에 적용
-    Shader->Apply(DeviceContext);
+    else
+    {
+        // DeviceContext에 적용
+        Shader->Apply(DeviceContext);
+    }
 }
 
-//체크
 void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
 {
     if (BufferCache == nullptr)
@@ -168,29 +170,25 @@ void URenderer::RenderPrimitive(UPrimitiveComponent* PrimitiveComp)
         return;
     }
 
-    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(PrimitiveComp->GetMeshType());
-
     PrepareShader(PrimitiveComp->GetShaderType());
-    PrepareTexture(PrimitiveComp->GetTexture());
-    PrepareTopology(PrimitiveComp->GetTopology());
     
-
-    
-    //FIMXE : 쉐이더 구조 변경, 텍스처 저장 구조에 따라 추후 변경.
-    // if (PrimitiveComp->IsA<UCharComp>()) {
-    //     //dynamic_cast<UCharComp*>(PrimitiveComp)->GetTexture();
-    //     //dynamic_cast<UCharComp*>(PrimitiveComp)->c
-    //     UpdateConstantUV();
-    // }
-
+    // 특정 애들은 Render 자체를 해주면 안됨.
+    // -> Shader가 없는 경우
     auto* Shader = UShaderManager::Get().GetShader(CurrentShaderType);
+
     if (Shader != nullptr)
     {
-        Shader->UpdateConstantBuffer(PrimitiveComp);
+        BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(PrimitiveComp->GetMeshType());
         
+        PrepareTexture(PrimitiveComp->GetTexture());        
+        PrepareTopology(PrimitiveComp->GetTopology());
+        
+        FConstantBufferContext ConstantBufferContext;
+        ConstantBufferContext.PrimitiveComponent = PrimitiveComp;
+        
+        Shader->UpdateConstantBuffer(&ConstantBufferContext);
+        RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
     }
-    
-    RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
 }
 
 void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
@@ -254,43 +252,25 @@ void URenderer::RenderBatch(FBatchRenderContext& BatchContext)
         BufferCache->UpdateVertexBuffer(BatchContext.TextureType, BatchContext.Topology, VertexBuffer, VertexData.Num());
         BatchContext.bIsDirty = false;
     }
-    
-    BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(BatchContext.TextureType, BatchContext.Topology);
-    BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(BatchContext.TextureType, BatchContext.Topology);
-
-    //TODOOOOOOOO if Depth > 0 Check
 
     PrepareShader(BatchContext.ShaderType);
-    PrepareTexture(BatchContext.TextureType);
-    PrepareTopology(BatchContext.Topology);
-
-    // Update Constant
-    //UShader* Shader = UShaderManager::Get().GetShader(BatchContext.ShaderType);
-    //Shader->UpdateConstantBuffer(DeviceContext);
 
     auto* Shader = UShaderManager::Get().GetShader(CurrentShaderType);
-    // VP
-    // 일반 color
 
-    // 빌보딩 배치렌더링?
-    //Shader->UpdateConstantBuffer();
     if (Shader != nullptr)
     {
-        //MVP 행렬 계산
-        FMatrix VP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);
-        Shader->UpdateConstantBuffer(DeviceContext, 0, &VP, sizeof(VP));
+        PrepareTexture(BatchContext.TextureType);
+        PrepareTopology(BatchContext.Topology);
 
+        BufferInfo VertexBufferInfo = BufferCache->GetVertexBufferInfo(BatchContext.TextureType, BatchContext.Topology);
+        BufferInfo IndexBufferInfo = BufferCache->GetIndexBufferInfo(BatchContext.TextureType, BatchContext.Topology);
+
+        FConstantBufferContext ConstantBufferContext;
+        ConstantBufferContext.BatchContext = &BatchContext;
+        Shader->UpdateConstantBuffer(&ConstantBufferContext);
         
-        struct PSConstants
-        {
-            FVector4 Color;
-            uint32 bUseVertexColor;
-        };
-        PSConstants PSData = {FVector4(), false};
-        Shader->UpdateConstantBuffer(DeviceContext, 1, &PSData, sizeof(PSData));
+        RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
     }
-
-    RenderPrimitiveInternal(VertexBufferInfo, IndexBufferInfo);
 }
 
 void URenderer::RenderPrimitiveInternal(const BufferInfo& VertexBufferInfo, const BufferInfo& IndexBufferInfo) const
