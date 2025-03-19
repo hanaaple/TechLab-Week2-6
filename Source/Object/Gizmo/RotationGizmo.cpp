@@ -50,7 +50,6 @@ void ARotationGizmo::Tick(float DeltaTime)
 			POINT pt;
 			GetCursorPos(&pt);
 			ScreenToClient(UEngine::Get().GetWindowHandle(), &pt);
-			UE_LOG("screen mouse: %f, %f", pt.x, pt.y);
 			RECT Rect;
 			GetClientRect(UEngine::Get().GetWindowHandle(), &Rect);
 			int ScreenWidth = Rect.right - Rect.left;
@@ -80,31 +79,41 @@ void ARotationGizmo::Tick(float DeltaTime)
 			FVector4 RayDir = (RayOrigin - prevMousePos).GetSafeNormal();
 			FTransform AT = Actor->GetActorTransform();
 
-			float Result = 0;
-
 			ACamera* cam = FEditorManager::Get().GetCamera();
 			FVector GizmoCenter = Actor->GetActorTransform().GetPosition();
+			FVector camX = cam->GetForward();
+			FVector camY = cam->GetRight();
+			FVector camZ = cam->GetUp();
 
 			prevMousePos = RayOrigin;
 
 			FVector RadialVector = (RayOrigin - GizmoCenter).GetSafeNormal();
 
-			FVector EffectiveMovement = FVector::CrossProduct(RadialVector, RayDir);
+			FVector EffectiveMovement = FVector::CrossProduct(RadialVector, RayDir).GetSafeNormal();
+
+			float Result = 0;
 
 			switch (SelectedAxis)
 			{
 			case ESelectedAxis::X:
-				Result = -EffectiveMovement.X;
+				Result = -FVector::DotProduct(EffectiveMovement, camX);
 				break;
 			case ESelectedAxis::Y:
-				Result = EffectiveMovement.Y;
+				Result = FVector::DotProduct(EffectiveMovement, camY);
 				break;
 			case ESelectedAxis::Z:
-				Result = EffectiveMovement.Z;
+				Result = -FVector::DotProduct(EffectiveMovement, camZ);
 				break;
 			default:
 				break;
 			}
+
+			FVector CameraToObject = (GizmoCenter - cam->GetActorTransform().GetPosition()).GetSafeNormal();
+
+			if (FVector4::DotProduct(RayDir, prevMouseDir) < -0.5f) {
+				Result = -Result;
+			}
+			prevMouseDir = RayDir;
 
 			if (Result > 0.1f)
 				Result = 0.1f;

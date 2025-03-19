@@ -24,4 +24,5 @@ private:
 	virtual const char* GetTypeName() override;
 	void DoTransform(FTransform& AT, float Result, AActor* Actor);
 	FVector4 prevMousePos;
+	FVector4 prevMouseDir;
 };
