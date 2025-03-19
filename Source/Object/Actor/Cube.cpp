@@ -6,7 +6,6 @@ ACube::ACube()
 	bCanEverTick = true;
 
 	UCubeComp* CubeComponent = AddComponent<UCubeComp>();
-	CubeComponent->SetRenderMode(Batch);
 	RootComponent = CubeComponent;
 	CubeComponent->SetRelativeTransform(FTransform());
 	/*

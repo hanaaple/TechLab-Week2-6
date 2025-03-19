@@ -296,11 +296,11 @@ void UI::RenderSettingsPanel()
     //View Mode 드롭다운 (좌측 컬럼)
     ImGui::PushItemWidth(-1);
     static const char* ViewModeNames[] = {"Lit", "Unlit", "Wireframe"};
-    static int CurrentViewMode = static_cast<int>(UEngine::Get().GetViewMode());
+    static int CurrentViewMode = (UEngine::Get().GetRenderer()->CurrentViewMode);
 
     if (ImGui::Combo("##ViewMode", &CurrentViewMode, ViewModeNames, IM_ARRAYSIZE(ViewModeNames)))
     {
-        UEngine::Get().SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
+        UEngine::Get().GetRenderer()->SetFillMode(static_cast<D3D11_FILL_MODE>(CurrentViewMode));
     }
     ImGui::PopItemWidth();
     ImGui::NextColumn();
@@ -328,6 +328,59 @@ void UI::RenderSettingsPanel()
         if (ImGui::Checkbox(FlagName, &bChecked))
         {
             UEngine::Get().SetShowFlag(Flag, bChecked);
+            //Primitives 비활성화 + Gizmo가 아닌 경우 렌더링 X
+            //Gizmo 비활성화 + Gizmo인 경우 렌더링 X
+            //BillboardText 비활성화 + BillboardText인 경우 렌더링 X
+            if (strcmp(FlagName, "Primitives") == 0)
+            {
+                UWorld* world = UEngine::Get().GetWorld();
+                for (auto actor : world->GetActors())
+                {
+                    for (auto* component : actor->GetComponents())
+                    {
+                        if (component->IsA<UPrimitiveComponent>() && !actor->IsGizmoActor())
+                        {
+                            UPrimitiveComponent* Comp = static_cast<UPrimitiveComponent*>(component);
+                            Comp->SetVisibility(bChecked);
+                        }
+                    } 
+                }
+            }
+
+            if (strcmp(FlagName, "Gizmo") == 0)
+            {
+                UWorld* world = UEngine::Get().GetWorld();
+                for (auto actor : world->GetActors())
+                {
+                    for (auto* component : actor->GetComponents())
+                    {
+                        if (component->IsA<UPrimitiveComponent>() && actor->IsGizmoActor())
+                        {
+                            UPrimitiveComponent* Comp = static_cast<UPrimitiveComponent*>(component);
+                            Comp->SetVisibility(bChecked);
+                        }
+                    } 
+                }
+            }
+
+            if (strcmp(FlagName, "Billboard Text") == 0)
+            {
+                UWorld* world = UEngine::Get().GetWorld();
+                for (auto actor : world->GetActors())
+                {
+                    if (actor->IsA<ABillboardText>())
+                    {
+                        for (auto* component : actor->GetComponents())
+                        {
+                            if (component->IsA<UPrimitiveComponent>())
+                            {
+                                UPrimitiveComponent* Comp = static_cast<UPrimitiveComponent*>(component);
+                                Comp->SetVisibility(bChecked);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -344,7 +397,7 @@ void UI::RenderSettingsPanel()
     ImGui::Text("Grid Spacing");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(-1);
-    if (ImGui::SliderFloat("##GridSpacing", &GridSpacing, 0.01f, 50.0f, "%.2f"))
+    if (ImGui::SliderFloat("##GridSpacing", &GridSpacing, 1.f, 50.0f, "%.2f"))
     {
         FEditorManager::Get().GetWorldGrid()->SetSpacing(GridSpacing);
         SettingManager::Get().SaveGridSpacing(GridSpacing);
@@ -524,40 +577,90 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
     {
         if (bShowTransform)
         {
-            FTransform ComponentTransform = Component->GetRelativeTransform();
-            float position[] = {
-                ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y,
-                ComponentTransform.GetPosition().Z
-            };
-            float scale[] = {
-                ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z
-            };
-
-            if (ImGui::DragFloat3(("Translation##" + std::to_string(Component->GetUUID())).c_str(), position, 0.1f))
             {
-                ComponentTransform.SetPosition(position[0], position[1], position[2]);
-                Component->SetRelativeTransform(ComponentTransform);
-            }
+                FTransform ComponentTransform = Component->GetRelativeTransform();
+                float position[] = {
+                    ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y,
+                    ComponentTransform.GetPosition().Z
+                };
+                float scale[] = {
+                    ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z
+                };
 
-            FVector PrevEulerAngle = ComponentTransform.GetEulerRotation();
-            FVector UIEulerAngle = PrevEulerAngle;
-            if (ImGui::DragFloat3(("Rotation##" + std::to_string(Component->GetUUID())).c_str(),
-                                  reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
+                
+                uint32 bufferSize = 100;
+                char ComponentNameInput[100];
+                strcpy_s(ComponentNameInput, bufferSize, Component->GetName().ToString().ToStdString().c_str());
+
+                if (ImGui::InputText("Component Name", ComponentNameInput, bufferSize))
+                {
+                    Component->SetName(FName(ComponentNameInput));
+                }
+                
+                ImGui::Text("Local", Component->GetUUID());
+                if (ImGui::DragFloat3(("Translation##" + std::to_string(Component->GetUUID())).c_str(), position, 0.1f))
+                {
+                    ComponentTransform.SetPosition(position[0], position[1], position[2]);
+                    Component->SetRelativeTransform(ComponentTransform);
+                }
+
+                FVector PrevEulerAngle = ComponentTransform.GetEulerRotation();
+                FVector UIEulerAngle = PrevEulerAngle;
+                if (ImGui::DragFloat3(("Rotation##" + std::to_string(Component->GetUUID())).c_str(),
+                                      reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
+                {
+                    ComponentTransform.SetRotation(UIEulerAngle);
+                    Component->SetRelativeTransform(ComponentTransform);
+                }
+
+                if (ImGui::DragFloat3(("Scale##" + std::to_string(Component->GetUUID())).c_str(), scale, 0.1f))
+                {
+                    ComponentTransform.SetScale(scale[0], scale[1], scale[2]);
+                    Component->SetRelativeTransform(ComponentTransform);
+                }
+            }
+            ImGui::Separator();
             {
-                ComponentTransform.SetRotation(UIEulerAngle);
-                Component->SetRelativeTransform(ComponentTransform);
-            }
+                FTransform ComponentTransform = Component->GetComponentTransform();
+                float position[] = {
+                    ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y,
+                    ComponentTransform.GetPosition().Z
+                };
+                float scale[] = {
+                    ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z
+                };
+                
+                
+                ImGui::Text("World", Component->GetUUID());
+                
 
-            if (ImGui::DragFloat3(("Scale##" + std::to_string(Component->GetUUID())).c_str(), scale, 0.1f))
-            {
-                ComponentTransform.SetScale(scale[0], scale[1], scale[2]);
-                Component->SetRelativeTransform(ComponentTransform);
-            }
-            ComponentTransform = Component->GetComponentTransform();
-            ImGui::Text("%u, World Position %f, %f, %f", Component->GetUUID(), ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y, ComponentTransform.GetPosition().Z);
-            ImGui::Text("%u, World Rotation %f, %f, %f", Component->GetUUID(), ComponentTransform.GetEulerRotation().X, ComponentTransform.GetEulerRotation().Y, ComponentTransform.GetEulerRotation().Z);
-            ImGui::Text("%u, World Scale %f, %f, %f", Component->GetUUID(), ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z);
+                if (ImGui::DragFloat3(("World Translation##" + std::to_string(Component->GetUUID())).c_str(), position, 0.1f))
+                {
+                    ComponentTransform.SetPosition(position[0], position[1], position[2]);
+                    Component->SetWorldTransform(ComponentTransform);
+                }
 
+                FVector PrevEulerAngle = ComponentTransform.GetEulerRotation();
+                FVector UIEulerAngle = PrevEulerAngle;
+                if (ImGui::DragFloat3(("World Rotation##" + std::to_string(Component->GetUUID())).c_str(),
+                                      reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
+                {
+                    ComponentTransform.SetRotation(UIEulerAngle);
+                    Component->SetWorldTransform(ComponentTransform);
+                }
+
+                if (ImGui::DragFloat3(("World Scale##" + std::to_string(Component->GetUUID())).c_str(), scale, 0.1f))
+                {
+                    ComponentTransform.SetScale(scale[0], scale[1], scale[2]);
+                    Component->SetWorldTransform(ComponentTransform);
+                }
+                
+            
+                // ImGui::Text("World Position %f, %f, %f",  ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y, ComponentTransform.GetPosition().Z);
+                // ImGui::Text("World Rotation %f, %f, %f", ComponentTransform.GetEulerRotation().X, ComponentTransform.GetEulerRotation().Y, ComponentTransform.GetEulerRotation().Z);
+                // ImGui::Text("World Scale %f, %f, %f", ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z);
+
+            }
             if (Component->IsA<UPrimitiveComponent>())
             {
                 auto* PrimitiveComponent = dynamic_cast<UPrimitiveComponent*>(Component);
@@ -596,75 +699,134 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
                         PrimitiveComponent->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
                     }
                 }
-
-                               static const char* MeshItem[] = {"EPT_Triangle", "EPT_Cube", "EPT_Sphere", "EPT_Line", "EPT_BoundingBox", "EPT_GridLine", "EPT_Cylinder", "EPT_Quad", "EPT_Cone", "EPT_Torus"};
-                int curMeshItem = -1;
-                if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Triangle)
-                    curMeshItem = 0;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cube)
-                    curMeshItem = 1;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Sphere)
-                    curMeshItem = 2;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Line)
-                    curMeshItem = 3;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_BoundingBox)
-                    curMeshItem = 4;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_GridLine)
-                    curMeshItem = 5;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cylinder)
-                    curMeshItem = 6;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Quad)
-                    curMeshItem = 7;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cone)
-                    curMeshItem = 8;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Torus)
-                    curMeshItem = 9;
-                
-                if (ImGui::Combo("##Mesh", &curMeshItem, MeshItem, IM_ARRAYSIZE(MeshItem)))
+                // Mesh
                 {
-                    if (FName(MeshItem[curMeshItem]) == FName("EPT_Triangle"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Triangle);
-                    } else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cube"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cube);
-                    }else if (FName(MeshItem[curMeshItem]) == FName("EPT_Sphere"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Sphere);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Line"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Line);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_BoundingBox"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_BoundingBox);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_GridLine"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_GridLine);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cylinder"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cylinder);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Quad"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Quad);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cone"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cone);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Torus"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Torus);
-                    }
                     
+                    static const char* MeshItem[] = {"EPT_Triangle", "EPT_Cube", "EPT_Sphere", "EPT_Line", "EPT_BoundingBox", "EPT_GridLine", "EPT_Cylinder", "EPT_Quad", "EPT_Cone", "EPT_Torus"};
+                    int curMeshItem = -1;
+                    if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Triangle)
+                        curMeshItem = 0;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cube)
+                        curMeshItem = 1;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Sphere)
+                        curMeshItem = 2;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Line)
+                        curMeshItem = 3;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_BoundingBox)
+                        curMeshItem = 4;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_GridLine)
+                        curMeshItem = 5;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cylinder)
+                        curMeshItem = 6;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Quad)
+                        curMeshItem = 7;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cone)
+                        curMeshItem = 8;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Torus)
+                        curMeshItem = 9;
+                
+                    if (ImGui::Combo("##Mesh", &curMeshItem, MeshItem, IM_ARRAYSIZE(MeshItem)))
+                    {
+                        if (FName(MeshItem[curMeshItem]) == FName("EPT_Triangle"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Triangle);
+                        } else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cube"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cube);
+                        }else if (FName(MeshItem[curMeshItem]) == FName("EPT_Sphere"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Sphere);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_Line"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Line);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_BoundingBox"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_BoundingBox);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_GridLine"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_GridLine);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cylinder"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cylinder);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_Quad"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Quad);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cone"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cone);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_Torus"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Torus);
+                        }
+                    
+                    }
+                }
+
+                {
+                    static const char* TextureItems[] = {"None", "FontATexture", "AtlasFontTexture", "CatTexture"};
+                    int curTextureItem = -1;
+                    if (PrimitiveComponent->GetTexture() == ETextureType::None)
+                        curTextureItem = 0;
+                    else if (PrimitiveComponent->GetTexture() == ETextureType::FontATexture)
+                        curTextureItem = 1;
+                    else if (PrimitiveComponent->GetTexture() == ETextureType::AtlasFontTexture)
+                        curTextureItem = 2;
+                    else if (PrimitiveComponent->GetTexture() == ETextureType::CatTexture)
+                        curTextureItem = 3;
+                    
+                    if (ImGui::Combo("##Texture", &curTextureItem, TextureItems, IM_ARRAYSIZE(TextureItems)))
+                    {
+                        if (FName(TextureItems[curTextureItem]) == FName("None"))
+                        {
+                            PrimitiveComponent->SetTexture(ETextureType::None);
+                        } else if (FName(TextureItems[curTextureItem]) == FName("FontATexture"))
+                        {
+                            PrimitiveComponent->SetTexture(ETextureType::FontATexture);
+                        }else if (FName(TextureItems[curTextureItem]) == FName("AtlasFontTexture"))
+                        {
+                            PrimitiveComponent->SetTexture(ETextureType::AtlasFontTexture);
+                        }
+                        else if (FName(TextureItems[curTextureItem]) == FName("CatTexture"))
+                        {
+                            PrimitiveComponent->SetTexture(ETextureType::CatTexture);
+                        }
+                    }
+                }
+
+                {
+                    static const char* ShaderItems[] = {"DefaultShader", "TextureShader", "PrimitiveShader"};
+                    int curShaderIndex = -1;
+                    if (PrimitiveComponent->GetShaderType() == EShaderType::DefaultShader)
+                        curShaderIndex = 0;
+                    else if (PrimitiveComponent->GetShaderType() == EShaderType::TextureShader)
+                        curShaderIndex = 1;
+                    else if (PrimitiveComponent->GetShaderType() == EShaderType::PrimitiveShader)
+                        curShaderIndex = 2;
+                    
+                    if (ImGui::Combo("##Shader", &curShaderIndex, ShaderItems, IM_ARRAYSIZE(ShaderItems)))
+                    {
+                        if (FName(ShaderItems[curShaderIndex]) == FName("DefaultShader"))
+                        {
+                            PrimitiveComponent->SetShaderType(EShaderType::DefaultShader);
+                        } else if (FName(ShaderItems[curShaderIndex]) == FName("TextureShader"))
+                        {
+                            PrimitiveComponent->SetShaderType(EShaderType::TextureShader);
+                        }else if (FName(ShaderItems[curShaderIndex]) == FName("PrimitiveShader"))
+                        {
+                            PrimitiveComponent->SetShaderType(EShaderType::PrimitiveShader);
+                        }
+                    }
                 }
             }
         }
-
+        ImGui::Separator();
         for (auto* Child : Component->GetAttachChildren())
         {
             if (!bShowTransform && Child->GetAttachChildren().Num() == 0)nodeFlags |= ImGuiTreeNodeFlags_Leaf;

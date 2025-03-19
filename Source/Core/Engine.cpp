@@ -233,11 +233,14 @@ void UEngine::InitWorld()
     FEditorManager::Get().SetCamera(World->SpawnActor<ACamera>());
 
     FEditorManager::Get().SetWorldGrid(World->SpawnActor<AWorldGrid>());
+    World->SpawnActor<AAxis>();
+    World->SpawnActor<AAABBPicker>();
+
+
+    
     //// Test
     //World->SpawnActor<AArrow>();
     //World->SpawnActor<ABillboardText>();
-    World->SpawnActor<AAxis>();
-    World->SpawnActor<AAABBPicker>();
     
     /* 빌보드 테스트 코드*/
     //World->SpawnActor<ABillboardText>();
@@ -247,7 +250,19 @@ void UEngine::InitWorld()
     //     World->SpawnActor<ACube>();
     // }
 
-    World->SpawnActor<ASphere>();
+    // auto* Acube = World->SpawnActor<ACube>();
+    // USceneComponent* Child = Acube->GetRootComponent(); 
+    // for (int i = 0; i < 1; i++)
+    // {
+    //     auto* cube = Acube->AddComponent<UCubeComp>();
+    //     FTransform Transform = FTransform();
+    //     Transform.SetPosition(0, 1, 0);
+    //     cube->SetRelativeTransform(Transform);
+    //     cube->SetupAttachment(Child, EEndPlayReason::EAttachmentRule::KeepRelative);
+    //     Child = cube;
+    // }
+
+    //World->SpawnActor<ASphere>();
     //World->SpawnActor<APicker>();
     /*auto* Actor = World->SpawnActor<ACylinder>();
     UConeComp* ConeComp = Actor->AddComponent<UConeComp>();
@@ -318,25 +333,6 @@ void UEngine::InitializeShowFlags()
     ShowFlagStates.Add(EEngineShowFlags::SF_Primitives, true);
     ShowFlagStates.Add(EEngineShowFlags::SF_Gizmo, true);
     ShowFlagStates.Add(EEngineShowFlags::SF_BillboardText, true);
-}
-
-//  View Mode 변경
-void UEngine::SetViewMode(EViewModeIndex NewMode)
-{
-    ViewMode = NewMode;
-    // View Mode에 따른 셰이더 변경
-    if (ViewMode == EViewModeIndex::VMI_Wireframe)
-    {
-        Renderer->EnableWireframeMode();
-    }
-    else if (ViewMode == EViewModeIndex::VMI_Unlit)
-    {
-        Renderer->EnableUnlitMode();
-    }
-    else
-    {
-        Renderer->EnableLitMode();
-    }
 }
 
 //  Show Flag 설정

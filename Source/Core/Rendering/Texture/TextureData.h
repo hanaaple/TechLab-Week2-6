@@ -4,9 +4,9 @@
 
 enum class ETextureType{
     None,
-    TextureA,
-    FontTexture,
-    TextureC
+    FontATexture,
+    AtlasFontTexture,
+    CatTexture
 };
 
 struct FTextureStaticData

@@ -301,13 +301,6 @@
     <ClCompile Include="Source\Object\Actor\Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\ShaderW0.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Source\ConstantBufferContext.h" />
     <ClInclude Include="Source\Core\Math\Vector4.h" />
     <ClInclude Include="Source\Core\Name\FName.h" />
@@ -320,6 +313,7 @@
     <ClInclude Include="Source\Core\Rendering\Texture\Texture.h" />
     <ClInclude Include="Source\Core\Rendering\Texture\TextureData.h" />
     <ClInclude Include="Source\Core\Rendering\Texture\TextureLoader.h" />
+    <ClInclude Include="Source\DataTypes\Enum.h" />
     <ClInclude Include="Source\DataTypes\ShdaerType.h" />
     <ClInclude Include="Source\Core\SettingManager.h" />
     <ClInclude Include="Source\Object\Actor\AABBPicker.h" />
@@ -418,12 +412,11 @@
   <ItemGroup>
     <Content Include="Resources\1234.png" />
     <Content Include="Resources\2313214124.png" />
+    <Content Include="Resources\cat0.png" />
+    <Content Include="Resources\Explosion.png" />
     <Content Include="Resources\tempTexture.png" />
     <Content Include="Shaders\PrimitiveShader.hlsl" />
-    <Content Include="Shaders\CustomShader.hlsl" />
     <Content Include="Shaders\DefaultShader.hlsl" />
-    <Content Include="Shaders\OutlineShader.hlsl" />
-    <Content Include="Shaders\PickingShader.hlsl" />
     <Content Include="Shaders\TextShader.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

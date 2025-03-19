@@ -12,11 +12,8 @@ inline FName ShaderTypeToFName(EShaderType ShaderType)
     switch (ShaderType)
     {
     case EShaderType::DefaultShader: return FName("DefaultShader");
-    case EShaderType::PickingShader: return FName("PickingShader");
-    case EShaderType::OutlineShader: return FName("OutlineShader");
-    case EShaderType::TextShader: return FName("TextShader");
+    case EShaderType::TextureShader: return FName("TextShader");
     case EShaderType::PrimitiveShader: return FName("PrimitiveShader");
-    case EShaderType::CustomShader: return FName("CustomShader");
     default: return FName("UnknownShader");
     }
 }

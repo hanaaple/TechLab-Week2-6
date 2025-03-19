@@ -127,17 +127,21 @@ void UWorld::UpdateRenderComponents()
 			}
 			else if (PrevFrameData.RenderMode == Individual)
 			{
-				IndividualRenders.Remove(RenderComponent);
+				if (IndividualRenders.Find(RenderComponent) != -1)
+					IndividualRenders.Remove(RenderComponent);
 			}
-
-			// Batch가 된 경우 -> 추가
-			if (CurFrameData.RenderMode == Batch)
+			
+			if (RenderComponent->GetVisibleFlag())
 			{
-				AddToBatch(RenderComponent);
-			}
-			else if (CurFrameData.RenderMode == Individual)
-			{
-				IndividualRenders.Add(RenderComponent);
+				// Batch가 된 경우 -> 추가
+				if (CurFrameData.RenderMode == Batch)
+				{
+					AddToBatch(RenderComponent);
+				}
+				else if (CurFrameData.RenderMode == Individual)
+				{
+					IndividualRenders.Add(RenderComponent);
+				}
 			}
 			
 			RenderComponent->SetDirty(false);
@@ -206,7 +210,11 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 {
 	// Depth Stencil, RenderTarget, BlendState 변경
 	Renderer.PrepareMain();
-
+	
+	// gizmo인가
+	// billboard인가
+	// primitive인가
+	
 	// 굳이 여기서 Shader, Texture, Topology를 안해줘도 내부적으로 동일한 경우 변경이 안되어 괜찮다.
 	for (auto& [ShaderType, ShaderMapped] : BatchRenders)
 	{
@@ -248,7 +256,8 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 			RenderTarget->Render();
 		}
 	}
-
+	auto FillMode = Renderer.GetFillMode();
+	Renderer.SetFillMode(D3D11_FILL_SOLID);
 	Renderer.PrepareZIgnore();
 	for (auto& RenderTarget: ZIgnoreRenderComponents)
 	{
@@ -256,6 +265,7 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 			continue;
 		RenderTarget->Render();
 	}
+	Renderer.SetFillMode(FillMode);
 }
 
 // void UWorld::DisplayPickingTexture(URenderer& Renderer)

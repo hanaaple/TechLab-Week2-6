@@ -10,10 +10,10 @@ public:
 	UCharComp() : Super() {
 		//bUseUV = true;
 		
-		SetTexture(ETextureType::FontTexture);
+		SetTexture(ETextureType::AtlasFontTexture);
 		SetMesh(EPrimitiveMeshType::EPT_Quad);
 		SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		SetShaderType(EShaderType::TextShader);
+		SetShaderType(EShaderType::TextureShader);
 	}
 	bool TryGetVertexData(TArray<FVertexSimple>* VertexData) override;
 public:

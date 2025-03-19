@@ -67,9 +67,12 @@ PS_OUTPUT mainPS(PS_INPUT input) : SV_TARGET
 
     if (useUv == 1)
     {
+        // (input.u * width, input.v * height + 1 - height);
+        // 
         float correctedV = 1.0 - (v + height);
         float4 texColor = sourceTex.Sample(samp, input.uv * float2(width, height) + float2(u, correctedV));
         output.color = texColor;
+        //output.color = float4(1, 1, 1, 1);
         //배경이 특정 색(예: 검은색)일 경우 픽셀 버리기
         if (length(texColor.rgb - float3(0, 0, 0)) < 0.05)
         {

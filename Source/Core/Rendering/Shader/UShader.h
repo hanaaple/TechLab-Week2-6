@@ -37,6 +37,7 @@ public:
     void CreateConstantBuffer(ID3D11Device* Device, uint32 BufferSlot, size_t BufferSize);
 
     void SetUpdateConstantBufferFunction(const std::function<void(FConstantBufferContext*)>& function) { UpdateConstantBufferFunction = function; }
+    const std::function<void(FConstantBufferContext*)>& GetUpdateConstantBufferFunction() { return UpdateConstantBufferFunction; }
 
 private:
     //람다 함수로 개별적인 ConstantBuffer 업데이트 가능
