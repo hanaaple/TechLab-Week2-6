@@ -296,11 +296,11 @@ void UI::RenderSettingsPanel()
     //View Mode 드롭다운 (좌측 컬럼)
     ImGui::PushItemWidth(-1);
     static const char* ViewModeNames[] = {"Lit", "Unlit", "Wireframe"};
-    static int CurrentViewMode = static_cast<int>(UEngine::Get().GetViewMode());
+    static int CurrentViewMode = (UEngine::Get().GetRenderer()->CurrentViewMode);
 
     if (ImGui::Combo("##ViewMode", &CurrentViewMode, ViewModeNames, IM_ARRAYSIZE(ViewModeNames)))
     {
-        UEngine::Get().SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
+        UEngine::Get().GetRenderer()->SetFillMode(static_cast<D3D11_FILL_MODE>(CurrentViewMode));
     }
     ImGui::PopItemWidth();
     ImGui::NextColumn();
@@ -328,6 +328,59 @@ void UI::RenderSettingsPanel()
         if (ImGui::Checkbox(FlagName, &bChecked))
         {
             UEngine::Get().SetShowFlag(Flag, bChecked);
+            //Primitives 비활성화 + Gizmo가 아닌 경우 렌더링 X
+            //Gizmo 비활성화 + Gizmo인 경우 렌더링 X
+            //BillboardText 비활성화 + BillboardText인 경우 렌더링 X
+            if (strcmp(FlagName, "Primitives") == 0)
+            {
+                UWorld* world = UEngine::Get().GetWorld();
+                for (auto actor : world->GetActors())
+                {
+                    for (auto* component : actor->GetComponents())
+                    {
+                        if (component->IsA<UPrimitiveComponent>() && !actor->IsGizmoActor())
+                        {
+                            UPrimitiveComponent* Comp = static_cast<UPrimitiveComponent*>(component);
+                            Comp->SetVisibility(bChecked);
+                        }
+                    } 
+                }
+            }
+
+            if (strcmp(FlagName, "Gizmo") == 0)
+            {
+                UWorld* world = UEngine::Get().GetWorld();
+                for (auto actor : world->GetActors())
+                {
+                    for (auto* component : actor->GetComponents())
+                    {
+                        if (component->IsA<UPrimitiveComponent>() && actor->IsGizmoActor())
+                        {
+                            UPrimitiveComponent* Comp = static_cast<UPrimitiveComponent*>(component);
+                            Comp->SetVisibility(bChecked);
+                        }
+                    } 
+                }
+            }
+
+            if (strcmp(FlagName, "Billboard Text") == 0)
+            {
+                UWorld* world = UEngine::Get().GetWorld();
+                for (auto actor : world->GetActors())
+                {
+                    if (actor->IsA<ABillboardText>())
+                    {
+                        for (auto* component : actor->GetComponents())
+                        {
+                            if (component->IsA<UPrimitiveComponent>())
+                            {
+                                UPrimitiveComponent* Comp = static_cast<UPrimitiveComponent*>(component);
+                                Comp->SetVisibility(bChecked);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -344,7 +397,7 @@ void UI::RenderSettingsPanel()
     ImGui::Text("Grid Spacing");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(-1);
-    if (ImGui::SliderFloat("##GridSpacing", &GridSpacing, 0.01f, 50.0f, "%.2f"))
+    if (ImGui::SliderFloat("##GridSpacing", &GridSpacing, 1.f, 50.0f, "%.2f"))
     {
         FEditorManager::Get().GetWorldGrid()->SetSpacing(GridSpacing);
         SettingManager::Get().SaveGridSpacing(GridSpacing);
@@ -524,40 +577,90 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
     {
         if (bShowTransform)
         {
-            FTransform ComponentTransform = Component->GetRelativeTransform();
-            float position[] = {
-                ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y,
-                ComponentTransform.GetPosition().Z
-            };
-            float scale[] = {
-                ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z
-            };
-
-            if (ImGui::DragFloat3(("Translation##" + std::to_string(Component->GetUUID())).c_str(), position, 0.1f))
             {
-                ComponentTransform.SetPosition(position[0], position[1], position[2]);
-                Component->SetRelativeTransform(ComponentTransform);
-            }
+                FTransform ComponentTransform = Component->GetRelativeTransform();
+                float position[] = {
+                    ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y,
+                    ComponentTransform.GetPosition().Z
+                };
+                float scale[] = {
+                    ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z
+                };
 
-            FVector PrevEulerAngle = ComponentTransform.GetEulerRotation();
-            FVector UIEulerAngle = PrevEulerAngle;
-            if (ImGui::DragFloat3(("Rotation##" + std::to_string(Component->GetUUID())).c_str(),
-                                  reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
+                
+                uint32 bufferSize = 100;
+                char ComponentNameInput[100];
+                strcpy_s(ComponentNameInput, bufferSize, Component->GetName().ToString().ToStdString().c_str());
+
+                if (ImGui::InputText("Component Name", ComponentNameInput, bufferSize))
+                {
+                    Component->SetName(FName(ComponentNameInput));
+                }
+                
+                ImGui::Text("Local", Component->GetUUID());
+                if (ImGui::DragFloat3(("Translation##" + std::to_string(Component->GetUUID())).c_str(), position, 0.1f))
+                {
+                    ComponentTransform.SetPosition(position[0], position[1], position[2]);
+                    Component->SetRelativeTransform(ComponentTransform);
+                }
+
+                FVector PrevEulerAngle = ComponentTransform.GetEulerRotation();
+                FVector UIEulerAngle = PrevEulerAngle;
+                if (ImGui::DragFloat3(("Rotation##" + std::to_string(Component->GetUUID())).c_str(),
+                                      reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
+                {
+                    ComponentTransform.SetRotation(UIEulerAngle);
+                    Component->SetRelativeTransform(ComponentTransform);
+                }
+
+                if (ImGui::DragFloat3(("Scale##" + std::to_string(Component->GetUUID())).c_str(), scale, 0.1f))
+                {
+                    ComponentTransform.SetScale(scale[0], scale[1], scale[2]);
+                    Component->SetRelativeTransform(ComponentTransform);
+                }
+            }
+            ImGui::Separator();
             {
-                ComponentTransform.SetRotation(UIEulerAngle);
-                Component->SetRelativeTransform(ComponentTransform);
-            }
+                FTransform ComponentTransform = Component->GetComponentTransform();
+                float position[] = {
+                    ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y,
+                    ComponentTransform.GetPosition().Z
+                };
+                float scale[] = {
+                    ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z
+                };
+                
+                
+                ImGui::Text("World", Component->GetUUID());
+                
 
-            if (ImGui::DragFloat3(("Scale##" + std::to_string(Component->GetUUID())).c_str(), scale, 0.1f))
-            {
-                ComponentTransform.SetScale(scale[0], scale[1], scale[2]);
-                Component->SetRelativeTransform(ComponentTransform);
-            }
-            ComponentTransform = Component->GetComponentTransform();
-            ImGui::Text("%u, World Position %f, %f, %f", Component->GetUUID(), ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y, ComponentTransform.GetPosition().Z);
-            ImGui::Text("%u, World Rotation %f, %f, %f", Component->GetUUID(), ComponentTransform.GetEulerRotation().X, ComponentTransform.GetEulerRotation().Y, ComponentTransform.GetEulerRotation().Z);
-            ImGui::Text("%u, World Scale %f, %f, %f", Component->GetUUID(), ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z);
+                if (ImGui::DragFloat3(("World Translation##" + std::to_string(Component->GetUUID())).c_str(), position, 0.1f))
+                {
+                    ComponentTransform.SetPosition(position[0], position[1], position[2]);
+                    Component->SetWorldTransform(ComponentTransform);
+                }
 
+                FVector PrevEulerAngle = ComponentTransform.GetEulerRotation();
+                FVector UIEulerAngle = PrevEulerAngle;
+                if (ImGui::DragFloat3(("World Rotation##" + std::to_string(Component->GetUUID())).c_str(),
+                                      reinterpret_cast<float*>(&UIEulerAngle), 0.1f))
+                {
+                    ComponentTransform.SetRotation(UIEulerAngle);
+                    Component->SetWorldTransform(ComponentTransform);
+                }
+
+                if (ImGui::DragFloat3(("World Scale##" + std::to_string(Component->GetUUID())).c_str(), scale, 0.1f))
+                {
+                    ComponentTransform.SetScale(scale[0], scale[1], scale[2]);
+                    Component->SetWorldTransform(ComponentTransform);
+                }
+                
+            
+                // ImGui::Text("World Position %f, %f, %f",  ComponentTransform.GetPosition().X, ComponentTransform.GetPosition().Y, ComponentTransform.GetPosition().Z);
+                // ImGui::Text("World Rotation %f, %f, %f", ComponentTransform.GetEulerRotation().X, ComponentTransform.GetEulerRotation().Y, ComponentTransform.GetEulerRotation().Z);
+                // ImGui::Text("World Scale %f, %f, %f", ComponentTransform.GetScale().X, ComponentTransform.GetScale().Y, ComponentTransform.GetScale().Z);
+
+            }
             if (Component->IsA<UPrimitiveComponent>())
             {
                 auto* PrimitiveComponent = dynamic_cast<UPrimitiveComponent*>(Component);
@@ -698,11 +801,11 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
                 }
 
                 {
-                    static const char* ShaderItems[] = {"DefaultShader", "TextShader", "PrimitiveShader"};
+                    static const char* ShaderItems[] = {"DefaultShader", "TextureShader", "PrimitiveShader"};
                     int curShaderIndex = -1;
                     if (PrimitiveComponent->GetShaderType() == EShaderType::DefaultShader)
                         curShaderIndex = 0;
-                    else if (PrimitiveComponent->GetShaderType() == EShaderType::TextShader)
+                    else if (PrimitiveComponent->GetShaderType() == EShaderType::TextureShader)
                         curShaderIndex = 1;
                     else if (PrimitiveComponent->GetShaderType() == EShaderType::PrimitiveShader)
                         curShaderIndex = 2;
@@ -712,9 +815,9 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
                         if (FName(ShaderItems[curShaderIndex]) == FName("DefaultShader"))
                         {
                             PrimitiveComponent->SetShaderType(EShaderType::DefaultShader);
-                        } else if (FName(ShaderItems[curShaderIndex]) == FName("TextShader"))
+                        } else if (FName(ShaderItems[curShaderIndex]) == FName("TextureShader"))
                         {
-                            PrimitiveComponent->SetShaderType(EShaderType::TextShader);
+                            PrimitiveComponent->SetShaderType(EShaderType::TextureShader);
                         }else if (FName(ShaderItems[curShaderIndex]) == FName("PrimitiveShader"))
                         {
                             PrimitiveComponent->SetShaderType(EShaderType::PrimitiveShader);
@@ -723,7 +826,7 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
                 }
             }
         }
-
+        ImGui::Separator();
         for (auto* Child : Component->GetAttachChildren())
         {
             if (!bShowTransform && Child->GetAttachChildren().Num() == 0)nodeFlags |= ImGuiTreeNodeFlags_Leaf;

@@ -14,6 +14,7 @@ void UTextComp::SetText(FName NewText)
 		for (int32 i = 0; i < diffLen; i++)
 		{
 			auto* Comp = GetOwner()->AddComponent<UCharComp>();
+			Comp->SetDepth(1);
 			CharComponents.Add(Comp);
 			Comp->SetupAttachment(this);
 			// Add Children?

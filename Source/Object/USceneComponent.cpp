@@ -163,6 +163,10 @@ void USceneComponent::OnTransformation()
 
 void USceneComponent::SetVisibility(bool bNewVisibility)
 {
+	if (IsA<UPrimitiveComponent>())
+	{
+		dynamic_cast<UPrimitiveComponent*>(this)->SetDirty(true);
+	}
 	// UE5 - Visibility 변경시 Flag Update
 	bVisible = bNewVisibility;
 	const TArray<USceneComponent*>& AttachedChildren = AttachChildren;
@@ -187,7 +191,6 @@ void USceneComponent::SetVisibility(bool bNewVisibility)
 			}
 
 			CurrentComp->SetVisibility(bNewVisibility);
-			
 		}
 	}
 }

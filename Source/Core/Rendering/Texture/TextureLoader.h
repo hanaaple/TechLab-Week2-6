@@ -12,7 +12,7 @@ private:
 	static ID3D11ShaderResourceView* LoadTexture(FName FileName, ID3D11Device* Device, ID3D11DeviceContext* DeviceContext);
 
 private:
-	TMap<std::string, Texture> TextureMap;
+	TMap<ETextureType, Texture> TextureMap;
 };
 
 //wstring StringToWString(const std::string& str)

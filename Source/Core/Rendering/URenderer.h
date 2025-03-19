@@ -11,6 +11,7 @@
 #include "Core/Math/Plane.h"
 #include "Core/Math/Transform.h"
 #include "Core/Rendering/BufferCache.h"
+#include "DataTypes/Enum.h"
 #include "Texture/TextureLoader.h"
 
 class AActor;
@@ -201,6 +202,9 @@ protected:
 
 	D3D_PRIMITIVE_TOPOLOGY CurrentTopology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 
+public:
+	D3D11_FILL_MODE CurrentViewMode;
+
 	
 protected:
 	// 피킹용 버퍼들
@@ -230,10 +234,7 @@ public:
 public:
 	//View Mode 변경 함수
 	void SetFillMode(D3D11_FILL_MODE FillMode);
-	void EnableWireframeMode();
-	void EnableLitMode();
-	void EnableUnlitMode();
-	const void ApplyCurrentRasterizerState() const;
+	D3D11_FILL_MODE GetFillMode() const { return CurrentViewMode; }
 
 	//렌더링 여부 반환
 	static bool ShouldRenderActor(const AActor* OwnerActor);

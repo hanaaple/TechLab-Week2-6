@@ -9,7 +9,6 @@ class UTextComp: public USceneComponent {
 
 public:
 	UTextComp() : Super() {
-		
 	}
 	virtual ~UTextComp() = default;
 

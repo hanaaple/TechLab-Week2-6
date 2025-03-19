@@ -313,6 +313,7 @@
     <ClInclude Include="Source\Core\Rendering\Texture\Texture.h" />
     <ClInclude Include="Source\Core\Rendering\Texture\TextureData.h" />
     <ClInclude Include="Source\Core\Rendering\Texture\TextureLoader.h" />
+    <ClInclude Include="Source\DataTypes\Enum.h" />
     <ClInclude Include="Source\DataTypes\ShdaerType.h" />
     <ClInclude Include="Source\Core\SettingManager.h" />
     <ClInclude Include="Source\Object\Actor\AABBPicker.h" />

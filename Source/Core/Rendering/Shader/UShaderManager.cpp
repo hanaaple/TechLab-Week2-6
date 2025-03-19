@@ -69,7 +69,7 @@ void UShaderManager::LoadAllShaders()
         // 특정 쉐이더는 
         UShaderManager& ShaderManager = UShaderManager::Get();
         
-        UShader* Shader = ShaderManager.GetShader(EShaderType::TextShader);        
+        UShader* Shader = ShaderManager.GetShader(EShaderType::TextureShader);        
 
         if (Shader == nullptr)
         {
@@ -145,8 +145,8 @@ void UShaderManager::LoadAllShaders()
                 TextureInfo info;
                 info.u = 0;
                 info.v = 0;
-                info.width = Texture->TextureData.BitmapWidth;
-                info.height = Texture->TextureData.BitmapHeight;
+                info.width = 1;
+                info.height = 1;
                 // 전체 텍스처 출력
                 Shader->UpdateConstantBuffer(DeviceContext, 1, &info, sizeof(info));
             }

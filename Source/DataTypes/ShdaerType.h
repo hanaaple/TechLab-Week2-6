@@ -5,6 +5,6 @@ enum class EShaderType : uint8
 {
     None,
     DefaultShader,
-    TextShader,
+    TextureShader,
     PrimitiveShader,
 };

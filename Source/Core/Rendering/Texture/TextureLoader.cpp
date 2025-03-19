@@ -20,13 +20,13 @@ Texture* UTextureLoader::GetTexture(ETextureType TextureEnum, ID3D11Device* Devi
 
 	std::string TextureName = TextureData->TextureName.ToStdString();
 	
-	if (!TextureMap.Contains(TextureName))
+	if (!TextureMap.Contains(TextureEnum))
 	{
 		if (ID3D11ShaderResourceView* TextureSRV = LoadTexture(TextureData->FileDirectory, Device, DeviceContext))
 		{
-			TextureMap.Add(TextureName, Texture());
-			TextureMap[TextureName].SetTexture(TextureSRV);
-			TextureMap[TextureName].Initialize(*TextureData);
+			TextureMap.Add(TextureEnum, Texture());
+			TextureMap[TextureEnum].SetTexture(TextureSRV);
+			TextureMap[TextureEnum].Initialize(*TextureData);
 		}
 		else
 		{
@@ -34,7 +34,7 @@ Texture* UTextureLoader::GetTexture(ETextureType TextureEnum, ID3D11Device* Devi
 		}
 	}
 	
-	return &TextureMap[TextureName];
+	return &TextureMap[TextureEnum];
 }
 
 /* png 기반 텍스처 로드 */
