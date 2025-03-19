@@ -46,7 +46,11 @@ void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		DestroyComponents.Remove(Component);
 		if (Component->GetOwner() != this)
 		{
-			Component->SetupAttachment(nullptr);
+			if (Component->IsA<USceneComponent>())
+			{
+				USceneComponent* SceneComponent = dynamic_cast<USceneComponent*>(Component);
+				SceneComponent->SetupAttachment(nullptr);
+			}
 			continue;
 		}
 				
