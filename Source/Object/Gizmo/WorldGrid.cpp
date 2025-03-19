@@ -6,7 +6,7 @@ AWorldGrid::AWorldGrid()
 	bIsGizmo = true;
 	Spacing = SettingManager::Get().LoadGridSpacing();
 	ULineComp* line = AddComponent<ULineComp>();
-	//line->SetRenderMode(ERenderMode::Batch);
+	line->SetRenderMode(ERenderMode::Batch);
 	FTransform transform = line->GetRelativeTransform();
 	transform.SetScale(FVector(maxGridDistance, 1, 1));
 	line->SetRelativeTransform(transform);
@@ -18,8 +18,8 @@ AWorldGrid::AWorldGrid()
 		ULineComp* horizontalLine = AddComponent<ULineComp>();
 		VerticalGridLines.Add(verticalLine);
 		HorizontalGridLines.Add(horizontalLine);
-		//verticalLine->SetRenderMode(ERenderMode::Batch);
-		//horizontalLine->SetRenderMode(ERenderMode::Batch);
+		verticalLine->SetRenderMode(ERenderMode::Batch);
+		horizontalLine->SetRenderMode(ERenderMode::Batch);
 		FTransform vtransform = verticalLine->GetRelativeTransform();
 		vtransform.SetScale(FVector(maxGridDistance, 1, 1));
 		verticalLine->SetRelativeTransform(vtransform);

@@ -3,18 +3,13 @@
 
 ABillboardText::ABillboardText()
 {
+	bIsGizmo = true;
 	bCanEverTick = true;
 
 	UTextComp* TextComponent = AddComponent<UTextComp>();
 	RootComponent = TextComponent;
-	TextComponent->SetRelativeTransform(FTransform());
 
-	TextComponent->SetText("Hello World!");
-	
-	//FIXME : testcode
-	//text = "W";
-	UTextureLoader::Get().DrawText("");
-	//UTextureLoader::Get().DrawTextW(text); 
+	TextComp = TextComponent;
 }
 
 void ABillboardText::BeginPlay()
@@ -25,9 +20,21 @@ void ABillboardText::BeginPlay()
 void ABillboardText::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (FollowComponent != nullptr)
+	{
+		FTransform Transform = GetActorTransform();
+		Transform.SetPosition(FollowComponent->GetComponentTransform().GetPosition() + Offset);
+		SetActorTransform(Transform);
+	}
 }
 
 const char* ABillboardText::GetTypeName()
 {
 	return "BillboardText";
+}
+
+void ABillboardText::SetText(FName NewText)
+{
+	TextComp->SetText(NewText);
 }

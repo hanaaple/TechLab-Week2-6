@@ -12,7 +12,6 @@ ACamera::ACamera()
     FieldOfView = 45.f;
     ProjectionMode = ECameraProjectionMode::Perspective;
     CameraSpeed = SettingManager::Get().LoadCamSensitivty();
-
     RootComponent = AddComponent<USceneComponent>();
     
     FTransform StartPos = GetActorTransform();
@@ -48,4 +47,15 @@ float ACamera::GetNear() const
 float ACamera::GetFar() const
 {
     return Far;
+}
+
+void ACamera::SetIsMoving(bool value)
+{
+    bIsMoving = value;
+}
+
+void ACamera::SetOriginalRotation()
+{
+    FTransform transform = GetActorTransform();
+    originalRotation = transform.GetEulerRotation();
 }

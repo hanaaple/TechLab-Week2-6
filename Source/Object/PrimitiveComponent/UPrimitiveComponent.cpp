@@ -1,18 +1,35 @@
 ﻿#include "UPrimitiveComponent.h"
+
+#include <format>
+
 #include "Object/World/World.h"
 #include "DataTypes/Structs.h"
+#include "Object/Actor/BillBoardText.h"
+#include "Static/FEditorManager.h"
 
 void UPrimitiveComponent::Activate()
 {
 	Super::Activate();
 
 	GetOwner()->GetWorld()->AddRenderComponent(this);
+
+	if (!GetOwner()->IsGizmoActor())
+	{
+		ABillboardText* Billboard = GetOwner()->GetWorld()->SpawnActor<ABillboardText>();
+		Billboard->SetText(FName(std::format("UUID: {}", GetUUID())));
+		Billboard->FollowComponent = this;
+	}
 }
 
 void UPrimitiveComponent::Deactivate()
 {
 	Super::Deactivate();
 
+	if (FEditorManager::Get().GetSelectedActor() == GetOwner())
+	{
+		FEditorManager::Get().SelectActor(nullptr);
+	}
+	
 	UWorld* World = GetOwner()->GetWorld();
 	
 	World->RemoveRenderComponent(this);
@@ -100,9 +117,9 @@ void UPrimitiveComponent::OnTransformation()
 		SetDirty(true);
 }
 
-void UPrimitiveComponent::UpdateConstantUV(const URenderer& Renderer, const char c)const {
-	Renderer.UpdateConstantUV(c);
-}
+//void UPrimitiveComponent::UpdateConstantUV(const URenderer& Renderer, const char c)const {
+	//Renderer.UpdateConstantFontUV(c);
+//}
 
 // 배치 렌더링용 버텍스를 가져와서 
 bool UPrimitiveComponent::TryGetVertexData(TArray<FVertexSimple>* VertexData)

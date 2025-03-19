@@ -167,6 +167,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\Container\Map.cpp" />
     <ClCompile Include="Source\Core\Math\Plane.cpp" />
     <ClCompile Include="Source\Core\Name\FName.cpp" />
     <ClCompile Include="Source\Core\Name\FNameEntry.cpp" />
@@ -249,6 +250,13 @@
       <AdditionalOptions>/utf-8 </AdditionalOptions>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Source\Core\Rendering\Shader\UShader.cpp">
+    </ClCompile>
+    <ClCompile Include="Source\Core\Rendering\Shader\UShaderManager.cpp">
+    </ClCompile>
+    <ClCompile Include="Source\Core\Rendering\Texture\Texture.cpp" />
+    <ClCompile Include="Source\Core\Rendering\Texture\TextureData.cpp" />
+    <ClCompile Include="Source\Core\Rendering\Texture\TextureLoader.cpp" />
     <ClCompile Include="Source\Core\SettingManager.cpp" />
     <ClCompile Include="Source\Object\Actor\AABBPicker.cpp" />
     <ClCompile Include="Source\Object\Actor\ABoundingBox.cpp" />
@@ -277,11 +285,8 @@
     <ClCompile Include="Source\Object\Gizmo\RotationGizmo.cpp" />
     <ClCompile Include="Source\Object\Gizmo\WorldGrid.cpp" />
     <ClCompile Include="Source\Primitive\MeshVertexData.cpp" />
-    <ClCompile Include="Source\Primitive\UShader.cpp" />
-    <ClCompile Include="Source\Primitive\UShaderManager.cpp" />
     <ClCompile Include="Source\Primitive\VertexDataCreator.cpp" />
     <ClCompile Include="Source\Static\FEditorManager.cpp" />
-    <ClCompile Include="Source\Texture\TextureLoader.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_demo.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_draw.cpp" />
@@ -309,6 +314,12 @@
     <ClInclude Include="Source\Core\Name\FNameTable.h" />
     <ClInclude Include="Source\Core\Rendering\BatchRenderContext.h" />
     <ClInclude Include="Source\Core\Rendering\BufferCache.h" />
+    <ClInclude Include="Source\Core\Rendering\Shader\UShader.h" />
+    <ClInclude Include="Source\Core\Rendering\Shader\UShaderManager.h" />
+    <ClInclude Include="Source\Core\Rendering\Texture\Texture.h" />
+    <ClInclude Include="Source\Core\Rendering\Texture\TextureData.h" />
+    <ClInclude Include="Source\Core\Rendering\Texture\TextureLoader.h" />
+    <ClInclude Include="Source\DataTypes\ShdaerType.h" />
     <ClInclude Include="Source\Core\SettingManager.h" />
     <ClInclude Include="Source\Object\Actor\AABBPicker.h" />
     <ClInclude Include="Source\Object\Actor\ABoundingBox.h" />
@@ -341,12 +352,10 @@
     <ClInclude Include="Source\Core\Math\Transform.h" />
     <ClInclude Include="Source\Object\Actor\Cylinder.h" />
     <ClInclude Include="Source\Object\Gizmo\RotationGizmo.h" />
-    <ClInclude Include="Source\Object\Gizmo\WorldGrid.h" />
     <ClInclude Include="Source\Object\ObjectFactory.h" />
     <ClInclude Include="Source\Primitive\MeshVertexData.h" />
     <ClInclude Include="Source\Primitive\VertexDataCreator.h" />
     <ClInclude Include="Source\Static\FEditorManager.h" />
-    <ClInclude Include="Source\Texture\TextureLoader.h" />
     <ClInclude Include="Source\ThirdParty\DirectXTK\Audio.h" />
     <ClInclude Include="Source\ThirdParty\DirectXTK\BufferHelpers.h" />
     <ClInclude Include="Source\ThirdParty\DirectXTK\CommonStates.h" />
@@ -400,18 +409,16 @@
     <ClInclude Include="Source\Object\Actor\Sphere.h" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Shaders\CustomShader.hlsl" />
-    <Content Include="Shaders\DefaultShader.hlsl" />
-    <Content Include="Shaders\OutlineShader.hlsl" />
-    <Content Include="Shaders\PickingShader.hlsl" />
-    <Content Include="Shaders\TextShader.hlsl" />
     <ClCompile Include="Source\Core\Container\Map.cpp" />
     <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp" />
+    <ClInclude Include="Source\Object\PrimitiveComponent\CharComp.h" />
     <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
-    <ClInclude Include="Source\Primitive\UShader.h" />
-    <ClInclude Include="Source\Primitive\UShaderManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\1234.png" />
+    <Content Include="Resources\2313214124.png" />
+    <Content Include="Resources\tempTexture.png" />
+    <Content Include="Shaders\PrimitiveShader.hlsl" />
     <Content Include="Shaders\CustomShader.hlsl" />
     <Content Include="Shaders\DefaultShader.hlsl" />
     <Content Include="Shaders\OutlineShader.hlsl" />

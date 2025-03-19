@@ -37,8 +37,8 @@ private:
 	std::unordered_map <EPrimitiveMeshType, BufferInfo> IndexBufferCache;
 
 	// Batch 렌더링 버퍼 캐시
-	TMap<ID3D11ShaderResourceView*, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>> BatchIndexBufferCache;
-	TMap<ID3D11ShaderResourceView*, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>> BatchVertexBufferCache;
+	TMap<ETextureType, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>> BatchIndexBufferCache;
+	TMap<ETextureType, TMap<D3D11_PRIMITIVE_TOPOLOGY, BufferInfo>> BatchVertexBufferCache;
 public:
 	FBufferCache();
 	~FBufferCache();
@@ -46,11 +46,11 @@ public:
 	BufferInfo& GetVertexBufferInfo(EPrimitiveMeshType Type);
 	BufferInfo& GetIndexBufferInfo(EPrimitiveMeshType Type);
 
-	BufferInfo& GetVertexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology);
-	BufferInfo& GetIndexBufferInfo(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology);
+	BufferInfo& GetVertexBufferInfo(ETextureType TextureType, D3D11_PRIMITIVE_TOPOLOGY Topology);
+	BufferInfo& GetIndexBufferInfo(ETextureType TextureType, D3D11_PRIMITIVE_TOPOLOGY Topology);
 
-	void UpdateVertexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer, uint32 BufferSize);
-	void UpdateIndexBuffer(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer, uint32 BufferSize);
+	void UpdateVertexBuffer(ETextureType TextureType, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer, uint32 BufferSize);
+	void UpdateIndexBuffer(ETextureType TextureType, D3D11_PRIMITIVE_TOPOLOGY Topology, ID3D11Buffer* Buffer, uint32 BufferSize);
 	
 	void Release();
 

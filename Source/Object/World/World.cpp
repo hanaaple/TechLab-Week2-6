@@ -14,8 +14,6 @@
 #include "Static/FEditorManager.h"
 #include <Object/Actor/BillBoardText.h>
 
-#include "Primitive/UShaderManager.h"
-
 
 void UWorld::BeginPlay()
 {
@@ -31,16 +29,17 @@ void UWorld::BeginPlay()
 
 void UWorld::Tick(float DeltaTime)
 {
+	for (const auto& Actor : ActorsToSpawn)
+	{
+		Actor->BeginPlay();
+		Actors.Add(Actor);
+	}
+	ActorsToSpawn.Empty();
+	
 	for (const auto& Actor : Actors)
 	{
 		Actor->ActivateComponent();
 	}
-	
-	for (const auto& Actor : ActorsToSpawn)
-	{
-		Actor->BeginPlay();
-	}
-	ActorsToSpawn.Empty();
 
 	const auto CopyActors = Actors;
 	for (const auto& Actor : CopyActors)
@@ -50,6 +49,41 @@ void UWorld::Tick(float DeltaTime)
 			Actor->Tick(DeltaTime);
 		}
 	}
+
+	if (FEditorManager::Get().GetSelectedActor() != nullptr) {
+		ACamera* cam = FEditorManager::Get().GetCamera();
+		if (!cam->GetIsMoving() && APlayerInput::Get().GetKeyDown(EKeyCode::F))
+		{
+			cam->SetOriginalRotation();
+			cam->SetIsMoving(true);
+		}
+		if (cam->GetIsMoving()) {
+			FTransform camTransform = cam->GetActorTransform();
+			FVector actorPos = FEditorManager::Get().GetSelectedActor()->GetActorTransform().GetPosition();
+			FVector camPos = camTransform.GetPosition();
+			FVector Direction = ((actorPos - FVector(5, 0, 0)) - camPos);
+			float distance = Direction.Length();
+			Direction = Direction.GetSafeNormal();
+			if (actorPos.X - camPos.X > 5.01f) {
+				camTransform.SetPosition(camPos + Direction * (distance/10.0f));
+				if (camTransform.GetEulerRotation().Length() > 0.1f) {
+					camTransform.SetRotation(camTransform.GetEulerRotation() - cam->GetOriginalRotation() * 0.02f);
+				}
+				cam->SetActorTransform(camTransform);
+			}
+			else {
+				cam->SetIsMoving(false);
+			}
+		}
+		if (APlayerInput::Get().GetMouseDown(true)) {
+			cam->SetIsMoving(false);
+		}
+	}
+	else {
+		FEditorManager::Get().GetCamera()->SetIsMoving(false);
+	}
+	
+
 
 	if (APlayerInput::Get().GetKeyDown(EKeyCode::Space))
 	{
@@ -172,16 +206,18 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 {
 	// Depth Stencil, RenderTarget, BlendState 변경
 	Renderer.PrepareMain();
-	Renderer.PrepareMainShader();	// 우선 Shader 1개로만
-	
-	for (auto& [Texture, TextureMapped] : BatchRenders)
+
+	// 굳이 여기서 Shader, Texture, Topology를 안해줘도 내부적으로 동일한 경우 변경이 안되어 괜찮다.
+	for (auto& [ShaderType, ShaderMapped] : BatchRenders)
 	{
-		for (auto& TopologyMapped : TextureMapped)
+		for (auto& [Texture, TextureMapped] : ShaderMapped)
 		{
-			for (auto& [_, BatchContext] : TopologyMapped.Value)
+			for (auto& TopologyMapped : TextureMapped)
 			{
-				Renderer.PrepareTexture(BatchContext.Texture);
-				Renderer.RenderBatch(BatchContext);
+				for (auto& [_, BatchContext] : TopologyMapped.Value)
+				{
+					Renderer.RenderBatch(BatchContext);
+				}
 			}
 		}
 	}
@@ -197,41 +233,29 @@ void UWorld::RenderMainTargets(URenderer& Renderer)
 		// 	}
 		// }
 	}
-
 	TArray<UPrimitiveComponent*> ZIgnoreRenderComponents;
 	for (auto* RenderTarget : IndividualRenders)
 	{
+		if (!Renderer.ShouldRenderActor(RenderTarget->GetOwner()))
+			continue;
 		if (RenderTarget != nullptr) {
-			Renderer.PrepareTexture(RenderTarget->GetTexture());
 			// Texture 변경
 			if (RenderTarget->GetDepth() > 0)
 			{
 				ZIgnoreRenderComponents.Add(RenderTarget);
 				continue;
 			}
-			auto CurrentShader = UShaderManager::Get().GetShader(RenderTarget->GetShaderName());
-			if (CurrentShader != nullptr)
-				CurrentShader->UpdateConstantBuffer(RenderTarget);
 			RenderTarget->Render();
 		}
 	}
-	
 
 	Renderer.PrepareZIgnore();
 	for (auto& RenderTarget: ZIgnoreRenderComponents)
 	{
-		Renderer.PrepareTexture(RenderTarget->GetTexture());
-		auto CurrentShader = UShaderManager::Get().GetShader(RenderTarget->GetShaderName());
-		if (CurrentShader != nullptr)
-			CurrentShader->UpdateConstantBuffer(RenderTarget);
+		if (!Renderer.ShouldRenderActor(RenderTarget->GetOwner()))
+			continue;
 		RenderTarget->Render();
 	}
-	// 1. 같은 메쉬여도 배치 여부가 다를수 있다.
-	// 2. 다른 메쉬여도 같은 토폴로지, 같은 머터리얼과 셰이더, 트
-
-	// 같은 토폴로지, 셰이더, 다른 메시 -> 배치 렌더링
-	// 같은 토폴로지, 셰이더, 같은 메시 -> 인스턴싱
-	
 }
 
 // void UWorld::DisplayPickingTexture(URenderer& Renderer)
@@ -366,15 +390,18 @@ UWorldInfo UWorld::GetWorldInfo() const
 	return WorldInfo;
 }
 
-bool UWorld::HasBatchRendersKey(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer)
+bool UWorld::HasBatchRendersKey(EShaderType ShaderType, ETextureType TextureType, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer)
 {
-	if (BatchRenders.Contains(Texture))
+	if (BatchRenders.Contains(ShaderType))
 	{
-		if (BatchRenders[Texture].Contains(Topology))
+		if (BatchRenders[ShaderType].Contains(TextureType))
 		{
-			if (BatchRenders[Texture][Topology].Contains(bUseIndexBuffer))
+			if (BatchRenders[ShaderType][TextureType].Contains(Topology))
 			{
-				return true;
+				if (BatchRenders[ShaderType][TextureType][Topology].Contains(bUseIndexBuffer))
+				{
+					return true;
+				}
 			}
 		}
 	}
@@ -382,62 +409,74 @@ bool UWorld::HasBatchRendersKey(ID3D11ShaderResourceView* Texture, D3D11_PRIMITI
 	return false;
 }
 
-void UWorld::CheckRemoveMap(ID3D11ShaderResourceView* Texture, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer, EPrimitiveMeshType MeshType)
+void UWorld::CheckRemoveMap(EShaderType ShaderType, ETextureType TextureType, D3D11_PRIMITIVE_TOPOLOGY Topology, bUseIndexBufferFlag bUseIndexBuffer, EPrimitiveMeshType MeshType)
 {
 	// TODO 더이상 접근하지 않는 캐싱된 배치 렌더링 타겟 해제
 	// BufferCache->CheckRemove(BatchContext.Texture, BatchContext.Topology, VertexBuffer);
-	if (BatchRenders.Contains(Texture))
+	if (BatchRenders.Contains(ShaderType))
 	{
-		if (BatchRenders[Texture].Contains(Topology))
+		if (BatchRenders[ShaderType].Contains(TextureType))
 		{
-			if (BatchRenders[Texture][Topology].Contains(bUseIndexBuffer))
+			if (BatchRenders[ShaderType][TextureType].Contains(Topology))
 			{
-				if (BatchRenders[Texture][Topology][bUseIndexBuffer].RenderComponentMap.Contains(MeshType))
+				if (BatchRenders[ShaderType][TextureType][Topology].Contains(bUseIndexBuffer))
 				{
-					if (BatchRenders[Texture][Topology][bUseIndexBuffer].RenderComponentMap[MeshType].Num() == 0)
+					if (BatchRenders[ShaderType][TextureType][Topology][bUseIndexBuffer].RenderComponentMap.Contains(MeshType))
 					{
-						BatchRenders[Texture][Topology][bUseIndexBuffer].RenderComponentMap.Remove(MeshType);
+						if (BatchRenders[ShaderType][TextureType][Topology][bUseIndexBuffer].RenderComponentMap[MeshType].Num() == 0)
+						{
+							BatchRenders[ShaderType][TextureType][Topology][bUseIndexBuffer].RenderComponentMap.Remove(MeshType);
+						}
+					}
+				
+					if (BatchRenders[ShaderType][TextureType][Topology][bUseIndexBuffer].RenderComponentMap.Num() == 0)
+					{
+						// Remove Cached Buffer
+						BatchRenders[ShaderType][TextureType][Topology].Remove(bUseIndexBuffer);
 					}
 				}
-				
-				if (BatchRenders[Texture][Topology][bUseIndexBuffer].RenderComponentMap.Num() == 0)
+
+				if (BatchRenders[ShaderType][TextureType][Topology].Num() == 0)
 				{
-					// Remove Cached Buffer
-					BatchRenders[Texture][Topology].Remove(bUseIndexBuffer);
+					BatchRenders[ShaderType][TextureType].Remove(Topology);
 				}
 			}
-
-			if (BatchRenders[Texture][Topology].Num() == 0)
+			if (BatchRenders[ShaderType][TextureType].Num() == 0)
 			{
-				BatchRenders[Texture].Remove(Topology);
+				BatchRenders[ShaderType].Remove(TextureType);
 			}
 		}
-		if (BatchRenders[Texture].Num() == 0)
+		if (BatchRenders[ShaderType].Num() == 0)
 		{
-			BatchRenders.Remove(Texture);
+			BatchRenders.Remove(ShaderType);
 		}
 	}
 }
 
 void UWorld::CheckInitMap(const FRenderData& FrameData)
 {
-	ID3D11ShaderResourceView* Texture = FrameData.Texture;
+	EShaderType ShaderType = FrameData.ShaderType;
+	ETextureType TextureType = FrameData.TextureType;
 	D3D11_PRIMITIVE_TOPOLOGY Topology = FrameData.Topology;
 	bUseIndexBufferFlag bUseIndexBuffer = MeshResourceCache::Get().HasIndexData(FrameData.MeshType);
 	EPrimitiveMeshType MeshType = FrameData.MeshType;
 	
-	if (!BatchRenders.Contains(Texture))
+	if (!BatchRenders.Contains(ShaderType))
 	{
-		BatchRenders.Add(Texture, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<bUseIndexBufferFlag, FBatchRenderContext>>());
-		if (!BatchRenders[Texture].Contains(Topology))
+		BatchRenders.Add(ShaderType, TMap<ETextureType, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<bUseIndexBufferFlag, FBatchRenderContext>>>());
+		if (!BatchRenders[ShaderType].Contains(TextureType))
 		{
-			BatchRenders[Texture].Add(Topology, TMap<bUseIndexBufferFlag, FBatchRenderContext>());
-			if (!BatchRenders[Texture][Topology].Contains(bUseIndexBuffer))
+			BatchRenders[ShaderType].Add(TextureType, TMap<D3D_PRIMITIVE_TOPOLOGY, TMap<bUseIndexBufferFlag, FBatchRenderContext>>());
+			if (!BatchRenders[ShaderType][TextureType].Contains(Topology))
 			{
-				BatchRenders[Texture][Topology].Add(bUseIndexBuffer, FBatchRenderContext());
+				BatchRenders[ShaderType][TextureType].Add(Topology, TMap<bUseIndexBufferFlag, FBatchRenderContext>());
+				if (!BatchRenders[ShaderType][TextureType][Topology].Contains(bUseIndexBuffer))
+				{
+					BatchRenders[ShaderType][TextureType][Topology].Add(bUseIndexBuffer, FBatchRenderContext());
 
-				if (!BatchRenders[Texture][Topology][bUseIndexBuffer].RenderComponentMap.Contains(MeshType)){
-					BatchRenders[Texture][Topology][bUseIndexBuffer].RenderComponentMap.Add(MeshType, TArray<UPrimitiveComponent*>());
+					if (!BatchRenders[ShaderType][TextureType][Topology][bUseIndexBuffer].RenderComponentMap.Contains(MeshType)){
+						BatchRenders[ShaderType][TextureType][Topology][bUseIndexBuffer].RenderComponentMap.Add(MeshType, TArray<UPrimitiveComponent*>());
+					}
 				}
 			}
 		}
@@ -451,9 +490,10 @@ void UWorld::AddToBatch(UPrimitiveComponent* Component)
 	CheckInitMap(CurFrameData);
 
 	bUseIndexBufferFlag useIndexBuffer = MeshResourceCache::Get().HasIndexData(CurFrameData.MeshType);
-	auto& CurBatchRenderContext = BatchRenders[CurFrameData.Texture][CurFrameData.Topology][useIndexBuffer];
+	auto& CurBatchRenderContext = BatchRenders[CurFrameData.ShaderType][CurFrameData.TextureType][CurFrameData.Topology][useIndexBuffer];
 	CurBatchRenderContext.bIsDirty = true;
-	CurBatchRenderContext.Texture = CurFrameData.Texture;
+	CurBatchRenderContext.ShaderType = CurFrameData.ShaderType;
+	CurBatchRenderContext.TextureType = CurFrameData.TextureType;
 	CurBatchRenderContext.Topology = CurFrameData.Topology;
 	CurBatchRenderContext.bUseIndexBuffer = useIndexBuffer;
 	CurBatchRenderContext.RenderComponentMap[CurFrameData.MeshType].Add(Component);
@@ -463,9 +503,9 @@ void UWorld::RemoveFromBatch(UPrimitiveComponent* Component, const FRenderData& 
 {
 	bUseIndexBufferFlag useIndexBuffer = MeshResourceCache::Get().HasIndexData(FrameData.MeshType);
 	// 이전에 렌더링 되었는지, 데이터 여부로 확인
-	if (HasBatchRendersKey(FrameData.Texture, FrameData.Topology, useIndexBuffer))
+	if (HasBatchRendersKey(FrameData.ShaderType, FrameData.TextureType, FrameData.Topology, useIndexBuffer))
 	{
-		auto& PrevBatchRenderContext = BatchRenders[FrameData.Texture][FrameData.Topology][useIndexBuffer];
+		auto& PrevBatchRenderContext = BatchRenders[FrameData.ShaderType][FrameData.TextureType][FrameData.Topology][useIndexBuffer];
 		PrevBatchRenderContext.bIsDirty = true;
 				
 		if (PrevBatchRenderContext.RenderComponentMap.Contains(FrameData.MeshType))
@@ -474,6 +514,6 @@ void UWorld::RemoveFromBatch(UPrimitiveComponent* Component, const FRenderData& 
 		}
 
 		// 빈 Map 삭제
-		CheckRemoveMap(FrameData.Texture, FrameData.Topology, useIndexBuffer, FrameData.MeshType);
+		CheckRemoveMap(FrameData.ShaderType, FrameData.TextureType, FrameData.Topology, useIndexBuffer, FrameData.MeshType);
 	}
 }

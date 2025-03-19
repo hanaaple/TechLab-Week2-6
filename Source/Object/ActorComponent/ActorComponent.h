@@ -17,7 +17,7 @@ public:
 	bool CanEverTick() const { return bCanEverTick; }
 
 	virtual class AActor* GetOwner() const;
-	virtual void SetOwner(class AActor* InOwner) { Owner = InOwner; }
+	virtual void SetOwner(AActor* InOwner);
 
 protected:
 	bool bCanEverTick = true;

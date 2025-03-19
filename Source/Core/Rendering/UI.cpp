@@ -264,9 +264,7 @@ void UI::RenderCameraSettings()
         Transform.SetRotation(UIEulerAngle);
         Camera->SetActorTransform(Transform);
     }
-    if(ImGui::DragFloat("Camera Speed", &Camera->CameraSpeed, 0.1f)) {
-        SettingManager::Get().SaveCamSensitivty(Camera->CameraSpeed);
-    }
+    ImGui::DragFloat("Camera Speed", &Camera->CameraSpeed, 0.1f);
 
     FVector Forward = Camera->GetActorTransform().GetForward();
     FVector Up = Camera->GetActorTransform().GetUp();
@@ -338,18 +336,12 @@ void UI::RenderSettingsPanel()
     //Grid Spacing UI (양쪽 컬럼을 합쳐 넓게 표시)
     ImGui::Columns(1); // 컬럼 분할 해제 → 전체 너비 사용
 
-    static float GridSpacing = SettingManager::Get().LoadGridSpacing(); // 임시 변수
-    
+    static float GridSpacing = 10.0f; //임시 변수 (나중에 실제 값으로 변경 필요)
+
     ImGui::Text("Grid Spacing");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(-1);
-    if (ImGui::SliderFloat("##GridSpacing", &GridSpacing, 0.1f, 50.0f, "%.2f")) {
-        if (FEditorManager::Get().GetWorldGrid()->GetSpacing() != GridSpacing) {
-            SettingManager::Get().SaveGridSpacing(GridSpacing);
-            FEditorManager::Get().GetWorldGrid()->SetSpacing(GridSpacing);
-            FEditorManager::Get().GetWorldGrid()->UpdateGrid();
-        }
-    }
+    ImGui::SliderFloat("##GridSpacing", &GridSpacing, 1.0f, 100.0f, "%.1f");
 
     ImGui::End();
 }
@@ -596,7 +588,73 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
                     {
                         PrimitiveComponent->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
                     }
-                }   
+                }
+
+                               static const char* MeshItem[] = {"EPT_Triangle", "EPT_Cube", "EPT_Sphere", "EPT_Line", "EPT_BoundingBox", "EPT_GridLine", "EPT_Cylinder", "EPT_Quad", "EPT_Cone", "EPT_Torus"};
+                int curMeshItem = -1;
+                if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Triangle)
+                    curMeshItem = 0;
+                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cube)
+                    curMeshItem = 1;
+                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Sphere)
+                    curMeshItem = 2;
+                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Line)
+                    curMeshItem = 3;
+                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_BoundingBox)
+                    curMeshItem = 4;
+                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_GridLine)
+                    curMeshItem = 5;
+                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cylinder)
+                    curMeshItem = 6;
+                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Quad)
+                    curMeshItem = 7;
+                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cone)
+                    curMeshItem = 8;
+                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Torus)
+                    curMeshItem = 9;
+                
+                if (ImGui::Combo("##Mesh", &curMeshItem, MeshItem, IM_ARRAYSIZE(MeshItem)))
+                {
+                    if (FName(MeshItem[curMeshItem]) == FName("EPT_Triangle"))
+                    {
+                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Triangle);
+                    } else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cube"))
+                    {
+                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cube);
+                    }else if (FName(MeshItem[curMeshItem]) == FName("EPT_Sphere"))
+                    {
+                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Sphere);
+                    }
+                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Line"))
+                    {
+                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Line);
+                    }
+                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_BoundingBox"))
+                    {
+                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_BoundingBox);
+                    }
+                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_GridLine"))
+                    {
+                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_GridLine);
+                    }
+                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cylinder"))
+                    {
+                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cylinder);
+                    }
+                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Quad"))
+                    {
+                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Quad);
+                    }
+                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cone"))
+                    {
+                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cone);
+                    }
+                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Torus"))
+                    {
+                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Torus);
+                    }
+                    
+                }
             }
         }
 

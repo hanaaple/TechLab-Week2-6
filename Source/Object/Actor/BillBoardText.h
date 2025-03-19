@@ -1,5 +1,8 @@
 ﻿#pragma once
 #include "Actor.h"
+
+class UTextComp;
+
 class ABillboardText : public AActor {
 	DECLARE_OBJECT(ABillboard, AActor)
 	using Super = AActor;
@@ -9,6 +12,12 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual const char* GetTypeName() override;
-	void SetText(const string NewText);
-	string text;
+
+	void SetText(FName NewText);
+
+public:
+	USceneComponent* FollowComponent;
+	FVector Offset = FVector(0, 0, 2);
+private:
+	UTextComp* TextComp;
 };
