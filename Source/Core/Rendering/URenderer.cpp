@@ -766,7 +766,7 @@ void URenderer::PrepareMain()
 void URenderer::PrepareMainShader()
 {
     //DeviceContext->PSSetShader(SimplePixelShader, nullptr, 0);
-    UShaderManager::Get().GetShader(FName("DefaultShader"))->Apply(DeviceContext);
+    UShaderManager::Get().GetShader(FName("PrimitiveShader"))->Apply(DeviceContext);
 
     // shader 파일에 샘플러 바인딩
     //DeviceContext->PSSetSamplers()

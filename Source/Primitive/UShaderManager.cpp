@@ -24,6 +24,38 @@ void UShaderManager::LoadAllShaders()
     {
         
     });
+    LoadShader(Device,L"Shaders/PrimitiveShader.hlsl",[](UPrimitiveComponent* PrimitiveComp)
+    {
+        ID3D11DeviceContext* DeviceContext = UShaderManager::Get().DeviceContext;
+            const URenderer *Renderer=UShaderManager::Get().Renderer;
+            FMatrix ViewMatrix = Renderer->GetViewMatrix();
+            FMatrix ProjectionMatrix=Renderer->GetProjectionMatrix();
+            
+            //MVP 행렬 계산
+            FMatrix MVP = FMatrix::Transpose(
+                PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
+            
+            UShader* Shader = UShaderManager::Get().GetShader(FName("PrimitiveShader"));
+            if (Shader)
+            {
+                Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+                struct PSConstants
+                {
+                    FVector4 Color;
+                    uint32 bUseVertexColor;
+                    float brightness;
+                };
+                float brightness=1.0f;
+                if (FEditorManager::Get().GetSelectedActor())
+                {
+                    //std::cout<<FEditorManager::Get().GetSelectedActor()->GetUUID()<<" "<<PrimitiveComp->GetUUID()<<" "<<PrimitiveComp->GetOwner()->GetUUID()<<std::endl;
+                    if (FEditorManager::Get().GetSelectedActor()->GetUUID()==PrimitiveComp->GetOwner()->GetUUID())brightness=2.0f;
+                    //brightness=2.0f;
+                }
+                PSConstants PSData = {PrimitiveComp->GetCustomColor(), PrimitiveComp->IsUseVertexColor(),brightness};
+                Shader->UpdateConstantBuffer(DeviceContext, 1, &PSData, sizeof(PSData));
+            }
+    });
 }
 
 UShader* UShaderManager::LoadShader(ID3D11Device* Device, const wchar_t* FileName,

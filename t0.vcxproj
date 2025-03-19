@@ -404,11 +404,6 @@
     <ClInclude Include="Source\Object\Actor\Sphere.h" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Shaders\CustomShader.hlsl" />
-    <Content Include="Shaders\DefaultShader.hlsl" />
-    <Content Include="Shaders\OutlineShader.hlsl" />
-    <Content Include="Shaders\PickingShader.hlsl" />
-    <Content Include="Shaders\TextShader.hlsl" />
     <ClCompile Include="Source\Core\Container\Map.cpp" />
     <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp" />
     <ClCompile Include="Source\Primitive\UShader.cpp" />
@@ -419,6 +414,7 @@
     <ClInclude Include="Source\Primitive\UShaderManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Shaders\PrimitiveShader.hlsl" />
     <Content Include="Shaders\CustomShader.hlsl" />
     <Content Include="Shaders\DefaultShader.hlsl" />
     <Content Include="Shaders\OutlineShader.hlsl" />
