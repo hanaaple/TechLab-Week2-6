@@ -5,6 +5,7 @@
 #include "Object/World/World.h"
 #include "DataTypes/Structs.h"
 #include "Object/Actor/BillBoardText.h"
+#include "Static/FEditorManager.h"
 
 void UPrimitiveComponent::Activate()
 {
@@ -24,6 +25,11 @@ void UPrimitiveComponent::Deactivate()
 {
 	Super::Deactivate();
 
+	if (FEditorManager::Get().GetSelectedActor() == GetOwner())
+	{
+		FEditorManager::Get().SelectActor(nullptr);
+	}
+	
 	UWorld* World = GetOwner()->GetWorld();
 	
 	World->RemoveRenderComponent(this);
