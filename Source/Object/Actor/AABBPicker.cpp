@@ -27,7 +27,7 @@ void AAABBPicker::LateTick(float DeltaTime)
 		FVector rayDir = RayCast(mousePos, camera);
 
 		//기즈모가 잡혔으면 다른 Actor를 선택하지 않음
-		if (CheckGizmo(rayOrigin, rayDir) != nullptr || CheckRotationGizmo(rayOrigin, rayDir))
+		if (CheckGizmo(rayOrigin, rayDir) != nullptr || CheckRotationGizmo(rayOrigin, rayDir) != nullptr)
 		{
 			return; // 기즈모가 선택된 경우, 다른 Actor를 선택하지 않음
 		}
@@ -131,7 +131,7 @@ AActor* AAABBPicker::CheckCollision(FVector rayOrigin, FVector rayDir)
 	UPrimitiveComponent* PickedComponent = nullptr;
 	UWorld* world = UEngine::Get().GetWorld();
 	TArray<UPrimitiveComponent*> components = world->GetRenderComponents();
-	float dist = 10000;
+	float minT = FLT_MAX;
 	for (auto component : components) {
 		if (component != nullptr && !component->GetOwner()->IsGizmoActor()) {
 			if (component->GetVisibleFlag()) {
@@ -170,8 +170,8 @@ AActor* AAABBPicker::CheckCollision(FVector rayOrigin, FVector rayDir)
 					}
 				}
 				if (tMin <= tMax && tMin >= 0 && component->GetOwner()->GetTypeName() != "Actor") {
-					float objDist = (component->GetComponentTransform().GetPosition() - rayOrigin).Length();
-					if (objDist < dist) {
+					if (tMin < minT) {
+						minT = tMin;
 						PickedComponent = component;
 					}
 				}
@@ -191,7 +191,7 @@ UPrimitiveComponent* AAABBPicker::CheckGizmo(FVector rayOrigin, FVector rayDir)
 	UPrimitiveComponent* PickedComponent = nullptr;
 	AEditorGizmos* gizmos = FEditorManager::Get().GetGizmoHandle();
 	TArray<UPrimitiveComponent*> components = gizmos->GetAxis();
-	float dist = 10000;
+	float minT = FLT_MAX;
 	for (auto component : components) {
 		if (component != nullptr) {
 			if (component->GetVisibleFlag()) {
@@ -214,11 +214,8 @@ UPrimitiveComponent* AAABBPicker::CheckGizmo(FVector rayOrigin, FVector rayDir)
 				tMin = FMath::Max(tMin, FMath::Min(t5, t6));
 
 				if (tMax >= tMin && tMax > 0) {
-					float objDist = FVector::Distance(center, rayOrigin);
-					if (component->GetDepth() > 0) {
-						objDist = 0;
-					}
-					if (objDist < dist) {
+					if (tMin < minT) {
+						minT = tMin;
 						PickedComponent = component;
 					}
 				}
@@ -238,7 +235,7 @@ UTorusComp* AAABBPicker::CheckRotationGizmo(FVector rayOrigin, FVector rayDir)
 	UTorusComp* PickedComponent = nullptr;
 	ARotationGizmo* gizmos = FEditorManager::Get().GetRotationGizmo();
 	TArray<UTorusComp*> components = gizmos->GetAxis();
-	float dist = 10000;
+	float minT = FLT_MAX;
 	for (auto component : components) {
 		if (component != nullptr) {
 			if (component->GetVisibleFlag()) {
@@ -261,11 +258,8 @@ UTorusComp* AAABBPicker::CheckRotationGizmo(FVector rayOrigin, FVector rayDir)
 				tMin = FMath::Max(tMin, FMath::Min(t5, t6));
 
 				if (tMax >= tMin && tMax > 0) {
-					float objDist = FVector::Distance(center, rayOrigin);
-					if (component->GetDepth() > 0) {
-						objDist = 0;
-					}
-					if (objDist < dist) {
+					if (tMin < minT) {
+						minT = tMin;
 						PickedComponent = component;
 					}
 				}

@@ -78,27 +78,27 @@ void ARotationGizmo::Tick(float DeltaTime)
 			RayOrigin = RayOrigin * InvViewMat;
 
 			FVector4 RayDir = (RayOrigin - prevMousePos);
-
 			FTransform AT = Actor->GetActorTransform();
+
 			float Result = 0;
+
+			ACamera* cam = FEditorManager::Get().GetCamera();
 			switch (SelectedAxis)
 			{
-				//TODO: 회전 방식 구상
 			case ESelectedAxis::X:
-				Result = RayDir.Dot(FVector(0, 1, 0));
+				Result = RayDir.Dot(cam->GetActorTransform().GetRight());
 				break;
 			case ESelectedAxis::Y:
-				Result = RayDir.Dot(FVector(0, 0, 1));
+				Result = RayDir.Dot(cam->GetActorTransform().GetUp());
 				break;
 			case ESelectedAxis::Z:
-				Result = RayDir.Dot(FVector(0, 1, 0));
+				Result = RayDir.Dot(cam->GetActorTransform().GetRight());
 				break;
 			default:
 				break;
 			}
 
 			Result *= 0.005f;
-
 			DoTransform(AT, Result, Actor);
 		}
 	}

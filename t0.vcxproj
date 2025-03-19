@@ -167,7 +167,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Core\Container\Map.cpp" />
     <ClCompile Include="Source\Core\Math\Plane.cpp" />
     <ClCompile Include="Source\Core\Name\FName.cpp" />
     <ClCompile Include="Source\Core\Name\FNameEntry.cpp" />
@@ -344,7 +343,6 @@
     <ClInclude Include="Source\Object\Gizmo\RotationGizmo.h" />
     <ClInclude Include="Source\Object\ObjectFactory.h" />
     <ClInclude Include="Source\Object\PrimitiveComponent\CharComp.h" />
-    <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
     <ClInclude Include="Source\Primitive\MeshVertexData.h" />
     <ClInclude Include="Source\Primitive\UShader.h" />
     <ClInclude Include="Source\Primitive\UShaderManager.h" />
@@ -410,13 +408,7 @@
     <Content Include="Shaders\PickingShader.hlsl" />
     <Content Include="Shaders\TextShader.hlsl" />
     <ClCompile Include="Source\Core\Container\Map.cpp" />
-    <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp" />
-    <ClCompile Include="Source\Primitive\UShader.cpp" />
-    <ClCompile Include="Source\Primitive\UShaderManager.cpp" />
-    <ClInclude Include="Source\Object\PrimitiveComponent\CharComp.h" />
     <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
-    <ClInclude Include="Source\Primitive\UShader.h" />
-    <ClInclude Include="Source\Primitive\UShaderManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Shaders\CustomShader.hlsl" />
