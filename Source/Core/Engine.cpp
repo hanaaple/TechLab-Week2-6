@@ -236,7 +236,61 @@ void UEngine::InitWorld()
     World->SpawnActor<AAxis>();
     World->SpawnActor<AAABBPicker>();
 
+    //World->SpawnActor<ASphere>();
+    //World->SpawnActor<ACube>();
+    float OffsetY = 0;
+    
+    {
+        ACube* Actor = World->SpawnActor<ACube>();
+        UCubeComp* Cube = static_cast<UCubeComp*>(Actor->GetRootComponent());
+        Actor->SetRootComponent(Cube);
+        Cube->SetTexture(ETextureType::None);
+        Cube->SetShaderType(EShaderType::PrimitiveShader);
 
+        FTransform Transform;
+        Transform.SetPosition(OffsetY, OffsetY, 0);
+        Cube->SetRelativeTransform(Transform);
+        OffsetY += 2;
+    }
+
+    {
+        ACube* Actor = World->SpawnActor<ACube>();
+        UCubeComp* Cube = static_cast<UCubeComp*>(Actor->GetRootComponent());
+        Actor->SetRootComponent(Cube);
+        Cube->SetTexture(ETextureType::CatTexture);
+        Cube->SetShaderType(EShaderType::TextureShader);
+
+        FTransform Transform;
+        Transform.SetPosition(OffsetY, OffsetY, 0);
+        Cube->SetRelativeTransform(Transform);
+        OffsetY += 2;
+    }
+
+    {
+        ACube* Actor = World->SpawnActor<ACube>();
+        UCubeComp* Cube = static_cast<UCubeComp*>(Actor->GetRootComponent());
+        Actor->SetRootComponent(Cube);
+        Cube->SetTexture(ETextureType::Lenna);
+        Cube->SetShaderType(EShaderType::TextureShader);
+
+        FTransform Transform;
+        Transform.SetPosition(OffsetY, OffsetY, 0);
+        Cube->SetRelativeTransform(Transform);
+        OffsetY += 2;
+    }
+
+    {
+        ACube* Actor = World->SpawnActor<ACube>();
+        UCubeComp* Cube = static_cast<UCubeComp*>(Actor->GetRootComponent());
+        Actor->SetRootComponent(Cube);
+        Cube->SetTexture(ETextureType::Cement);
+        Cube->SetShaderType(EShaderType::TextureShader);
+
+        FTransform Transform;
+        Transform.SetPosition(OffsetY, OffsetY, 0);
+        Cube->SetRelativeTransform(Transform);
+        OffsetY += 2;
+    }
     
     //// Test
     //World->SpawnActor<AArrow>();

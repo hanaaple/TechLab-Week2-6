@@ -411,9 +411,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\1234.png" />
-    <Content Include="Resources\2313214124.png" />
     <Content Include="Resources\cat0.png" />
+    <Content Include="Resources\cement.png" />
     <Content Include="Resources\Explosion.png" />
+    <Content Include="Resources\Lenna.png" />
     <Content Include="Resources\tempTexture.png" />
     <Content Include="Shaders\PrimitiveShader.hlsl" />
     <Content Include="Shaders\DefaultShader.hlsl" />

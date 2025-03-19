@@ -40,6 +40,26 @@ FTextureStaticData* TextureData::GetTexture(ETextureType TextureType)
             TextureStaticData.AtlasTotalCount = 1;
             Textures.Add(TextureType, TextureStaticData);
             break;
+        case ETextureType::Lenna:
+            TextureStaticData.FileDirectory = FName("Resources/Lenna.png");
+            TextureStaticData.TextureName = FName("Texture 명");
+            TextureStaticData.BitmapWidth = 330.f;
+            TextureStaticData.BitmapHeight = 330.0f;
+            TextureStaticData.RowCount = 1;
+            TextureStaticData.ColCount = 1;
+            TextureStaticData.AtlasTotalCount = 1;
+            Textures.Add(TextureType, TextureStaticData);
+            break;
+        case ETextureType::Cement:
+            TextureStaticData.FileDirectory = FName("Resources/cement.png");
+            TextureStaticData.TextureName = FName("Texture 명");
+            TextureStaticData.BitmapWidth = 330.f;
+            TextureStaticData.BitmapHeight = 225.0f;
+            TextureStaticData.RowCount = 1;
+            TextureStaticData.ColCount = 1;
+            TextureStaticData.AtlasTotalCount = 1;
+            Textures.Add(TextureType, TextureStaticData);
+            break;
         default:
             return nullptr;
             break;

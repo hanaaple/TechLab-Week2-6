@@ -702,7 +702,7 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
                 // Mesh
                 {
                     
-                    static const char* MeshItem[] = {"EPT_Triangle", "EPT_Cube", "EPT_Sphere", "EPT_Line", "EPT_BoundingBox", "EPT_GridLine", "EPT_Cylinder", "EPT_Quad", "EPT_Cone", "EPT_Torus"};
+                    static const char* MeshItem[] = {"EPT_Triangle", "EPT_Cube (UV)", "EPT_Sphere", "EPT_Line", "EPT_BoundingBox", "EPT_GridLine", "EPT_Cylinder", "EPT_Quad (UV)", "EPT_Cone", "EPT_Torus"};
                     int curMeshItem = -1;
                     if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Triangle)
                         curMeshItem = 0;
@@ -730,7 +730,7 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
                         if (FName(MeshItem[curMeshItem]) == FName("EPT_Triangle"))
                         {
                             PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Triangle);
-                        } else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cube"))
+                        } else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cube (UV)"))
                         {
                             PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cube);
                         }else if (FName(MeshItem[curMeshItem]) == FName("EPT_Sphere"))
@@ -753,7 +753,7 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
                         {
                             PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cylinder);
                         }
-                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_Quad"))
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_Quad (UV)"))
                         {
                             PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Quad);
                         }
@@ -770,7 +770,7 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
                 }
 
                 {
-                    static const char* TextureItems[] = {"None", "FontATexture", "AtlasFontTexture", "CatTexture"};
+                    static const char* TextureItems[] = {"None", "FontATexture", "AtlasFontTexture", "CatTexture", "Lenna", "Cement"};
                     int curTextureItem = -1;
                     if (PrimitiveComponent->GetTexture() == ETextureType::None)
                         curTextureItem = 0;
@@ -780,6 +780,10 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
                         curTextureItem = 2;
                     else if (PrimitiveComponent->GetTexture() == ETextureType::CatTexture)
                         curTextureItem = 3;
+                    else if (PrimitiveComponent->GetTexture() == ETextureType::Lenna)
+                        curTextureItem = 4;
+                    else if (PrimitiveComponent->GetTexture() == ETextureType::Cement)
+                        curTextureItem = 5;
                     
                     if (ImGui::Combo("##Texture", &curTextureItem, TextureItems, IM_ARRAYSIZE(TextureItems)))
                     {
@@ -796,6 +800,14 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
                         else if (FName(TextureItems[curTextureItem]) == FName("CatTexture"))
                         {
                             PrimitiveComponent->SetTexture(ETextureType::CatTexture);
+                        }
+                        else if (FName(TextureItems[curTextureItem]) == FName("Lenna"))
+                        {
+                            PrimitiveComponent->SetTexture(ETextureType::Lenna);
+                        }
+                        else if (FName(TextureItems[curTextureItem]) == FName("Cement"))
+                        {
+                            PrimitiveComponent->SetTexture(ETextureType::Cement);
                         }
                     }
                 }
