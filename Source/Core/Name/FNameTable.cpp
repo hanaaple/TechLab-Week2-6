@@ -37,7 +37,7 @@ FString FNameTable::GetName(int32 Index) const
     {
         return NameEntries[Index].GetName();
     }
-    return "None";
+    return "";
 }
 
 const FNameEntry& FNameTable::GetNameEntry(int32 Index) const

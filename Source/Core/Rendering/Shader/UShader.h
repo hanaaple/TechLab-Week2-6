@@ -20,6 +20,7 @@ public:
     void Release();
 
     FName GetShaderName() const { return ShaderName; }
+    void SetShaderName(const FName& Name) { ShaderName = Name; }
 
     //Data에 FMatrix를 바로 넣어도 되고 자료가 여러개라면 struct 형태로 삽입
     //만약 해당 버퍼 슬롯에 버퍼가 없다면 자동으로 생성
@@ -35,8 +36,9 @@ public:
                            ID3DBlob* VertexShaderBlob);
     void CreateConstantBuffer(ID3D11Device* Device, uint32 BufferSlot, size_t BufferSize);
 
-    void SetShaderName(const FName& Name) { ShaderName = Name; }
+    void SetUpdateConstantBufferFunction(const std::function<void(UPrimitiveComponent*)>& function) { UpdateConstantBufferFunction = function; }
 
+private:
     //람다 함수로 개별적인 ConstantBuffer 업데이트 가능
     std::function<void(UPrimitiveComponent*)> UpdateConstantBufferFunction;
 

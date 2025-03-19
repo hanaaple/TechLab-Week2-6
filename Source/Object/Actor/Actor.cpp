@@ -34,8 +34,10 @@ void AActor::Destroyed()
 
 void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	for (auto& Component : Components)
-	{		
+	while (Components.Num() > 0)
+	{
+		UActorComponent* Component = Components[0];
+		Components.Remove(Component);
 		Component->EndPlay(EndPlayReason);
 		if (FEditorManager::Get().GetSelectedActor() == this)
 		{
@@ -43,16 +45,16 @@ void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		}
 		UEngine::Get().GObjects.Remove(Component->GetUUID());
 	}
-	Components.Empty();
 }
 
 void AActor::ActivateComponent()
 {
-	for (auto* Component : ToActiveComponents)
+	while (ToActiveComponents.Num() > 0)
 	{
+		UActorComponent* Component = ToActiveComponents[0];
+		ToActiveComponents.Remove(Component);	
 		Component->Activate();
 	}
-	ToActiveComponents.Empty();
 }
 
 void AActor::Pick()

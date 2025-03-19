@@ -3,7 +3,6 @@
 FName::FName()
     : ComparisonIndex(INDEX_NONE), DisplayIndex(INDEX_NONE), Number(0)
 {
-
 }
 
 FName::FName(const FString& InName, uint32 InNumber)
@@ -15,12 +14,10 @@ FName::FName(const FString& InName, uint32 InNumber)
     DebugString = InName;
 #endif
 }
-
 FName::FName(const char* pStr, uint32 InNumber)
     : FName(FString(pStr), InNumber) // FString 변환 후 기존 생성자 호출
 {
 }
-
 bool FName::operator==(const FName& Other) const
 {
     return ComparisonIndex == Other.ComparisonIndex && Number == Other.Number;
@@ -31,13 +28,11 @@ bool FName::operator!=(const FName& Other) const
 {
     return !(*this == Other);
 }
-
 // 대소문자 구별 비교
 bool FName::EqualsCaseSensitive(const FName& Other) const
 {
     return DisplayIndex == Other.DisplayIndex && Number == Other.Number;
 }
-
 // 정렬용 비교 함수
 int32 FName::Compare(const FName& Other) const
 {
@@ -45,41 +40,45 @@ int32 FName::Compare(const FName& Other) const
     if (ComparisonIndex > Other.ComparisonIndex) return 1;
     return 0;
 }
-
 FString FName::ToString() const
 {
     return FNameTable::Get().GetName(DisplayIndex);
 }
 
+std::string FName::ToStdString() const
+{
+    return ToString().ToStdString();
+}
+
+const char* FName::ToCharString() const
+{
+    return ToStdString().c_str();
+}
 const FString& FName::ToStringRef() const
 {
     return FNameTable::Get().GetName(DisplayIndex); // ✅ 참조 반환
 }
-
 int32 FName::GetNumber() const
 {
     return Number;
 }
-
 bool FName::IsValid() const
 {
     return ComparisonIndex != INDEX_NONE && DisplayIndex != INDEX_NONE;
 }
-
 void FName::SetIndex(const FName& Other)
 {
     ComparisonIndex = Other.ComparisonIndex;
     DisplayIndex = Other.DisplayIndex;
 }
-
 int32 FName::GetDisplayIndex() const
 {
     return DisplayIndex;
 }
-
 /*
 bool FName::EqualsIgnoreCase(const FName& Other) const
 {
     return FNameTable::Get().GetNameEntry(ComparisonIndex).GetLowerCaseHash()
     == FNameTable::Get().GetNameEntry(Other.ComparisonIndex).GetLowerCaseHash();
 }*/
+
