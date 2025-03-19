@@ -592,71 +592,130 @@ void UI::RenderComponentTree(USceneComponent* Component, bool bShowTransform, bo
                         PrimitiveComponent->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
                     }
                 }
-
-                               static const char* MeshItem[] = {"EPT_Triangle", "EPT_Cube", "EPT_Sphere", "EPT_Line", "EPT_BoundingBox", "EPT_GridLine", "EPT_Cylinder", "EPT_Quad", "EPT_Cone", "EPT_Torus"};
-                int curMeshItem = -1;
-                if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Triangle)
-                    curMeshItem = 0;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cube)
-                    curMeshItem = 1;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Sphere)
-                    curMeshItem = 2;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Line)
-                    curMeshItem = 3;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_BoundingBox)
-                    curMeshItem = 4;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_GridLine)
-                    curMeshItem = 5;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cylinder)
-                    curMeshItem = 6;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Quad)
-                    curMeshItem = 7;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cone)
-                    curMeshItem = 8;
-                else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Torus)
-                    curMeshItem = 9;
-                
-                if (ImGui::Combo("##Mesh", &curMeshItem, MeshItem, IM_ARRAYSIZE(MeshItem)))
+                // Mesh
                 {
-                    if (FName(MeshItem[curMeshItem]) == FName("EPT_Triangle"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Triangle);
-                    } else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cube"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cube);
-                    }else if (FName(MeshItem[curMeshItem]) == FName("EPT_Sphere"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Sphere);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Line"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Line);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_BoundingBox"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_BoundingBox);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_GridLine"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_GridLine);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cylinder"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cylinder);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Quad"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Quad);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cone"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cone);
-                    }
-                    else if (FName(MeshItem[curMeshItem]) == FName("EPT_Torus"))
-                    {
-                        PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Torus);
-                    }
                     
+                    static const char* MeshItem[] = {"EPT_Triangle", "EPT_Cube", "EPT_Sphere", "EPT_Line", "EPT_BoundingBox", "EPT_GridLine", "EPT_Cylinder", "EPT_Quad", "EPT_Cone", "EPT_Torus"};
+                    int curMeshItem = -1;
+                    if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Triangle)
+                        curMeshItem = 0;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cube)
+                        curMeshItem = 1;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Sphere)
+                        curMeshItem = 2;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Line)
+                        curMeshItem = 3;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_BoundingBox)
+                        curMeshItem = 4;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_GridLine)
+                        curMeshItem = 5;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cylinder)
+                        curMeshItem = 6;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Quad)
+                        curMeshItem = 7;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Cone)
+                        curMeshItem = 8;
+                    else if (PrimitiveComponent->GetMeshType() == EPrimitiveMeshType::EPT_Torus)
+                        curMeshItem = 9;
+                
+                    if (ImGui::Combo("##Mesh", &curMeshItem, MeshItem, IM_ARRAYSIZE(MeshItem)))
+                    {
+                        if (FName(MeshItem[curMeshItem]) == FName("EPT_Triangle"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Triangle);
+                        } else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cube"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cube);
+                        }else if (FName(MeshItem[curMeshItem]) == FName("EPT_Sphere"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Sphere);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_Line"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Line);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_BoundingBox"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_BoundingBox);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_GridLine"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_GridLine);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cylinder"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cylinder);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_Quad"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Quad);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_Cone"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Cone);
+                        }
+                        else if (FName(MeshItem[curMeshItem]) == FName("EPT_Torus"))
+                        {
+                            PrimitiveComponent->SetMesh(EPrimitiveMeshType::EPT_Torus);
+                        }
+                    
+                    }
+                }
+
+                {
+                    static const char* TextureItems[] = {"None", "FontATexture", "AtlasFontTexture", "CatTexture"};
+                    int curTextureItem = -1;
+                    if (PrimitiveComponent->GetTexture() == ETextureType::None)
+                        curTextureItem = 0;
+                    else if (PrimitiveComponent->GetTexture() == ETextureType::FontATexture)
+                        curTextureItem = 1;
+                    else if (PrimitiveComponent->GetTexture() == ETextureType::AtlasFontTexture)
+                        curTextureItem = 2;
+                    else if (PrimitiveComponent->GetTexture() == ETextureType::CatTexture)
+                        curTextureItem = 3;
+                    
+                    if (ImGui::Combo("##Texture", &curTextureItem, TextureItems, IM_ARRAYSIZE(TextureItems)))
+                    {
+                        if (FName(TextureItems[curTextureItem]) == FName("None"))
+                        {
+                            PrimitiveComponent->SetTexture(ETextureType::None);
+                        } else if (FName(TextureItems[curTextureItem]) == FName("FontATexture"))
+                        {
+                            PrimitiveComponent->SetTexture(ETextureType::FontATexture);
+                        }else if (FName(TextureItems[curTextureItem]) == FName("AtlasFontTexture"))
+                        {
+                            PrimitiveComponent->SetTexture(ETextureType::AtlasFontTexture);
+                        }
+                        else if (FName(TextureItems[curTextureItem]) == FName("CatTexture"))
+                        {
+                            PrimitiveComponent->SetTexture(ETextureType::CatTexture);
+                        }
+                    }
+                }
+
+                {
+                    static const char* ShaderItems[] = {"DefaultShader", "TextShader", "PrimitiveShader"};
+                    int curShaderIndex = -1;
+                    if (PrimitiveComponent->GetShaderType() == EShaderType::DefaultShader)
+                        curShaderIndex = 0;
+                    else if (PrimitiveComponent->GetShaderType() == EShaderType::TextShader)
+                        curShaderIndex = 1;
+                    else if (PrimitiveComponent->GetShaderType() == EShaderType::PrimitiveShader)
+                        curShaderIndex = 2;
+                    
+                    if (ImGui::Combo("##Shader", &curShaderIndex, ShaderItems, IM_ARRAYSIZE(ShaderItems)))
+                    {
+                        if (FName(ShaderItems[curShaderIndex]) == FName("DefaultShader"))
+                        {
+                            PrimitiveComponent->SetShaderType(EShaderType::DefaultShader);
+                        } else if (FName(ShaderItems[curShaderIndex]) == FName("TextShader"))
+                        {
+                            PrimitiveComponent->SetShaderType(EShaderType::TextShader);
+                        }else if (FName(ShaderItems[curShaderIndex]) == FName("PrimitiveShader"))
+                        {
+                            PrimitiveComponent->SetShaderType(EShaderType::PrimitiveShader);
+                        }
+                    }
                 }
             }
         }

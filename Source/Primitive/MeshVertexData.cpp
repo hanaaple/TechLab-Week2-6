@@ -13,7 +13,7 @@ TArray<FVertexSimple> TriangleVertices =
 	{ -1.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f }  // Bottom-left vertex (blue)
 };
 
-/*FVertexSimple CubeVertices[] =
+TArray<FVertexSimple> CubeVertices =
 {
     // Front face (Z+)
     { -0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f,  0.0f, 1.0f }, // Bottom-left (red)
@@ -26,22 +26,22 @@ TArray<FVertexSimple> TriangleVertices =
     {  0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 1.0f }, // Bottom-right (magenta)
     { -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f, 1.0f,  1.0f, 0.0f }, // Top-left (blue)
     {  0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f }  // Top-right (yellow)
-};*/
-
-TArray<FVertexSimple> CubeVertices =
-{
-	// Front face (Z+)
-	{ -0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f }, // Bottom-left (red)
-	{  0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 1.0f }, // Bottom-right (green)
-	{ -0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f, 1.0f }, // Top-left (yellow)
-	{  0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f, 1.0f }, // Top-right (blue)
-
-	// Back face (Z-)
-	{ -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f, 1.0f }, // Bottom-left (cyan)
-	{  0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 1.0f, 1.0f }, // Bottom-right (magenta)
-	{ -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f, 1.0f }, // Top-left (blue)
-	{  0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 1.0f }  // Top-right (yellow)
 };
+
+// TArray<FVertexSimple> CubeVertices =
+// {
+// 	// Front face (Z+)
+// 	{ -0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f }, // Bottom-left (red)
+// 	{  0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 1.0f }, // Bottom-right (green)
+// 	{ -0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f, 1.0f }, // Top-left (yellow)
+// 	{  0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f, 1.0f }, // Top-right (blue)
+//
+// 	// Back face (Z-)
+// 	{ -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f, 1.0f }, // Bottom-left (cyan)
+// 	{  0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 1.0f, 1.0f }, // Bottom-right (magenta)
+// 	{ -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f, 1.0f }, // Top-left (blue)
+// 	{  0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 1.0f }  // Top-right (yellow)
+// };
 
 TArray<uint32> CubeIndecies = {
 	// Front face (Z+)

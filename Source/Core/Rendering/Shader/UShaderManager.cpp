@@ -16,10 +16,54 @@ void UShaderManager::Initialize(const URenderer& Renderer)
 
 void UShaderManager::LoadAllShaders()
 {
-    LoadShader(Device, L"Shaders/DefaultShader.hlsl");
-    //LoadShader(Device, FName("PickingShader"), L"Shaders/ShaderW0.hlsl", "mainVS", "PickingPS");
-    LoadShader(Device, L"Shaders/PickingShader.hlsl");
-    LoadShader(Device, L"Shaders/OutlineShader.hlsl");
+    LoadShader(Device, L"Shaders/DefaultShader.hlsl", [](FConstantBufferContext* ConstantContext)
+        {
+            UShaderManager& ShaderManager = UShaderManager::Get();
+            
+            UShader* Shader = ShaderManager.GetShader(EShaderType::DefaultShader);
+            if (Shader == nullptr)
+            {
+                return;
+            }
+            ID3D11DeviceContext* DeviceContext = ShaderManager.DeviceContext;
+            const URenderer* Renderer = ShaderManager.Renderer;
+            FMatrix ViewMatrix = Renderer->GetViewMatrix();
+            FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
+
+            UPrimitiveComponent* PrimitiveComp = ConstantContext->PrimitiveComponent;
+            FMatrix MVP;
+            if (PrimitiveComp != nullptr)
+            {
+                MVP = FMatrix::Transpose(PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
+            }
+            else
+            {
+                MVP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);   
+            }
+            
+            Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+            
+            if (PrimitiveComp != nullptr)
+            {
+                struct PSConstants
+                {
+                    FVector4 Color;
+                    uint32 bUseVertexColor;
+                };
+                PSConstants PSData = {PrimitiveComp->GetCustomColor(), PrimitiveComp->IsUseVertexColor()};
+                Shader->UpdateConstantBuffer(DeviceContext, 1, &PSData, sizeof(PSData));
+            }
+            else
+            {
+                struct PSConstants
+                {
+                    FVector4 Color;
+                    uint32 bUseVertexColor;
+                };
+                PSConstants PSData = {FVector4(), true};
+                Shader->UpdateConstantBuffer(DeviceContext, 1, &PSData, sizeof(PSData));
+            }
+        });
     LoadShader(Device, L"Shaders/TextShader.hlsl", [](FConstantBufferContext* ConstantContext)
     {
         // 특정 쉐이더는 
@@ -77,8 +121,8 @@ void UShaderManager::LoadAllShaders()
                     TextureInfo info;
                     info.u = 0;
                     info.v = 0;
-                    info.width = Texture->TextureData.BitmapWidth;
-                    info.height = Texture->TextureData.BitmapHeight;
+                    info.width = 1;
+                    info.height = 1;
                     // 전체 텍스처 출력
                     Shader->UpdateConstantBuffer(DeviceContext, 1, &info, sizeof(info));
                 }
@@ -116,9 +160,6 @@ void UShaderManager::LoadAllShaders()
         Shader->UpdateConstantBuffer(DeviceContext, 2, &UseUV, sizeof(UseUV));
         Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
     });
-    LoadShader(Device, L"Shaders/CustomShader.hlsl", [](FConstantBufferContext* ConstantContext)
-    {
-    });
     LoadShader(Device,L"Shaders/PrimitiveShader.hlsl",[](FConstantBufferContext* ConstantContext)
     {
         UShaderManager& ShaderManager = UShaderManager::Get();
@@ -146,6 +187,7 @@ void UShaderManager::LoadAllShaders()
             MVP = FMatrix::Transpose(PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
         }
         Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
+
         struct PSConstants
         {
             FVector4 Color;
@@ -164,6 +206,11 @@ void UShaderManager::LoadAllShaders()
                 //brightness=2.0f;
             }
             PSConstants PSData = {PrimitiveComp->GetCustomColor(), PrimitiveComp->IsUseVertexColor(),brightness};
+            Shader->UpdateConstantBuffer(DeviceContext, 1, &PSData, sizeof(PSData));
+        }
+        else
+        {
+            PSConstants PSData = {FVector4(), true, 1.f};
             Shader->UpdateConstantBuffer(DeviceContext, 1, &PSData, sizeof(PSData));
         }
     });
@@ -197,44 +244,7 @@ UShader* UShaderManager::LoadShader(ID3D11Device* Device, const FName& Name, con
     //사용자가 무명 함수를 넘기지 않았을 경우, 기본 무명 함수를 적용
     if (!UpdateConstantBufferFunction)
     {
-        UpdateConstantBufferFunction = [](FConstantBufferContext* ConstantContext)
-        {
-            UShaderManager& ShaderManager = UShaderManager::Get();
-            
-            UShader* Shader = ShaderManager.GetShader(EShaderType::DefaultShader);
-            if (Shader == nullptr)
-            {
-                return;
-            }
-            ID3D11DeviceContext* DeviceContext = ShaderManager.DeviceContext;
-            const URenderer* Renderer = ShaderManager.Renderer;
-            FMatrix ViewMatrix = Renderer->GetViewMatrix();
-            FMatrix ProjectionMatrix = Renderer->GetProjectionMatrix();
-
-            UPrimitiveComponent* PrimitiveComp = ConstantContext->PrimitiveComponent;
-            FMatrix MVP;
-            if (PrimitiveComp != nullptr)
-            {
-                MVP = FMatrix::Transpose(PrimitiveComp->GetComponentTransform().GetMatrix() * ViewMatrix * ProjectionMatrix);
-            }
-            else
-            {
-                MVP = FMatrix::Transpose(ViewMatrix * ProjectionMatrix);   
-            }
-            
-            Shader->UpdateConstantBuffer(DeviceContext, 0, &MVP, sizeof(MVP));
-            
-            if (PrimitiveComp != nullptr)
-            {
-                struct PSConstants
-                {
-                    FVector4 Color;
-                    uint32 bUseVertexColor;
-                };
-                PSConstants PSData = {PrimitiveComp->GetCustomColor(), PrimitiveComp->IsUseVertexColor()};
-                Shader->UpdateConstantBuffer(DeviceContext, 1, &PSData, sizeof(PSData));
-            }
-        };
+        UpdateConstantBufferFunction = GetShader(EShaderType::DefaultShader)->GetUpdateConstantBufferFunction();
     }
     //  무명 함수 설정
     NewShader->SetUpdateConstantBufferFunction(UpdateConstantBufferFunction);

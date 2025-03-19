@@ -78,7 +78,10 @@ void FBufferCache::UpdateVertexBuffer(ETextureType TextureType, D3D11_PRIMITIVE_
 
 	if (BatchVertexBufferCache[TextureType].Contains(Topology))
 	{
-		BatchVertexBufferCache[TextureType][Topology].GetBuffer()->Release();
+		if (BatchVertexBufferCache[TextureType][Topology].GetBuffer() != nullptr)
+		{
+			BatchVertexBufferCache[TextureType][Topology].GetBuffer()->Release();
+		}
 	}
 	else
 	{
