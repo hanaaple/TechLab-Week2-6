@@ -99,15 +99,12 @@ void ARotationGizmo::Tick(float DeltaTime)
 			switch (SelectedAxis)
 			{
 			case ESelectedAxis::X:
-				UE_LOG("X Axis Selected");
 				Result = -FVector::DotProduct(EffectiveMovement, camX);
 				break;
 			case ESelectedAxis::Y:
-				UE_LOG("Y Axis Selected");
 				Result = FVector::DotProduct(EffectiveMovement, camY);
 				break;
 			case ESelectedAxis::Z:
-				UE_LOG("Z Axis Selected");
 				Result = -FVector::DotProduct(EffectiveMovement, camZ);
 				break;
 			default:
