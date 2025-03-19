@@ -167,6 +167,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\ConstantBufferContext.cpp" />
     <ClCompile Include="Source\Core\Container\Map.cpp" />
     <ClCompile Include="Source\Core\Math\Plane.cpp" />
     <ClCompile Include="Source\Core\Name\FName.cpp" />
@@ -308,6 +309,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\ConstantBufferContext.h" />
     <ClInclude Include="Source\Core\Math\Vector4.h" />
     <ClInclude Include="Source\Core\Name\FName.h" />
     <ClInclude Include="Source\Core\Name\FNameEntry.h" />

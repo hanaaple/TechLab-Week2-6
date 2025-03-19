@@ -1,4 +1,5 @@
 #pragma once
+#include "ConstantBufferContext.h"
 #include "Core/Container/Map.h"
 #include "UShader.h"
 #include "DataTypes/ShdaerType.h"
@@ -28,10 +29,10 @@ public:
     
     //UShader* LoadShader(ID3D11Device* Device, const wchar_t* FileName);
     UShader* LoadShader(ID3D11Device* Device, const wchar_t* FileName,
-                        std::function<void(UPrimitiveComponent*)> UpdateConstantBufferFunction = nullptr);
+                        std::function<void(FConstantBufferContext*)> UpdateConstantBufferFunction = nullptr);
     UShader* LoadShader(ID3D11Device* Device, const FName& Name, const wchar_t* FileName,
                         const FString& VertexEntry, const FString& PixelEntry,
-                        std::function<void(UPrimitiveComponent*)> UpdateConstantBufferFunction=nullptr);
+                        std::function<void(FConstantBufferContext*)> UpdateConstantBufferFunction=nullptr);
 
     UShader* GetShader(const EShaderType& Type);
 
