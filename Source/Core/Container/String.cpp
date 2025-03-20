@@ -1,5 +1,9 @@
 ﻿#include "String.h"
+
+#include <algorithm>
 #include <cctype>
+#include <codecvt>
+#include <locale>
 
 #include "Core/Math/MathUtility.h"
 
@@ -116,4 +120,24 @@ int32 FString::Find(
         StartPosition = (StartPosition == INDEX_NONE) ? StrLen - SubStrLen : FMath::Min(StartPosition, StrLen - SubStrLen);
         return FindSubString(StartPosition, -1, -1);
     }
+}
+
+#if IS_WIDECHAR
+std::wstring FString::ToStdString() const
+{
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> Converter;
+    return Converter.from_bytes(std::string(PrivateString.begin(), PrivateString.end()));;
+}
+#else
+std::string FString::ToStdString() const
+{
+    return std::string(PrivateString.begin(), PrivateString.end());
+}
+#endif
+FString FString::ToLower() const
+{
+    FString LowerString = *this;
+    std::transform(LowerString.PrivateString.begin(), LowerString.PrivateString.end(), 
+                   LowerString.PrivateString.begin(), ::tolower);
+    return LowerString;
 }

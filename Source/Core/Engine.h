@@ -2,16 +2,13 @@
 
 #include <memory>
 
-#include "HAL/PlatformType.h"
-#include "Rendering/URenderer.h"
+
 #include "Rendering/UI.h"
 #include "AbstractClass/Singleton.h"
 #include "Container/Map.h"
-#include "Core/Container/Array.h"
 
 class UObject;
 class UWorld;
-
 enum class EScreenMode : uint8
 {
     Windowed,    // 창 모드
@@ -19,6 +16,14 @@ enum class EScreenMode : uint8
     Borderless,  // 테두리 없는 창 모드
 };
 
+//Show Flag (프리미티브 렌더링 활성/비활성)
+enum class EEngineShowFlags : uint32
+{
+    SF_Primitives,
+    SF_Gizmo,
+    SF_BillboardText
+    
+};
 class UEngine : public TSingleton<UEngine>
 {
 public:
@@ -46,7 +51,7 @@ public:
      */
     void Shutdown();
 
-	class URenderer* GetRenderer() const { return Renderer.get(); }
+	URenderer* GetRenderer() const { return Renderer.get(); }
 	float GetScreenRatio() const { return static_cast<float>(ScreenWidth) / ScreenHeight; }
     int GetScreenWidth() const { return ScreenWidth; }
     int GetScreenHeight() const { return ScreenHeight; }
@@ -92,11 +97,22 @@ private:
 	UI ui;
 
 private:
-    class UWorld* World;
+    UWorld* World;
 
 public:
     // TArray<std::shared_ptr<UObject>> GObjects;
     TMap<uint32, std::shared_ptr<UObject>> GObjects;
+public:
+
+    void InitializeShowFlags();
+    //Show Flag 토글
+    void SetShowFlag(EEngineShowFlags Flag, bool bEnable);
+    bool IsShowFlagEnabled(EEngineShowFlags Flag) const;
+    const TMap<EEngineShowFlags, bool>& GetShowFlagStates() const;
+
+private:
+    //bool bShowPrimitives = true;
+    static TMap<EEngineShowFlags, bool> ShowFlagStates;
 };
 
 template <typename ObjectType> requires std::derived_from<ObjectType, UObject>

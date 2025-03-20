@@ -3,6 +3,7 @@
 
 class ASphere : public AActor
 {
+    DECLARE_OBJECT(ASphere, AActor)
 	using Super = AActor;
 public:
 	ASphere();

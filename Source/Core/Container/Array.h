@@ -39,6 +39,8 @@ public:
     // 이동 생성자
     TArray(TArray&& Other) noexcept;
 
+    TArray(std::initializer_list<T> Ilist);
+    
     // 복사 할당 연산자
     TArray& operator=(const TArray& Other);
 
@@ -49,6 +51,8 @@ public:
     SizeType Add(const T& Item);
     SizeType Add(T&& Item);
     SizeType AddUnique(const T& Item);
+    void Append(TArray& Source);
+    void Append(T* Source, int Size);
     SizeType Emplace(T&& Item);
     void Empty();
     SizeType Remove(const T& Item);
@@ -58,7 +62,18 @@ public:
         requires std::is_invocable_r_v<bool, Predicate, const T&>
     SizeType RemoveAll(const Predicate& Pred);
     T* GetData();
+    const T* GetData() const;
 
+    void Push(T&& Item);	
+    void Push(const T& Item);
+
+    /**
+     * Pops element from the array.
+     *
+     * @returns Popped element.
+     */
+    T Pop();
+    
     /**
      * Array에서 Item을 찾습니다.
      * @param Item 찾으려는 Item
@@ -110,6 +125,11 @@ TArray<T, Allocator>::TArray(TArray&& Other) noexcept: PrivateVector(std::move(O
 }
 
 template <typename T, typename Allocator>
+TArray<T, Allocator>::TArray(std::initializer_list<T> Ilist) : PrivateVector(Ilist)
+{
+}
+
+template <typename T, typename Allocator>
 TArray<T, Allocator>& TArray<T, Allocator>::operator=(const TArray& Other)
 {
     if (this != &Other)
@@ -155,6 +175,28 @@ typename TArray<T, Allocator>::SizeType TArray<T, Allocator>::AddUnique(const T&
         return Index;
     }
     return Add(Item);
+}
+
+template <typename T, typename Allocator>
+void TArray<T, Allocator>::Append(TArray<T, Allocator>& Source)
+{
+    if(Source.Num() == 0)
+    {
+        return;
+    }
+
+    PrivateVector.insert(PrivateVector.end(), Source.begin(), Source.end());
+}
+
+template <typename T, typename Allocator>
+void TArray<T, Allocator>::Append(T* Source, int Size)
+{
+    if(Size == 0 || Source == nullptr)
+    {
+        return;
+    }
+
+    PrivateVector.insert(PrivateVector.end(), Source, Source + Size);
 }
 
 template <typename T, typename Allocator>
@@ -213,6 +255,38 @@ template <typename T, typename Allocator>
 T* TArray<T, Allocator>::GetData()
 {
     return PrivateVector.data();
+}
+
+template <typename T, typename Allocator>
+const T* TArray<T, Allocator>::GetData() const
+{
+    return PrivateVector.data();
+}
+
+template <typename T, typename Allocator>
+void TArray<T, Allocator>::Push(T&& Item)
+{
+    Add(Item);
+}
+
+template <typename T, typename Allocator>
+void TArray<T, Allocator>::Push(const T& Item)
+{
+    Add(Item);
+}
+
+template <typename T, typename Allocator>
+T TArray<T, Allocator>::Pop()
+{
+    T Result = PrivateVector.back();
+    PrivateVector.pop_back();
+
+    // UE Code
+    // RangeCheck(0);           비어있는지 체크
+    // T Result = static_cast<std::remove_reference_t<T>&&>(GetData()[Num() - 1]);
+    // RemoveAtImpl(ArrayNum - 1);
+    // ResizeShrink();
+    return Result;
 }
 
 template <typename T, typename Allocator>

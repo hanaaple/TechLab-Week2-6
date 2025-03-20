@@ -7,6 +7,7 @@ void UActorComponent::BeginPlay()
 
 void UActorComponent::Tick(float DeltaTime)
 {
+	
 }
 
 void UActorComponent::EndPlay(const EEndPlayReason::Type Reason)
@@ -16,4 +17,9 @@ void UActorComponent::EndPlay(const EEndPlayReason::Type Reason)
 AActor* UActorComponent::GetOwner() const
 {
 	return Owner;
+}
+
+void UActorComponent::SetOwner(AActor* InOwner)
+{
+	Owner = InOwner;
 }

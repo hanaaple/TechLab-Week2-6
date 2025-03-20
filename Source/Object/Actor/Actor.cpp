@@ -1,24 +1,13 @@
 ﻿#include "Actor.h"
-#include "Object/USceneComponent.h"
 #include "Debug/DebugConsole.h"
 #include "Object/World/World.h"
-#include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 #include "Static/FEditorManager.h"
-
-AActor::AActor() : Depth{ 0 }
-{
-}
 
 void AActor::BeginPlay()
 {
 	for (auto& Component : Components)
 	{
 		Component->BeginPlay();
-
-		if (UPrimitiveComponent* PrimitiveComponent = dynamic_cast<UPrimitiveComponent*>(Component))
-		{
-			PrimitiveComponent->RegisterComponentWithWorld(World);
-		}
 	}
 }
 
@@ -45,32 +34,54 @@ void AActor::Destroyed()
 
 void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	for (auto& Component : Components)
-	{		
-		Component->EndPlay(EndPlayReason);
-		if (const auto PrimitiveComp = dynamic_cast<UPrimitiveComponent*>(Component))
+	TArray<UActorComponent*> DestroyComponents;
+	if (RootComponent == nullptr)
+		return;
+	DestroyComponents.Add(RootComponent);
+	
+	while (DestroyComponents.Num() > 0)
+	{
+		UActorComponent* Component = DestroyComponents[0];
+		DestroyComponents.Remove(Component);
+		if (Component->GetOwner() != this)
 		{
-			if (World->ContainsZIgnoreComponent(PrimitiveComp))
+			if (Component->IsA<USceneComponent>())
 			{
-				World->RemoveZIgnoreComponent(PrimitiveComp);
+				USceneComponent* SceneComponent = dynamic_cast<USceneComponent*>(Component);
+				SceneComponent->SetupAttachment(nullptr);
 			}
-			
-			GetWorld()->RemoveRenderComponent(PrimitiveComp);
+			continue;
 		}
-		if (FEditorManager::Get().GetSelectedActor() == this)
+				
+		if (Component->IsA<USceneComponent>())
 		{
-			FEditorManager::Get().SelectActor(nullptr);
+			USceneComponent* SceneComponent = dynamic_cast<USceneComponent*>(Component);
+			for (auto* Child : SceneComponent->GetAttachChildren())
+			{
+				DestroyComponents.Add(Child);
+			}
+			SceneComponent->RemoveAllChildren();
 		}
-		UEngine::Get().GObjects.Remove(Component->GetUUID());
+
+		Component->EndPlay(EndPlayReason);
+		RemoveComponent(Component);
 	}
-	Components.Empty();
+}
+
+void AActor::ActivateComponent()
+{
+	while (ToActiveComponents.Num() > 0)
+	{
+		UActorComponent* Component = ToActiveComponents[0];
+		ToActiveComponents.Remove(Component);	
+		Component->Activate();
+	}
 }
 
 void AActor::Pick()
 {
 	if (RootComponent)
 	{
-		bIsPicked = true;
 		RootComponent->Pick(true);
 	}
 }
@@ -79,7 +90,6 @@ void AActor::UnPick()
 {
 	if (RootComponent)
 	{
-		bIsPicked = false;
 		RootComponent->Pick(false);
 	}	
 }
@@ -89,12 +99,23 @@ FTransform AActor::GetActorTransform() const
 	return RootComponent != nullptr ? RootComponent->GetComponentTransform() : FTransform();
 }
 
-void AActor::SetActorTransform(const FTransform& InTransform)
+void AActor::SetActorTransform(const FTransform& NewTransform)
 {
-	// InTransform은 월드 기준임
 	if (RootComponent)
 	{
-		RootComponent->SetRelativeTransform(InTransform);
+		RootComponent->SetWorldTransform(NewTransform);
+	}
+	else
+	{
+		UE_LOG("RootComponent is nullptr");
+	}
+}
+
+void AActor::SetActorRelativeTransform(const FTransform& NewRelativeTransform)
+{
+	if (RootComponent)
+	{
+		RootComponent->SetRelativeTransform(NewRelativeTransform);
 	}
 	else
 	{

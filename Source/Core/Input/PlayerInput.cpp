@@ -1,4 +1,6 @@
-#include "PlayerInput.h"
+﻿#include "PlayerInput.h"
+
+#include "ImGui/imgui.h"
 
 FVector GetWndWH(HWND hWnd)
 {
@@ -128,11 +130,12 @@ void APlayerInput::ExpireOnce()
 
 FVector APlayerInput::CalNDCPos(FVector MousePos, FVector WindowSize)
 {
-    return {( MousePos.X / ( WindowSize.X / 2 ) ) - 1, ( MousePos.Y / ( WindowSize.Y / 2 ) ) - 1, 0};
+    return {( MousePos.X / ( WindowSize.X / 2 ) ) - 1, -(( MousePos.Y / ( WindowSize.Y / 2 )) - 1), 0};
 }
 
 void APlayerInput::HandleMouseInput(HWND hWnd, LPARAM lParam, bool isDown, bool isRight)
 {
+    if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))return;
     POINTS Pts = MAKEPOINTS(lParam);
     FVector WH = GetWndWH(hWnd);
     if (isDown)

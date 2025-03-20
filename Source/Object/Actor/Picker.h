@@ -4,6 +4,7 @@
 
 class APicker : public AActor
 {
+    DECLARE_OBJECT(APicker, AActor)
     using Super = AActor;
 public:
     APicker();

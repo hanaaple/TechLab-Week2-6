@@ -3,6 +3,7 @@
 
 class AArrow : public AActor
 {
+    DECLARE_OBJECT(AArrow, AActor)
 	using Super = AActor;
 
 public:

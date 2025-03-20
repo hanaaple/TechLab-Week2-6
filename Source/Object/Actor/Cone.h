@@ -3,6 +3,7 @@
 
 class ACone : public AActor
 {
+    DECLARE_OBJECT(ACone, AActor)
     using Super = AActor;
 public:
     ACone();

@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "MathUtility.h"
+#include "Matrix.h"
 
+struct FVector4;
 
 struct FVector
 {
@@ -10,6 +12,9 @@ struct FVector
 
     static const FVector ZeroVector;
     static const FVector OneVector;
+
+public:
+    FVector(const FVector4& vector4);
 
 public:
     static FVector Zero() { return {0, 0, 0}; }
@@ -40,6 +45,9 @@ public:
     FVector operator*(const FVector& Other) const;
     FVector operator*(float Scalar) const;
     FVector& operator*=(float Scalar);
+
+    FVector operator*(const FMatrix& Matrix) const;
+    FVector operator*=(const FMatrix& Matrix) const;
 
     FVector operator/(const FVector& Other) const;
     FVector operator/(float Scalar) const;
@@ -194,19 +202,14 @@ inline bool FVector::operator!=(const FVector& Other) const
     return X != Other.X || Y != Other.Y || Z != Other.Z;
 }
 
-struct alignas(16) FVector4 : public FVector
-{
-    using FVector::X;
-    using FVector::Y;
-    using FVector::Z;
+struct FVector2 {
+    float X, Y;
+    FVector2() : X(0), Y(0) {};
+    FVector2(float X, float Y) : X(X), Y(Y) {};
+    static const FVector2 ZeroVector;
+    static const FVector2 OneVector;
 
-    float W;
-    FVector4()
-        : FVector(0, 0, 0), W(0)
-    {
-    }
-    FVector4(float InX, float InY, float InZ, float InW)
-        : FVector(InX, InY, InZ), W(InW)
-    {
-    }
+public:
+    static FVector2 Zero() { return { 0, 0 }; }
+    static FVector2 One() { return { 1, 1 }; }
 };

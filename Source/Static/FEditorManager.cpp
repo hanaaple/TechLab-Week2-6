@@ -1,17 +1,25 @@
 ﻿#include "FEditorManager.h"
-#include "Core/Engine.h"
 #include "Object/World/World.h"
-#include "Object/Gizmo/GizmoHandle.h"
-#include "Core/Math/Vector.h"
-#include "Core/Math/Transform.h"
+#include "Object/Gizmo/EditorGizmos.h"
+#include "Object/Actor/ABoundingBox.h"
+#include "Object/Gizmo/RotationGizmo.h"
 
 void FEditorManager::SelectActor(AActor* NewActor)
 {
-    if (GizmoHandle == nullptr)
+    if (ControlGizmo == nullptr)
     {
-		GizmoHandle = UEngine::Get().GetWorld()->SpawnActor<AGizmoHandle>();
-    	GizmoHandle->SetDepth(1);
-        GizmoHandle->SetActive(false);
+    	ControlGizmo = UEngine::Get().GetWorld()->SpawnActor<AEditorGizmos>();
+    	ControlGizmo->SetActorVisibility(false);
+    }
+
+    if (RotationGizmo == nullptr) {
+        RotationGizmo = UEngine::Get().GetWorld()->SpawnActor<ARotationGizmo>();
+        RotationGizmo->SetActorVisibility(false);
+    }
+
+    if (AABB == nullptr) {
+        AABB = UEngine::Get().GetWorld()->SpawnActor<ABoundingBoxActor>();
+        AABB->SetActorVisibility(false);
     }
 
 	if (SelectedActor == NewActor)
@@ -20,7 +28,9 @@ void FEditorManager::SelectActor(AActor* NewActor)
     if (SelectedActor != nullptr && SelectedActor != NewActor)
     {
         SelectedActor->UnPick();
-        GizmoHandle->SetActive(false);
+        AABB->SetActorVisibility(false);
+        ControlGizmo->SetActorVisibility(false);
+        RotationGizmo->SetActorVisibility(false);
     }
 
 	SelectedActor = NewActor;
@@ -28,7 +38,16 @@ void FEditorManager::SelectActor(AActor* NewActor)
     if (SelectedActor != nullptr)
     {
         SelectedActor->Pick();
-        GizmoHandle->SetActive(true);
+        
+        AABB->SetActorVisibility(true);
+        if (GizmoType == EGizmoType::Rotate) {
+            ControlGizmo->SetActorVisibility(false);
+            RotationGizmo->SetActorVisibility(true);
+        }
+        else {
+            ControlGizmo->SetActorVisibility(true);
+            RotationGizmo->SetActorVisibility(false);
+        }
         //FVector Pos = SelectedActor->GetActorTransform().GetPosition();
 		//FTransform GizmoTransform = GizmoHandle->GetActorTransform();
 		//GizmoTransform.SetPosition(Pos);
@@ -40,4 +59,35 @@ void FEditorManager::SelectActor(AActor* NewActor)
 void FEditorManager::SetCamera(ACamera* NewCamera)
 {
     Camera = NewCamera;
+}
+
+void FEditorManager::SetGizmoType(EGizmoType newType)
+{
+    GizmoType = newType;
+    if (SelectedActor != nullptr) {
+        if (GizmoType == EGizmoType::Rotate) {
+            ControlGizmo->SetActorVisibility(false);
+            RotationGizmo->SetActorVisibility(true);
+        }
+        else {
+            ControlGizmo->SetActorVisibility(true);
+            RotationGizmo->SetActorVisibility(false);
+            TArray<UPrimitiveComponent*> axis = ControlGizmo->GetAxis();
+            if (GizmoType == EGizmoType::Translate) {
+                axis[1]->SetMesh(EPrimitiveMeshType::EPT_Cone);
+                axis[3]->SetMesh(EPrimitiveMeshType::EPT_Cone);
+                axis[5]->SetMesh(EPrimitiveMeshType::EPT_Cone);
+            }
+            if (GizmoType == EGizmoType::Scale) {
+                axis[1]->SetMesh(EPrimitiveMeshType::EPT_Cube);
+                axis[3]->SetMesh(EPrimitiveMeshType::EPT_Cube);
+                axis[5]->SetMesh(EPrimitiveMeshType::EPT_Cube);
+            }
+        }
+    }
+}
+
+void FEditorManager::SetWorldGrid(AWorldGrid* grid)
+{
+    WorldGrid = grid;
 }

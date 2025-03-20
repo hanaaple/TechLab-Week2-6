@@ -1,30 +1,19 @@
 ﻿#pragma once
-#include "Core/EngineTypes.h"
 #include "Object/UObject.h"
-#include "Object/ActorComponent/ActorComponent.h"
 #include "Core/Math/Transform.h"
 #include "Core/Container/Set.h"
 #include "Object/ObjectFactory.h"
-#include "Object/USceneComponent.h"
+#include "Object/ActorComponent/ActorComponent.h"
 
 class UWorld;
 
 class AActor : public UObject
 {
-	friend class FEditorManager;
+    DECLARE_OBJECT(AActor, UObject)
+    friend class FEditorManager;
 public:
-	AActor();
+	AActor() = default;
 	virtual ~AActor() override = default;
-
-	void SetDepth(int InDepth)
-	{
-		Depth = InDepth;
-	}
-
-	int GetDepth() const
-	{
-		return Depth;
-	}
 public:
 	virtual void BeginPlay();
 	virtual void Tick(float DeltaTime);
@@ -32,21 +21,25 @@ public:
 	
 	virtual void Destroyed();
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
-	TSet<UActorComponent*>& GetComponents() { return Components; }
+	TArray<UActorComponent*>& GetComponents() { return Components; }
 
-	UWorld* GetWorld() const { return World; }
-	void SetWorld(UWorld* InWorld) { World = InWorld; }
+	void ActivateComponent();
 
+	inline UWorld* GetWorld() const
+	{
+		return World;
+	}
+	inline void SetWorld(UWorld* InWorld)
+	{
+		World = InWorld;
+	}
+	
+	// Clear, 세이브 X, 
 	bool IsGizmoActor() const { return bIsGizmo; }
 
 private:
 	virtual void Pick();
 	virtual void UnPick();
-
-	uint32 Depth;
-	bool bIsPicked = false;
-public:
-	bool IsPicked() const { return bIsPicked; }
 
 public:
 	template<typename T>
@@ -55,20 +48,8 @@ public:
 	{
 		T* ObjectInstance = FObjectFactory::ConstructObject<T>();
 		Components.Add(ObjectInstance);
+		ToActiveComponents.Add(ObjectInstance);
 		ObjectInstance->SetOwner(this);
-
-		// 만약 SceneComponent를 상속 받았다면
-		//if constexpr (std::is_base_of_v<USceneComponent, T>)
-		//{
-		//	if (RootComponent == nullptr)
-		//	{
-		//		RootComponent = ObjectInstance;
-		//	}
-		//	else
-		//	{
-		//		ObjectInstance->SetupAttachment(RootComponent);
-		//	}
-		//}
 
 		return ObjectInstance;
 	}
@@ -78,11 +59,21 @@ public:
 		requires std::derived_from<T, UActorComponent>
 	void RemoveComponent(T* Object)
 	{
+		Object->Deactivate();
 		Components.Remove(Object);
+		UEngine::Get().GObjects.Remove(Object->GetUUID());
 	}
 
+	/** @return Actor's World Transform */
 	FTransform GetActorTransform() const;
-	void SetActorTransform(const FTransform& InTransform);
+	/** @param
+	 * * Set Actor World Transform */
+	void SetActorTransform(const FTransform& NewTransform);
+
+	// Actor는 World 기준이라 없다? -> 그런데 Actor에 Parent는 있을 수 있다?
+	/** @param NewRelativeTransform 새로운 상대 좌표 */
+	void SetActorRelativeTransform(const FTransform& NewRelativeTransform);
+	
 	bool CanEverTick() const { return bCanEverTick; }
 	virtual const char* GetTypeName();
 
@@ -90,7 +81,7 @@ public:
 
 public:
 	USceneComponent* GetRootComponent() const { return RootComponent; }
-	void SetRootComponent(USceneComponent* InRootComponent) { RootComponent = InRootComponent; }
+	virtual void SetRootComponent(USceneComponent* InRootComponent) { RootComponent = InRootComponent; }
 
 public:
 	void SetColor(FVector4 InColor);
@@ -103,6 +94,7 @@ protected:
 
 private:
 	UWorld* World = nullptr;
-	TSet<UActorComponent*> Components;
+	TArray<UActorComponent*> Components;
+	TArray<UActorComponent*> ToActiveComponents;	// 컴포넌트 생성 시 일시적으로 넣어줌.
 };
 

@@ -9458,8 +9458,8 @@ static void ImGui::UpdateMouseInputs()
     io.MouseWheelRequestAxisSwap = io.KeyShift && !io.ConfigMacOSXBehaviors;
 
     // Round mouse position to avoid spreading non-rounded position (e.g. UpdateManualResize doesn't support them well)
-    //if (IsMousePosValid(&io.MousePos))
-        //io.MousePos = g.MouseLastValidPos = ImFloor(io.MousePos);
+    if (IsMousePosValid(&io.MousePos))
+        io.MousePos = g.MouseLastValidPos = ImFloor(io.MousePos);
 
     // If mouse just appeared or disappeared (usually denoted by -FLT_MAX components) we cancel out movement in MouseDelta
     if (IsMousePosValid(&io.MousePos) && IsMousePosValid(&io.MousePosPrev))
@@ -9733,7 +9733,7 @@ void ImGui::UpdateInputEvents(bool trickle_fast_inputs)
             ImVec2 event_pos(e->MousePos.PosX, e->MousePos.PosY);
             if (trickle_fast_inputs && (mouse_button_changed != 0 || mouse_wheeled || key_changed || text_inputted))
                 break;
-            //io.MousePos = event_pos;
+            io.MousePos = event_pos;
             io.MouseSource = e->MousePos.MouseSource;
             mouse_moved = true;
         }

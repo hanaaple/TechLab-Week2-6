@@ -1,8 +1,7 @@
 ﻿#pragma once
 #include "Vector.h"
 #include "Matrix.h"
-#include "Core/Engine.h"
-#include "Core/Math/Plane.h"
+#include "Plane.h"
 
 #define TORAD 0.0174532925199432957f
 
@@ -10,14 +9,13 @@ struct FTransform
 {
 protected:
 	FVector Position;
-	FQuat Rotation;
+	FVector Rotation; 
 	FVector Scale;
-	int Depth;
 	
 public:
 	FTransform()
 		: Position(FVector(0, 0, 0))
-		, Rotation(FQuat(0, 0, 0, 1))
+		, Rotation(FVector(0, 0, 0))
 		, Scale(FVector(1, 1, 1))
 	{
 	}
@@ -29,13 +27,20 @@ public:
 	{
 	}
 
-	FTransform(FVector InPosition, FQuat InQuat, FVector InScale)
-		: Position(InPosition)
-		, Rotation(InQuat)
-		, Scale(InScale)
+	// FTransform(FVector InPosition, FQuat InQuat, FVector InScale)
+	// 	: Position(InPosition)
+	// 	, Rotation(InQuat)
+	// 	, Scale(InScale)
+	// {
+	// }
+
+	FTransform(const FMatrix& matrix)
 	{
+		Position = matrix.GetTranslation();
+		Rotation = matrix.GetEulerRotation();
+		Scale = matrix.GetScale();
 	}
-	        
+
 	inline FMatrix GetViewMatrix() const
 	{
 		return FMatrix::LookAtLH(Position, Position + GetForward(), GetUp());
@@ -51,16 +56,24 @@ public:
 	}
 	inline virtual void SetRotation(const FVector& InRotation)
 	{
-		Rotation = FQuat::EulerToQuaternion(InRotation);
+		Rotation = InRotation;
 	}
+	//
+	// inline virtual void SetRotation(const FQuat& InRotation)
+	// {
+	// 	Rotation = InRotation;
+	// }
+	
 	inline virtual void SetRotation(float x, float y, float z)
 	{
 		SetRotation(FVector(x, y, z));
 	}
+	
 	inline void SetScale(FVector InScale)
 	{
 		Scale = InScale;
 	}
+	
 	inline void AddScale(FVector InScale)
 	{
 		Scale.X += InScale.X;
@@ -75,7 +88,12 @@ public:
 	{
 		return Position;
 	}
-	FQuat GetRotation() const 
+	// FQuat GetRotation() const 
+	// {
+	// 	return Rotation;
+	// }
+
+	FVector GetEulerRotation() const 
 	{
 		return Rotation;
 	}
@@ -84,18 +102,19 @@ public:
 	{
 		return Scale;
 	}
-
+	
 	FMatrix GetMatrix() const 
 	{
+		// 순서 맞음.
 		return FMatrix::GetScaleMatrix(Scale.X, Scale.Y, Scale.Z)
-			* FMatrix::GetRotateMatrix(Rotation)
+			* FMatrix::GetRotateMatrix(FQuat(Rotation))
 			* FMatrix::GetTranslateMatrix(Position.X, Position.Y, Position.Z);
 	}
 
 	FVector GetForward() const
 	{
 		// 쿼터니언을 회전 행렬로 변환
-		FMatrix RotationMatrix = FMatrix::GetRotateMatrix(Rotation);
+		FMatrix RotationMatrix = FMatrix::GetRotateMatrix(FQuat(Rotation));
 
 		// 회전 행렬의 첫 번째 열이 Forward 벡터를 나타냄
 		FVector Forward = FVector(
@@ -109,11 +128,56 @@ public:
 
 	FVector GetRight() const
 	{
-		return FVector::CrossProduct(FVector(0, 0, 1), GetForward()).GetSafeNormal();
+		//return FVector::CrossProduct(FVector(0, 0, 1), GetForward()).GetSafeNormal();
+		// 쿼터니언을 회전 행렬로 변환
+		FMatrix RotationMatrix = FMatrix::GetRotateMatrix(FQuat(Rotation));
+
+		// 회전 행렬의 두 번째 열이 Right 벡터를 나타냄
+		FVector Forward = FVector(
+			RotationMatrix.M[0][1],
+			RotationMatrix.M[1][1],
+			RotationMatrix.M[2][1]
+		);
+		return Forward.GetSafeNormal();
 	}
 
 	FVector GetUp() const{
 		return FVector::CrossProduct(GetForward(), GetRight()).GetSafeNormal();
+
+	}
+
+	FVector GetVisualForward() const
+	{
+		// 쿼터니언을 회전 행렬로 변환
+		FMatrix RotationMatrix = FMatrix::GetVisualRotationMatrix(FQuat(Rotation));
+
+		// 회전 행렬의 첫 번째 열이 Forward 벡터를 나타냄
+		FVector Forward = FVector(
+			RotationMatrix.M[0][0],
+			RotationMatrix.M[1][0],
+			RotationMatrix.M[2][0]
+		);
+
+		return Forward.GetSafeNormal();
+	}
+
+	FVector GetVisualRight() const
+	{
+		//return FVector::CrossProduct(FVector(0, 0, 1), GetForward()).GetSafeNormal();
+		// 쿼터니언을 회전 행렬로 변환
+		FMatrix RotationMatrix = FMatrix::GetVisualRotationMatrix(FQuat(Rotation));
+
+		// 회전 행렬의 두 번째 열이 Right 벡터를 나타냄
+		FVector Forward = FVector(
+			RotationMatrix.M[0][1],
+			RotationMatrix.M[1][1],
+			RotationMatrix.M[2][1]
+		);
+		return Forward.GetSafeNormal();
+	}
+
+	FVector GetVisualUp() const {
+		return FVector::CrossProduct(GetVisualForward(), GetVisualRight()).GetSafeNormal();
 
 	}
 
@@ -125,29 +189,33 @@ public:
 	// InRotate는 Degree 단위
 	void Rotate(const FVector& InRotation)
 	{
-		RotateRoll(InRotation.X);
-		RotatePitch(InRotation.Y);
-		RotateYaw(InRotation.Z);
+		Rotation += InRotation;
 	}
 
 	void RotateYaw(float Angle)
 	{
-		FVector Axis = FVector(0, 0, 1);
-		Rotation = FQuat::MultiplyQuaternions(Rotation, FQuat(Axis, Angle));
-
-		//Rotation = FQuat::MultiplyQuaternions(Rotation, FQuat(0, 0, sin(Angle * TORAD / 2), cos(Angle * TORAD / 2)));
+		Rotation.Z += Angle;
 	}
 
 	void RotatePitch(float Angle)
 	{
-		FVector Axis = FVector(0, 1, 0).GetSafeNormal();
-		Rotation = FQuat::MultiplyQuaternions(Rotation, FQuat(Axis, Angle));
+		Rotation.Y += Angle;
 	}
 
 	void RotateRoll(float Angle)
 	{
-		FVector Axis = FVector(1, 0, 0).GetSafeNormal();
-		Rotation = FQuat::MultiplyQuaternions(Rotation, FQuat(Axis, Angle));
+		Rotation.X += Angle;
 	}
 
+	FTransform operator*(const FTransform& OtherMatrix) const
+	{		
+		FTransform Result = GetMatrix() * OtherMatrix.GetMatrix();
+		
+		return Result;
+	}
+
+	FMatrix Inverse() const
+	{
+		return GetMatrix().Inverse();
+	}
 };

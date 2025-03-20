@@ -1,6 +1,5 @@
 ﻿#include "Camera.h"
 
-#include "Core/Rendering/URenderer.h"
 #include "Object/PrimitiveComponent/UPrimitiveComponent.h"
 
 
@@ -12,7 +11,7 @@ ACamera::ACamera()
     Far = 100.f;
     FieldOfView = 45.f;
     ProjectionMode = ECameraProjectionMode::Perspective;
-
+    CameraSpeed = SettingManager::Get().LoadCamSensitivty();
     RootComponent = AddComponent<USceneComponent>();
     
     FTransform StartPos = GetActorTransform();
@@ -48,4 +47,15 @@ float ACamera::GetNear() const
 float ACamera::GetFar() const
 {
     return Far;
+}
+
+void ACamera::SetIsMoving(bool value)
+{
+    bIsMoving = value;
+}
+
+void ACamera::SetOriginalRotation()
+{
+    FTransform transform = GetActorTransform();
+    originalRotation = transform.GetEulerRotation();
 }

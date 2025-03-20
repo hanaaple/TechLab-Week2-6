@@ -1,18 +1,21 @@
 ﻿#include "Engine.h"
 
 #include <iostream>
-#include "Object/ObjectFactory.h"
-#include "Object/World/World.h"
-#include "Debug/DebugConsole.h"
-#include "Object/Gizmo/Axis.h"
-#include "Core/Input/PlayerInput.h"
-#include "Core/Input/PlayerController.h"
-#include "Object/Actor/Camera.h"
-#include "Object/Actor/Sphere.h"
-#include "Static/FEditorManager.h"
 
-class AArrow;
-class APicker;
+#include "Debug/DebugConsole.h"
+#include "Input/PlayerController.h"
+#include "Input/PlayerInput.h"
+#include "Object/Actor/Cylinder.h"
+#include "Object/Gizmo/Axis.h"
+#include "Object/World/World.h"
+#include "Static/FEditorManager.h"
+#include <Object/Actor/Cone.h>
+#include <Object/Actor/Cube.h>
+#include <Object/Actor/BillBoardText.h>
+#include "Object/Actor/AABBPicker.h"
+#include "Object/Gizmo/WorldGrid.h"
+#include "Object/Actor/Sphere.h"
+
 // ImGui WndProc 정의
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -85,8 +88,8 @@ void UEngine::Initialize(
     InitializedScreenHeight = ScreenHeight;
     
     ui.Initialize(WindowHandle, *Renderer, ScreenWidth, ScreenHeight);
-    
-	UE_LOG("Engine Initialized!");
+    InitializeShowFlags();
+    UE_LOG("Engine Initialized!");
 }
 
 void UEngine::Run()
@@ -134,13 +137,13 @@ void UEngine::Run()
         }
 		// Renderer Update
         Renderer->Prepare();
-        Renderer->PrepareShader();
 
 		// World Update
 		if (World)
 		{
 			World->Tick(DeltaTime);
-			World->Render();
+		    World->UpdateRenderComponents();
+		    World->Render();
 		    World->LateTick(DeltaTime);
 		}
 
@@ -229,12 +232,114 @@ void UEngine::InitWorld()
 
     FEditorManager::Get().SetCamera(World->SpawnActor<ACamera>());
 
-    //// Test
-    //AArrow* Arrow = World->SpawnActor<AArrow>();
-    //World->SpawnActor<ASphere>();
-    
+    FEditorManager::Get().SetWorldGrid(World->SpawnActor<AWorldGrid>());
     World->SpawnActor<AAxis>();
-    World->SpawnActor<APicker>();
+    World->SpawnActor<AAABBPicker>();
+
+    //World->SpawnActor<ASphere>();
+    //World->SpawnActor<ACube>();
+    float OffsetY = 0;
+    
+    {
+        ACube* Actor = World->SpawnActor<ACube>();
+        UCubeComp* Cube = static_cast<UCubeComp*>(Actor->GetRootComponent());
+        Actor->SetRootComponent(Cube);
+        Cube->SetTexture(ETextureType::None);
+        Cube->SetShaderType(EShaderType::PrimitiveShader);
+
+        FTransform Transform;
+        Transform.SetPosition(OffsetY, OffsetY, 0);
+        Cube->SetRelativeTransform(Transform);
+        OffsetY += 2;
+    }
+
+    {
+        ACube* Actor = World->SpawnActor<ACube>();
+        UCubeComp* Cube = static_cast<UCubeComp*>(Actor->GetRootComponent());
+        Actor->SetRootComponent(Cube);
+        Cube->SetTexture(ETextureType::CatTexture);
+        Cube->SetShaderType(EShaderType::TextureShader);
+
+        FTransform Transform;
+        Transform.SetPosition(OffsetY, OffsetY, 0);
+        Cube->SetRelativeTransform(Transform);
+        OffsetY += 2;
+    }
+
+    {
+        ACube* Actor = World->SpawnActor<ACube>();
+        UCubeComp* Cube = static_cast<UCubeComp*>(Actor->GetRootComponent());
+        Actor->SetRootComponent(Cube);
+        Cube->SetTexture(ETextureType::Lenna);
+        Cube->SetShaderType(EShaderType::TextureShader);
+
+        FTransform Transform;
+        Transform.SetPosition(OffsetY, OffsetY, 0);
+        Cube->SetRelativeTransform(Transform);
+        OffsetY += 2;
+    }
+
+    {
+        ACube* Actor = World->SpawnActor<ACube>();
+        UCubeComp* Cube = static_cast<UCubeComp*>(Actor->GetRootComponent());
+        Actor->SetRootComponent(Cube);
+        Cube->SetTexture(ETextureType::Cement);
+        Cube->SetShaderType(EShaderType::TextureShader);
+
+        FTransform Transform;
+        Transform.SetPosition(OffsetY, OffsetY, 0);
+        Cube->SetRelativeTransform(Transform);
+        OffsetY += 2;
+    }
+    
+    //// Test
+    //World->SpawnActor<AArrow>();
+    //World->SpawnActor<ABillboardText>();
+    
+    /* 빌보드 테스트 코드*/
+    //World->SpawnActor<ABillboardText>();
+
+    // for (int i =0 ; i < 1000; i++)
+    // {
+    //     World->SpawnActor<ACube>();
+    // }
+
+    // auto* Acube = World->SpawnActor<ACube>();
+    // USceneComponent* Child = Acube->GetRootComponent(); 
+    // for (int i = 0; i < 1; i++)
+    // {
+    //     auto* cube = Acube->AddComponent<UCubeComp>();
+    //     FTransform Transform = FTransform();
+    //     Transform.SetPosition(0, 1, 0);
+    //     cube->SetRelativeTransform(Transform);
+    //     cube->SetupAttachment(Child, EEndPlayReason::EAttachmentRule::KeepRelative);
+    //     Child = cube;
+    // }
+
+    //World->SpawnActor<ASphere>();
+    //World->SpawnActor<APicker>();
+    /*auto* Actor = World->SpawnActor<ACylinder>();
+    UConeComp* ConeComp = Actor->AddComponent<UConeComp>();
+    ConeComp->SetRelativeTransform(FTransform(FVector(0.0f, 0.0f, 1.0f), FVector(), FVector(1.2f, 1.2f, 0.5f)));
+
+    ConeComp->SetupAttachment(Actor->GetRootComponent(), EEndPlayReason::EAttachmentRule::KeepRelative);
+	
+    for (int i=0;i<10;i++)
+    {
+        UConeComp* ConeComp1 =  Actor->AddComponent<UConeComp>();
+        
+        ConeComp1->SetRelativeTransform(FTransform(FVector(0.0f, i, 1.0f), FVector(), FVector(1.2f, 1.2f, 0.5f)));
+        ConeComp1->SetupAttachment(Actor->GetRootComponent(), EEndPlayReason::EAttachmentRule::KeepRelative);
+    
+        for (int j=0;j<10;j++)
+        {
+            UConeComp* ConeComp2 =  Actor->AddComponent<UConeComp>();
+            ConeComp2->SetRelativeTransform(FTransform(FVector(0.0f, j * i, 1.0f), FVector(), FVector(1.2f, 1.2f, 0.5f)));
+            ConeComp2->SetupAttachment(ConeComp1, EEndPlayReason::EAttachmentRule::KeepRelative);
+        }
+    }*/
+    
+    
 
 	World->BeginPlay();
 }
@@ -273,4 +378,39 @@ UObject* UEngine::GetObjectByUUID(uint32 InUUID) const
         return Obj->get();
     }
     return nullptr;
+}
+
+TMap<EEngineShowFlags, bool> UEngine::ShowFlagStates;
+
+void UEngine::InitializeShowFlags()
+{
+    ShowFlagStates.Add(EEngineShowFlags::SF_Primitives, true);
+    ShowFlagStates.Add(EEngineShowFlags::SF_Gizmo, true);
+    ShowFlagStates.Add(EEngineShowFlags::SF_BillboardText, true);
+}
+
+//  Show Flag 설정
+void UEngine::SetShowFlag(EEngineShowFlags Flag, bool bEnable)
+{
+    ShowFlagStates[Flag] = bEnable;
+    //bShowPrimitives = bEnable;
+    //Renderer->SetShowPrimitives(bShowPrimitives); //  렌더러에 전달
+}
+
+//  Show Flag 상태 확인
+bool UEngine::IsShowFlagEnabled(EEngineShowFlags Flag) const
+{
+    return ShowFlagStates[Flag];
+    /*
+    if (Flag == EEngineShowFlags::SF_Primitives)
+    {
+        return ShowFlagStates[Flag];
+        //return bShowPrimitives;
+    }
+    return false;*/
+}
+
+const TMap<EEngineShowFlags, bool>& UEngine::GetShowFlagStates() const
+{
+    return ShowFlagStates;
 }

@@ -81,10 +81,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)Binaries\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediate\Build\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)ThirdParty;$(IncludePath)</IncludePath>
+    <ReferencePath>$(ReferencePath)</ReferencePath>
+    <LibraryPath>$(SolutionDir)Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Binaries\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediate\Build\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)ThirdParty;$(IncludePath)</IncludePath>
+    <ReferencePath>$(ReferencePath)</ReferencePath>
+    <LibraryPath>$(SolutionDir)Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -152,6 +158,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>$(ProjectDir)Source;$(ProjectDir)Source\ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -161,11 +168,105 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\ConstantBufferContext.cpp" />
     <ClCompile Include="Source\Core\Math\Plane.cpp" />
+    <ClCompile Include="Source\Core\Name\FName.cpp" />
+    <ClCompile Include="Source\Core\Name\FNameEntry.cpp" />
+    <ClCompile Include="Source\Core\Name\FNameTable.cpp" />
+    <ClCompile Include="Source\Core\Rendering\BufferCache.cpp">
+      <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <Optimization>Disabled</Optimization>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>C:\Users\Jungle\Documents\GitHub\TechLab-Week2-6\Intermediate\Build\x64\Debug\</AssemblerListingLocation>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <BrowseInformation>false</BrowseInformation>
+      <BrowseInformationFile>C:\Users\Jungle\Documents\GitHub\TechLab-Week2-6\Intermediate\Build\x64\Debug\</BrowseInformationFile>
+      <CompileAs>Default</CompileAs>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <EnableASAN>false</EnableASAN>
+      <EnableFuzzer>false</EnableFuzzer>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableVectorLength>NotSet</EnableVectorLength>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <GenerateModuleDependencies>false</GenerateModuleDependencies>
+      <GenerateSourceDependencies>false</GenerateSourceDependencies>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDependenciesFile>C:\Users\Jungle\Documents\GitHub\TechLab-Week2-6\Intermediate\Build\x64\Debug\</ModuleDependenciesFile>
+      <ModuleOutputFile>C:\Users\Jungle\Documents\GitHub\TechLab-Week2-6\Intermediate\Build\x64\Debug\</ModuleOutputFile>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ObjectFileName>C:\Users\Jungle\Documents\GitHub\TechLab-Week2-6\Intermediate\Build\x64\Debug\</ObjectFileName>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ProgramDataBaseFileName>C:\Users\Jungle\Documents\GitHub\TechLab-Week2-6\Intermediate\Build\x64\Debug\vc143.pdb</ProgramDataBaseFileName>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>C:\Users\Jungle\Documents\GitHub\TechLab-Week2-6\Intermediate\Build\x64\Debug\t0.pch</PrecompiledHeaderOutputFile>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+      <ShowIncludes>false</ShowIncludes>
+      <SourceDependenciesFile>C:\Users\Jungle\Documents\GitHub\TechLab-Week2-6\Intermediate\Build\x64\Debug\</SourceDependenciesFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <SpectreMitigation>false</SpectreMitigation>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TrackerLogDirectory>C:\Users\Jungle\Documents\GitHub\TechLab-Week2-6\Intermediate\Build\x64\Debug\t0.tlog\</TrackerLogDirectory>
+      <TranslateIncludes>false</TranslateIncludes>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <UseFullPaths>true</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <XMLDocumentationFileName>C:\Users\Jungle\Documents\GitHub\TechLab-Week2-6\Intermediate\Build\x64\Debug\</XMLDocumentationFileName>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <IntelJCCErratum>false</IntelJCCErratum>
+      <BuildStlModules>false</BuildStlModules>
+      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
+      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
+      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
+      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_UNICODE;UNICODE;</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>C:\Users\Jungle\Documents\GitHub\TechLab-Week2-6\Source;C:\Users\Jungle\Documents\GitHub\TechLab-Week2-6\Source\ThirdParty;</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8 </AdditionalOptions>
+      <LinkCompiled>true</LinkCompiled>
+    </ClCompile>
+    <ClCompile Include="Source\Core\Rendering\Shader\UShader.cpp">
+    </ClCompile>
+    <ClCompile Include="Source\Core\Rendering\Shader\UShaderManager.cpp">
+    </ClCompile>
+    <ClCompile Include="Source\Core\Rendering\Texture\Texture.cpp" />
+    <ClCompile Include="Source\Core\Rendering\Texture\TextureData.cpp" />
+    <ClCompile Include="Source\Core\Rendering\Texture\TextureLoader.cpp" />
+    <ClCompile Include="Source\Core\SettingManager.cpp" />
+    <ClCompile Include="Source\Object\Actor\AABBPicker.cpp" />
+    <ClCompile Include="Source\Object\Actor\ABoundingBox.cpp" />
+    <ClCompile Include="Source\Object\Actor\ATorus.cpp" />
+    <ClCompile Include="Source\Object\Actor\BillboardText.cpp" />
     <ClCompile Include="Source\Object\Actor\Camera.cpp" />
     <ClCompile Include="Source\Object\Actor\Cone.cpp" />
     <ClCompile Include="Source\Object\Actor\Cylinder.cpp" />
-    <ClCompile Include="Source\Object\Gizmo\GizmoHandle.cpp" />
+    <ClCompile Include="Source\Object\Gizmo\EditorGizmos.cpp" />
     <ClCompile Include="Source\Object\Actor\Arrow.cpp" />
     <ClCompile Include="Source\Core\Input\PlayerController.cpp" />
     <ClCompile Include="Source\Core\Input\PlayerInput.cpp" />
@@ -174,7 +275,6 @@
     <ClCompile Include="Source\Object\ActorComponent\ActorComponent.cpp" />
     <ClCompile Include="Source\Debug\DebugConsole.cpp" />
     <ClCompile Include="Source\Object\Actor\Actor.cpp" />
-    <ClCompile Include="Source\Core\Rendering\BufferCache.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Source\Core\Engine.cpp" />
     <ClCompile Include="Source\Core\Container\String.cpp" />
@@ -183,7 +283,11 @@
     <ClCompile Include="Source\Core\Math\Matrix.cpp" />
     <ClCompile Include="Source\Core\Math\Vector.cpp" />
     <ClCompile Include="Source\JsonSaveHelper.cpp" />
-    <ClCompile Include="Source\Object\ObjectFactory.cpp" />
+    <ClCompile Include="Source\Object\Gizmo\RotationGizmo.cpp" />
+    <ClCompile Include="Source\Object\Gizmo\WorldGrid.cpp" />
+    <ClCompile Include="Source\Primitive\MeshVertexData.cpp" />
+    <ClCompile Include="Source\Primitive\VertexDataCreator.cpp" />
+    <ClCompile Include="Source\Static\FEditorManager.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_demo.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_draw.cpp" />
@@ -198,22 +302,37 @@
     <ClCompile Include="Source\Object\Actor\Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\ShaderW0.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="Source\ConstantBufferContext.h" />
+    <ClInclude Include="Source\Core\Math\Vector4.h" />
+    <ClInclude Include="Source\Core\Name\FName.h" />
+    <ClInclude Include="Source\Core\Name\FNameEntry.h" />
+    <ClInclude Include="Source\Core\Name\FNameTable.h" />
+    <ClInclude Include="Source\Core\Rendering\BatchRenderContext.h" />
+    <ClInclude Include="Source\Core\Rendering\BufferCache.h" />
+    <ClInclude Include="Source\Core\Rendering\Shader\UShader.h" />
+    <ClInclude Include="Source\Core\Rendering\Shader\UShaderManager.h" />
+    <ClInclude Include="Source\Core\Rendering\Texture\Texture.h" />
+    <ClInclude Include="Source\Core\Rendering\Texture\TextureData.h" />
+    <ClInclude Include="Source\Core\Rendering\Texture\TextureLoader.h" />
+    <ClInclude Include="Source\DataTypes\Enum.h" />
+    <ClInclude Include="Source\DataTypes\ShdaerType.h" />
+    <ClInclude Include="Source\Core\SettingManager.h" />
+    <ClInclude Include="Source\Object\Actor\AABBPicker.h" />
+    <ClInclude Include="Source\Object\Actor\ABoundingBox.h" />
+    <ClInclude Include="Source\DataTypes\MeshDataTypes.h" />
+    <ClInclude Include="Source\DataTypes\Structs.h" />
+    <ClInclude Include="Source\Object\Actor\ATorus.h" />
+    <ClInclude Include="Source\Object\Actor\BillBoardText.h" />
     <ClInclude Include="Source\Object\Actor\Camera.h" />
     <ClInclude Include="Source\Object\Actor\Cone.h" />
     <ClInclude Include="Source\Object\Actor\Cube.h" />
+    <ClCompile Include="Source\Object\Gizmo\Axis.h" />
     <ClInclude Include="Source\Object\ActorComponent\ActorComponent.h" />
     <ClInclude Include="Source\Object\Actor\Actor.h" />
     <ClInclude Include="Source\Core\Container\Map.h" />
     <ClInclude Include="Source\Core\Container\Pair.h" />
     <ClInclude Include="Source\Debug\DebugConsole.h" />
     <ClInclude Include="Source\Core\Container\Set.h" />
-    <ClInclude Include="Source\Core\Rendering\BufferCache.h" />
     <ClInclude Include="Source\Core\AbstractClass\Singleton.h" />
     <ClInclude Include="Source\Core\Container\Array.h" />
     <ClInclude Include="Source\Core\Container\ContainerAllocator.h" />
@@ -228,7 +347,33 @@
     <ClInclude Include="Source\JsonSaveHelper.h" />
     <ClInclude Include="Source\Core\Math\Transform.h" />
     <ClInclude Include="Source\Object\Actor\Cylinder.h" />
+    <ClInclude Include="Source\Object\Gizmo\RotationGizmo.h" />
     <ClInclude Include="Source\Object\ObjectFactory.h" />
+    <ClInclude Include="Source\Primitive\MeshVertexData.h" />
+    <ClInclude Include="Source\Primitive\VertexDataCreator.h" />
+    <ClInclude Include="Source\Static\FEditorManager.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\Audio.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\BufferHelpers.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\CommonStates.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\DDSTextureLoader.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\DirectXHelpers.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\Effects.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\GamePad.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\GeometricPrimitive.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\GraphicsMemory.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\Keyboard.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\Model.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\Mouse.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\PostProcess.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\PrimitiveBatch.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\ScreenGrab.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\SimpleMath.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\SimpleMath.inl" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\SpriteBatch.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\SpriteFont.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\VertexTypes.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\WICTextureLoader.h" />
+    <ClInclude Include="Source\ThirdParty\DirectXTK\XboxDDSTextureLoader.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\imconfig.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\imgui.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\imgui_impl_dx11.h" />
@@ -240,26 +385,41 @@
     <ClInclude Include="Source\ThirdParty\SimpleJSON\Json.hpp" />
     <ClCompile Include="Source\Core\Rendering\UI.cpp" />
     <ClCompile Include="Source\Core\Rendering\URenderer.cpp" />
-    <ClCompile Include="Source\Primitive\PrimitiveVertices.cpp" />
+    <ClCompile Include="Source\Primitive\MeshResourceCache.cpp" />
     <ClInclude Include="Source\Core\Engine.h" />
     <ClInclude Include="Source\Core\Rendering\UI.h" />
     <ClInclude Include="Source\Core\Rendering\URenderer.h" />
     <ClCompile Include="Source\Object\Actor\Picker.cpp" />
-    <ClInclude Include="Source\Object\Gizmo\GizmoHandle.h" />
+    <ClInclude Include="Source\Object\Gizmo\EditorGizmos.h" />
     <ClInclude Include="Source\Core\Container\CString.h" />
     <ClInclude Include="Source\Object\Actor\Picker.h" />
-    <ClCompile Include="Source\Static\FEditorManager.cpp" />
     <ClInclude Include="Source\Object\Actor\Arrow.h" />
     <ClInclude Include="Source\Core\Input\PlayerController.h" />
     <ClInclude Include="Source\Core\Input\PlayerInput.h" />
     <ClInclude Include="Source\Core\EngineTypes.h" />
-    <ClInclude Include="Source\Static\FEditorManager.h" />
-    <ClInclude Include="Source\Primitive\PrimitiveVertices.h" />
+    <ClInclude Include="Source\Primitive\MeshResourceCache.h" />
     <ClInclude Include="Source\Object\UObject.h" />
     <ClInclude Include="Source\Object\USceneComponent.h" />
     <ClInclude Include="Source\Object\PrimitiveComponent\UPrimitiveComponent.h" />
     <ClInclude Include="Source\Object\World\World.h" />
     <ClInclude Include="Source\Object\Actor\Sphere.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Core\Container\Map.cpp" />
+    <ClCompile Include="Source\Object\PrimitiveComponent\TextComp.cpp" />
+    <ClInclude Include="Source\Object\PrimitiveComponent\CharComp.h" />
+    <ClInclude Include="Source\Object\PrimitiveComponent\TextComp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\1234.png" />
+    <Content Include="Resources\cat0.png" />
+    <Content Include="Resources\cement.png" />
+    <Content Include="Resources\Explosion.png" />
+    <Content Include="Resources\Lenna.png" />
+    <Content Include="Resources\tempTexture.png" />
+    <Content Include="Shaders\PrimitiveShader.hlsl" />
+    <Content Include="Shaders\DefaultShader.hlsl" />
+    <Content Include="Shaders\TextShader.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
